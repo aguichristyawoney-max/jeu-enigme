@@ -1,239 +1,162 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-  pingTimeout: 600000,
-  pingInterval: 25000
-});
+const io = new Server(server);
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Stockage des parties
 const parties = {};
 
-function genererCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
-
 io.on('connection', (socket) => {
-  console.log('Connecté:', socket.id);
+    console.log('Connexion détectée:', socket.id);
 
-  socket.on('admin_creer_partie', ({ codeExistant } = {}) => {
-    if (codeExistant && parties[codeExistant]) {
-      const partie = parties[codeExistant];
-      partie.adminId = socket.id;
-      socket.join(codeExistant);
-      socket.emit('partie_creee', { code: codeExistant });
-      return;
-    }
+    // --- LOGIQUE ADMIN ---
 
-    let code = genererCode();
-    while (parties[code]) code = genererCode();
+    socket.on('admin_creer_partie', ({ codeExistant }) => {
+        let code = codeExistant || Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        if (!parties[code]) {
+            parties[code] = {
+                adminId: socket.id,
+                joueurs: [],
+                enCours: false,
+                questionActuelle: null
+            };
+        } else {
+            parties[code].adminId = socket.id;
+        }
 
-    parties[code] = {
-      code,
-      adminId: socket.id,
-      joueurs: {},
-      scores: {},
-      question: null,
-      image: null,
-      reponses: {},
-      reactions: {},
-      demandesIndice: new Set(),
-      phase: 'attente',
-      tempsDepart: null,
-      tempsDuration: null,
-      pointsMax: 1,
-      timerInterval: null,
-      messages: [],
-      pointDonneCetteQuestion: false
-    };
-
-    socket.join(code);
-    socket.data.code = code;
-    socket.data.isAdmin = true;
-    socket.emit('partie_creee', { code });
-  });
-
-  socket.on('joueur_rejoindre', ({ code, nom }) => {
-    const partie = parties[code];
-    if (!partie) { socket.emit('erreur', 'Code de partie invalide !'); return; }
-
-    partie.joueurs[socket.id] = { id: socket.id, nom };
-    partie.scores[nom] = partie.scores[nom] || 0;
-    socket.join(code);
-    socket.data.code = code;
-    socket.data.nom = nom;
-    socket.data.isAdmin = false;
-
-    io.to(code).emit('joueurs_update', Object.values(partie.joueurs));
-    socket.emit('partie_rejointe', { code, nom });
-  });
-
-  socket.on('admin_question', ({ code, question, image, temps, pointsMax }) => {
-    const partie = parties[code];
-    if (!partie || socket.id !== partie.adminId) return;
-
-    partie.question = question || null;
-    partie.image = image || null;
-    partie.reponses = {};
-    partie.reactions = {};
-    partie.demandesIndice = new Set();
-    partie.phase = 'playing';
-    partie.tempsDepart = Date.now();
-    partie.tempsDuration = temps;
-    partie.pointsMax = pointsMax || 1;
-    partie.pointDonneCetteQuestion = false;
-
-    if (partie.timerInterval) clearTimeout(partie.timerInterval);
-
-    io.to(code).emit('nouvelle_question', {
-      question: partie.question,
-      image: partie.image,
-      temps,
-      pointsMax: partie.pointsMax
+        socket.join(code);
+        socket.emit('partie_creee', { code });
+        io.to(code).emit('joueurs_update', parties[code].joueurs);
     });
 
-    partie.timerInterval = setTimeout(() => {
-      partie.phase = 'resultat';
-      envoyerFinQuestion(code);
-    }, temps * 1000);
-  });
+    socket.on('admin_lancer_jeu', ({ code }) => {
+        if (parties[code]) {
+            parties[code].enCours = true;
+            io.to(code).emit('jeu_demarre');
+        }
+    });
 
-  socket.on('admin_couper_temps', ({ code }) => {
-    const partie = parties[code];
-    if (!partie || socket.id !== partie.adminId) return;
+    socket.on('admin_question', ({ code, question, image, temps, pointsMax }) => {
+        if (parties[code]) {
+            parties[code].questionActuelle = { question, pointsMax };
+            // On réinitialise l'historique des réponses pour la nouvelle question
+            parties[code].joueurs.forEach(j => j.historique = []);
+            
+            io.to(code).emit('nouvelle_question', { question, image, temps, pointsMax });
+            io.to(code).emit('reponse_joueur', parties[code].joueurs);
+        }
+    });
 
-    if (partie.timerInterval) clearTimeout(partie.timerInterval);
-    partie.phase = 'resultat';
-    envoyerFinQuestion(code);
-  });
+    socket.on('admin_couper_temps', ({ code }) => {
+        io.to(code).emit('stop_timer');
+    });
 
-  function envoyerFinQuestion(code) {
-    const partie = parties[code];
-    if (!partie) return;
+    // LA FONCTION QUE TU AS DEMANDÉ
+    socket.on('admin_personne_a_trouve', ({ code }) => {
+        if (parties[code]) {
+            // 1. On avertit les joueurs que personne ne gagne
+            io.to(code).emit('personne_a_trouve_notif', {
+                message: "🤷‍♂️ Personne n'a trouvé ! 0 point pour ce tour."
+            });
 
-    const reponsesFinales = Object.values(partie.reponses).map(r => ({
-      nom: r.nom,
-      historique: r.historique || [],
-      derniere: r.historique && r.historique.length > 0
-        ? r.historique[r.historique.length - 1].reponse
-        : '(pas de réponse)',
-      premierTemps: r.historique && r.historique.length > 0
-        ? r.historique[0].tempsReponse
-        : null
-    }));
+            // 2. On arrête le chrono chez tout le monde
+            io.to(code).emit('stop_timer');
 
-    io.to(code).emit('fin_question', { reponses: reponsesFinales });
-  }
+            // 3. Message auto dans le chat
+            const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            io.to(code).emit('chat_message', {
+                nom: "📢 SYSTÈME",
+                message: "Fin de l'énigme : personne n'a trouvé.",
+                heure: heure
+            });
+        }
+    });
 
-  socket.on('joueur_reponse', ({ code, reponse }) => {
-    const partie = parties[code];
-    if (!partie || partie.phase !== 'playing') return;
+    socket.on('admin_donner_points', ({ code, nom, points }) => {
+        if (parties[code]) {
+            const joueur = parties[code].joueurs.find(j => j.nom === nom);
+            if (joueur) {
+                const ptsGagnes = parseInt(points) || 0;
+                joueur.points += ptsGagnes;
+                
+                // On notifie l'admin que c'est bien enregistré pour verrouiller son interface
+                socket.emit('point_deja_donne');
+                
+                // Update général
+                io.to(code).emit('points_update', parties[code].joueurs);
+                io.to(code).emit('recompense_animation', { nom, points: ptsGagnes });
+            }
+        }
+    });
 
-    const nom = socket.data.nom;
-    const tempsEcoule = parseFloat(((Date.now() - partie.tempsDepart) / 1000).toFixed(1));
+    socket.on('admin_envoyer_indice', ({ code, indice }) => {
+        io.to(code).emit('recevoir_indice', { indice });
+    });
 
-    if (!partie.reponses[nom]) {
-      partie.reponses[nom] = { nom, historique: [] };
-    }
+    socket.on('admin_fin_partie', ({ code }) => {
+        if (parties[code]) {
+            io.to(code).emit('scores_finaux', parties[code].joueurs);
+            delete parties[code];
+        }
+    });
 
-    partie.reponses[nom].historique.push({ reponse, tempsReponse: tempsEcoule });
+    // --- LOGIQUE JOUEUR ---
 
-    const toutesReponses = Object.values(partie.reponses);
-    io.to(partie.adminId).emit('reponse_joueur', toutesReponses);
-  });
+    socket.on('joueur_rejoindre', ({ code, nom }) => {
+        if (parties[code]) {
+            socket.join(code);
+            const nouveauJoueur = {
+                id: socket.id,
+                nom: nom,
+                points: 0,
+                historique: [],
+                reactions: {}
+            };
+            parties[code].joueurs.push(nouveauJoueur);
+            io.to(code).emit('joueurs_update', parties[code].joueurs);
+        } else {
+            socket.emit('erreur', 'Partie introuvable');
+        }
+    });
 
-  socket.on('admin_donner_points', ({ code, nom, points }) => {
-    const partie = parties[code];
-    if (!partie || socket.id !== partie.adminId) return;
+    socket.on('joueur_reponse', ({ code, nom, reponse, tempsReponse }) => {
+        if (parties[code]) {
+            const joueur = parties[code].joueurs.find(j => j.nom === nom);
+            if (joueur) {
+                joueur.historique.push({ reponse, tempsReponse });
+                io.to(code).emit('reponse_joueur', parties[code].joueurs);
+            }
+        }
+    });
 
-    if (partie.pointDonneCetteQuestion) {
-      socket.emit('point_deja_donne');
-      return;
-    }
+    socket.on('joueur_reaction', ({ code, nomCible, emoji }) => {
+        if (parties[code]) {
+            const joueur = parties[code].joueurs.find(j => j.nom === nomCible);
+            if (joueur) {
+                joueur.reactions[emoji] = (joueur.reactions[emoji] || 0) + 1;
+                io.to(code).emit('reaction_update', { nomCible, reactions: joueur.reactions });
+            }
+        }
+    });
 
-    partie.pointDonneCetteQuestion = true;
+    socket.on('chat_message', ({ code, nom, message }) => {
+        const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        io.to(code).emit('chat_message', { nom, message, heure });
+    });
 
-    const pts = Math.max(0, parseInt(points) || 0);
-    partie.scores[nom] = (partie.scores[nom] || 0) + pts;
-
-    const scoresArray = Object.entries(partie.scores)
-      .map(([n, p]) => ({ nom: n, points: p }));
-
-    io.to(code).emit('points_update', scoresArray);
-
-    if (partie.timerInterval) clearTimeout(partie.timerInterval);
-    partie.phase = 'resultat';
-    envoyerFinQuestion(code);
-  });
-
-  socket.on('joueur_reaction', ({ code, nomCible, emoji }) => {
-    const partie = parties[code];
-    if (!partie) return;
-
-    if (!partie.reactions[nomCible]) partie.reactions[nomCible] = {};
-    if (!partie.reactions[nomCible][emoji]) partie.reactions[nomCible][emoji] = 0;
-    partie.reactions[nomCible][emoji]++;
-
-    io.to(code).emit('reaction_update', { nomCible, reactions: partie.reactions[nomCible] });
-  });
-
-  socket.on('joueur_demande_indice', ({ code }) => {
-    const partie = parties[code];
-    if (!partie || partie.phase !== 'playing') return;
-
-    partie.demandesIndice.add(socket.id);
-
-    const nbJoueurs = Object.keys(partie.joueurs).length;
-    const nbDemandes = partie.demandesIndice.size;
-    const majorite = nbDemandes > nbJoueurs / 2;
-
-    io.to(partie.adminId).emit('demande_indice_update', { nbDemandes, nbJoueurs, majorite });
-  });
-
-  socket.on('admin_envoyer_indice', ({ code, indice }) => {
-    const partie = parties[code];
-    if (!partie || socket.id !== partie.adminId) return;
-    io.to(code).emit('indice_recu', { indice });
-  });
-
-  socket.on('chat_message', ({ code, nom, message }) => {
-    const partie = parties[code];
-    if (!partie) return;
-
-    const msg = {
-      nom,
-      message,
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    };
-    partie.messages.push(msg);
-    io.to(code).emit('chat_message', msg);
-  });
-
-  socket.on('disconnect', () => {
-    const code = socket.data.code;
-    if (!code || !parties[code]) return;
-
-    const partie = parties[code];
-
-    if (socket.data.isAdmin) {
-      io.to(code).emit('admin_deconnecte');
-    } else {
-      delete partie.joueurs[socket.id];
-      partie.demandesIndice.delete(socket.id);
-      io.to(code).emit('joueurs_update', Object.values(partie.joueurs));
-    }
-  });
+    socket.on('disconnect', () => {
+        console.log('Déconnexion:', socket.id);
+    });
 });
 
-// MODIFICATION ICI POUR LE DÉPLOIEMENT
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Serveur lancé sur le port ${PORT}`);
+    console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });

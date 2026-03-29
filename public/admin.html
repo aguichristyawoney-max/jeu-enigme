@@ -267,7 +267,6 @@
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
 <div id="ecran-admin-login" class="ecran actif">
   <div style="background:linear-gradient(135deg,#8B5E3C,#6d4a2e);min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:16px;">
     <div class="login-card">
@@ -285,7 +284,6 @@
   </div>
 </div>
 
-<!-- ══ ATTENTE ══ -->
 <div id="ecran-admin-attente" class="ecran">
   <div style="text-align:center;color:white;margin-bottom:8px;">
     <div style="font-size:clamp(28px,8vw,36px);">👑</div>
@@ -309,7 +307,6 @@
   </div>
 </div>
 
-<!-- ══ JEU ADMIN ══ -->
 <div id="ecran-admin-jeu" class="ecran">
 
   <div class="admin-header">
@@ -320,7 +317,6 @@
 
   <div class="admin-body">
 
-    <!-- PANEL QUESTION -->
     <div class="panel">
       <h3>❓ Nouvelle question</h3>
       <div class="question-form">
@@ -352,10 +348,10 @@
         <div class="controles">
           <button class="btn btn-vert" onclick="envoyerQuestion()">📤 Envoyer</button>
           <button class="btn btn-rouge" onclick="couperTemps()">⏹ Couper</button>
+          <button class="btn btn-orange" onclick="personneNaTrouve()">🤷‍♂️ Personne n'a trouvé</button>
         </div>
       </div>
 
-      <!-- INDICE -->
       <div class="notif-indice" id="notif-indice">
         <p id="notif-indice-texte">Des joueurs demandent un indice !</p>
       </div>
@@ -367,7 +363,6 @@
       </div>
     </div>
 
-    <!-- PANEL RÉPONSES -->
     <div class="panel">
       <h3>📋 Réponses des joueurs</h3>
       <div class="verrou-banner" id="verrou-banner">🔒 Point attribué — prochaine question pour déverrouiller</div>
@@ -389,7 +384,6 @@
       </div>
     </div>
 
-    <!-- PANEL SCORES -->
     <div class="panel">
       <h3>🏆 Scores en direct</h3>
       <div id="admin-scores">
@@ -400,7 +394,6 @@
       </div>
     </div>
 
-    <!-- PANEL CHAT -->
     <div class="panel">
       <h3>💬 Chat</h3>
       <div class="chat-box" id="chat-admin"></div>
@@ -415,7 +408,6 @@
   </div>
 </div>
 
-<!-- ══ FIN ══ -->
 <div id="ecran-admin-fin" class="ecran">
   <div class="fin-card">
     <h2>🏁 Partie terminée !</h2>
@@ -533,10 +525,19 @@
   function donnerPoints(nom) {
     if (pointVerrouille) return;
     const input = document.getElementById('points-input-' + nom);
-    const pts = parseInt(input.value);
-    if (isNaN(pts) || pts < 0) return;
+    // Correction: utilisation de parseInt avec 0 par défaut
+    const pts = parseInt(input.value) || 0;
+    if (pts < 0) return;
     verrouiller();
     socket.emit('admin_donner_points', { code: adminCode, nom, points: pts });
+  }
+
+  function personneNaTrouve() {
+    if (!adminCode || pointVerrouille) return;
+    if (confirm("Confirmer que personne n'a trouvé ? Cela affichera 0 point pour ce tour.")) {
+      verrouiller();
+      socket.emit('admin_personne_a_trouve', { code: adminCode });
+    }
   }
 
   function adminReagir(nomCible, emoji) {
