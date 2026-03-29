@@ -51,7 +51,7 @@ io.on('connection', (socket) => {
       pointsMax: 1,
       timerInterval: null,
       messages: [],
-      pointDonneCetteQuestion: false  // 🔒 NOUVEAU
+      pointDonneCetteQuestion: false
     };
 
     socket.join(code);
@@ -88,7 +88,7 @@ io.on('connection', (socket) => {
     partie.tempsDepart = Date.now();
     partie.tempsDuration = temps;
     partie.pointsMax = pointsMax || 1;
-    partie.pointDonneCetteQuestion = false;  // 🔓 RESET à chaque nouvelle question
+    partie.pointDonneCetteQuestion = false;
 
     if (partie.timerInterval) clearTimeout(partie.timerInterval);
 
@@ -153,13 +153,11 @@ io.on('connection', (socket) => {
     const partie = parties[code];
     if (!partie || socket.id !== partie.adminId) return;
 
-    // 🔒 PROTECTION : si déjà donné cette question, on ignore
     if (partie.pointDonneCetteQuestion) {
       socket.emit('point_deja_donne');
       return;
     }
 
-    // 🔒 On verrouille immédiatement
     partie.pointDonneCetteQuestion = true;
 
     const pts = Math.max(0, parseInt(points) || 0);
@@ -234,6 +232,8 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log('Serveur lancé sur http://localhost:3000');
+// MODIFICATION ICI POUR LE DÉPLOIEMENT
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Serveur lancé sur le port ${PORT}`);
 });
