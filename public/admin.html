@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#8B5E3C">
+  <title>👑 Admin - Jeu-Enigmes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; }
+
+    .ecran { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px; }
+    .ecran.actif { display: flex; }
+
+    /* ══ LOGIN ══ */
+    #ecran-admin-login {
+      background: linear-gradient(135deg, #8B5E3C, #6d4a2e);
+      justify-content: center;
+      padding: 16px;
+    }
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: clamp(24px, 6vw, 40px);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+    .login-card .emoji { font-size: clamp(36px, 10vw, 52px); margin-bottom: 10px; }
+    .login-card h2 { color: #8B5E3C; margin-bottom: 8px; font-size: clamp(20px, 5vw, 26px); }
+    .login-card p { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+    .login-input {
+      width: 100%; padding: 14px 18px; font-size: clamp(16px, 4vw, 18px);
+      border: 3px solid #e0d5c8; border-radius: 12px; outline: none;
+      color: #3d2b1f; margin-bottom: 12px; font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .login-input:focus { border-color: #8B5E3C; }
+    .nom-preview { font-size: clamp(16px, 4vw, 20px); font-weight: bold; color: #8B5E3C; min-height: 28px; margin-bottom: 16px; }
+
+    /* ══ ATTENTE ══ */
+    #ecran-admin-attente {
+      background: linear-gradient(135deg, #8B5E3C, #6d4a2e);
+      justify-content: center;
+    }
+    .code-display {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: clamp(20px, 5vw, 30px) clamp(24px, 8vw, 50px);
+      text-align: center; color: white; margin: 16px 0;
+      width: 100%; max-width: 360px;
+    }
+    .code-display .label { font-size: 15px; opacity: 0.8; margin-bottom: 8px; }
+    .code-display .code { font-size: clamp(36px, 12vw, 56px); font-weight: bold; letter-spacing: 6px; }
+    .code-display .info { font-size: 13px; opacity: 0.7; margin-top: 8px; }
+
+    .joueurs-admin { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; max-width: 400px; }
+    .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 15px; font-weight: bold; }
+
+    /* ══ BOUTONS ══ */
+    .btn {
+      padding: clamp(12px, 3vw, 14px) clamp(18px, 5vw, 28px);
+      font-size: clamp(15px, 4vw, 17px); font-weight: bold;
+      border: none; border-radius: 12px; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 5px 0 rgba(0,0,0,0.2); margin: 6px;
+      font-family: inherit; min-height: 48px;
+    }
+    .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+    .btn-vert { background: #6db88e; color: white; }
+    .btn-rouge { background: #e05a5a; color: white; }
+    .btn-orange { background: #e8b86d; color: #3d2b1f; }
+    .btn-full { width: 100%; margin: 4px 0; }
+
+    /* ══ JEU ADMIN ══ */
+    #ecran-admin-jeu { background: #f5ede0; align-items: stretch; padding: 0; }
+
+    .admin-header {
+      background: linear-gradient(135deg, #8B5E3C, #6d4a2e);
+      padding: 12px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      color: white; flex-wrap: wrap; gap: 8px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .admin-header h1 { font-size: clamp(14px, 3.5vw, 18px); }
+    .admin-code-small {
+      background: rgba(255,255,255,0.2); padding: 5px 12px;
+      border-radius: 20px; font-size: clamp(15px, 4vw, 18px);
+      font-weight: bold; letter-spacing: 3px;
+    }
+    .joueurs-header { display: flex; flex-wrap: wrap; gap: 5px; }
+    .joueur-tag { background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 10px; font-size: 12px; }
+
+    /* ══ BODY GRILLE ══ */
+    .admin-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 12px;
+    }
+    @media (max-width: 700px) {
+      .admin-body { grid-template-columns: 1fr; }
+    }
+
+    .panel { background: white; border-radius: 16px; padding: clamp(14px, 4vw, 20px); }
+    .panel h3 {
+      color: #8B5E3C; margin-bottom: 14px;
+      font-size: clamp(15px, 4vw, 17px);
+      border-bottom: 2px solid #f5ede0; padding-bottom: 8px;
+    }
+
+    /* ══ QUESTION ══ */
+    .question-form textarea {
+      width: 100%; padding: 12px;
+      border: 2px solid #e0d5c8; border-radius: 10px;
+      font-size: clamp(14px, 3.5vw, 15px); font-family: inherit;
+      resize: vertical; min-height: 80px; outline: none;
+    }
+    .question-form textarea:focus { border-color: #8B5E3C; }
+
+    .form-row { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+    .form-row label { font-size: 13px; color: #8B5E3C; font-weight: bold; }
+    .form-row input[type="number"],
+    .form-row input[type="range"] { flex: 1; padding: 8px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; outline: none; }
+    .form-row input:focus { border-color: #8B5E3C; }
+
+    .preview-image { max-width: 100%; max-height: 130px; border-radius: 10px; margin: 8px 0; display: none; object-fit: contain; }
+    .image-upload-label {
+      display: block; padding: 10px; text-align: center;
+      border: 2px dashed #e0d5c8; border-radius: 10px;
+      cursor: pointer; color: #aaa; font-size: 14px; margin: 8px 0;
+      transition: border-color 0.2s;
+    }
+    .image-upload-label:hover { border-color: #8B5E3C; color: #8B5E3C; }
+    .temps-val { font-weight: bold; color: #8B5E3C; min-width: 30px; text-align: center; }
+
+    /* ══ INDICE ══ */
+    .notif-indice {
+      background: #fff3cd; border: 2px solid #e8b86d;
+      border-radius: 10px; padding: 10px; margin-bottom: 10px; display: none;
+    }
+    .notif-indice p { color: #856404; font-weight: bold; font-size: 13px; }
+    .indice-form { display: flex; gap: 8px; }
+    .indice-form input {
+      flex: 1; padding: 10px; border: 2px solid #e0d5c8;
+      border-radius: 10px; font-family: inherit; outline: none; font-size: 14px;
+      min-height: 44px;
+    }
+    .indice-form input:focus { border-color: #8B5E3C; }
+
+    /* ══ TABLE RÉPONSES → CARDS sur mobile ══ */
+    .table-reponses { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .table-reponses th {
+      background: #f5ede0; padding: 8px 6px; text-align: left;
+      color: #8B5E3C; font-size: 12px; border-bottom: 2px solid #e0d5c8;
+    }
+    .table-reponses td { padding: 8px 6px; border-bottom: 1px solid #f0e8e0; vertical-align: top; }
+    .table-reponses tr:hover td { background: #fdf8f4; }
+
+    /* Cards sur mobile */
+    @media (max-width: 700px) {
+      .table-reponses thead { display: none; }
+      .table-reponses, .table-reponses tbody, .table-reponses tr, .table-reponses td {
+        display: block; width: 100%;
+      }
+      .table-reponses tr {
+        background: white; border: 2px solid #e0d5c8;
+        border-radius: 14px; margin-bottom: 12px; padding: 12px; overflow: hidden;
+      }
+      .table-reponses td {
+        border: none; padding: 4px 0;
+      }
+      .table-reponses td::before {
+        content: attr(data-label);
+        font-weight: bold; color: #8B5E3C;
+        font-size: 12px; display: block; margin-bottom: 3px;
+      }
+    }
+
+    .historique-admin { display: flex; flex-direction: column; gap: 3px; }
+    .histo-item { font-size: 13px; color: #888; padding: 3px 6px; border-radius: 6px; background: #f5f5f5; }
+    .histo-item.derniere { color: #3d2b1f; font-weight: bold; background: #e8f5e9; }
+    .temps-badge { background: #e8b86d; color: white; border-radius: 8px; padding: 2px 6px; font-size: 12px; font-weight: bold; }
+
+    .emoji-btns-admin { display: flex; gap: 4px; flex-wrap: wrap; }
+    .emoji-btns-admin button {
+      font-size: 20px; background: none; border: 2px solid #e0d5c8;
+      border-radius: 8px; cursor: pointer; padding: 5px 7px;
+      transition: transform 0.1s; min-width: 40px; min-height: 40px;
+    }
+    .emoji-btns-admin button:active { transform: scale(1.3); }
+    .reactions-admin { font-size: 13px; margin-top: 4px; color: #666; }
+
+    .points-zone { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .points-zone input {
+      width: 56px; padding: 6px; border: 2px solid #e0d5c8;
+      border-radius: 8px; font-family: inherit; text-align: center; font-size: 15px;
+      min-height: 40px;
+    }
+    .btn-point {
+      background: #6db88e; color: white; border: none;
+      border-radius: 8px; padding: 8px 12px; cursor: pointer;
+      font-weight: bold; font-size: 16px; font-family: inherit;
+      transition: opacity 0.2s; min-height: 44px; min-width: 44px;
+    }
+    .btn-point:disabled { background: #ccc; opacity: 0.4; cursor: not-allowed; }
+    .points-max-badge { font-size: 12px; color: #aaa; margin-top: 3px; }
+
+    /* ══ VERROU ══ */
+    .verrou-banner {
+      background: #e05a5a; color: white; text-align: center;
+      padding: 8px; border-radius: 10px; font-weight: bold;
+      font-size: 13px; margin-bottom: 10px; display: none;
+    }
+
+    /* ══ SCORES ══ */
+    .score-ligne {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; background: #f5ede0;
+      font-size: clamp(14px, 3.5vw, 16px);
+    }
+    .score-pts { font-weight: bold; color: #8B5E3C; background: white; padding: 4px 10px; border-radius: 10px; }
+
+    /* ══ CHAT ══ */
+    .chat-box {
+      height: clamp(130px, 25vw, 180px); overflow-y: auto;
+      border: 2px solid #e0d5c8; border-radius: 10px;
+      padding: 10px; margin-bottom: 10px; background: #fdfaf7;
+    }
+    .chat-msg { margin-bottom: 8px; font-size: 14px; line-height: 1.4; }
+    .chat-nom { font-weight: bold; color: #8B5E3C; margin-right: 4px; }
+    .chat-heure { font-size: 11px; color: #aaa; margin-right: 4px; }
+    .chat-form { display: flex; gap: 6px; }
+    .chat-form input {
+      flex: 1; padding: 10px; border: 2px solid #e0d5c8;
+      border-radius: 10px; font-family: inherit; outline: none;
+      font-size: 14px; min-height: 44px;
+    }
+    .chat-form input:focus { border-color: #8B5E3C; }
+    .chat-form .btn { margin: 0; padding: 10px 14px; font-size: 14px; min-height: 44px; }
+
+    /* ══ CONTRÔLES ══ */
+    .controles { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 10px 0; }
+    .controles .btn { flex: 1; min-width: 140px; }
+
+    /* ══ FIN ══ */
+    #ecran-admin-fin { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
+    .fin-card { background: white; border-radius: 20px; padding: clamp(20px, 6vw, 30px); max-width: 500px; width: 100%; text-align: center; }
+    .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px, 5vw, 24px); }
+    .podium-ligne {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; font-size: clamp(14px, 4vw, 16px);
+    }
+    .podium-ligne.or { background: #fff8e1; border: 2px solid #ffd700; }
+    .podium-ligne.argent { background: #f5f5f5; border: 2px solid #c0c0c0; }
+    .podium-ligne.bronze { background: #fff3e0; border: 2px solid #cd7f32; }
+    .podium-ligne.autre { background: #f5ede0; border: 2px solid #e0d5c8; }
+    .podium-pts { font-weight: bold; color: #8B5E3C; }
+
+    /* ══ TIMER ══ */
+    .timer-admin { font-size: clamp(22px, 7vw, 30px); font-weight: bold; color: #e05a5a; text-align: center; margin: 8px 0; }
+
+    /* ══ SCROLL SMOOTH ══ */
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="ecran-admin-login" class="ecran actif">
+  <div style="background:linear-gradient(135deg,#8B5E3C,#6d4a2e);min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:16px;">
+    <div class="login-card">
+      <div class="emoji">👑</div>
+      <h2>Espace Admin</h2>
+      <p>Entre ton prénom pour commencer</p>
+      <input type="text" id="admin-nom-input" class="login-input"
+        placeholder="Ton prénom..." maxlength="20"
+        autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
+        onkeydown="if(event.key==='Enter') confirmerNomAdmin()"
+        oninput="previewNomAdmin(this.value)" />
+      <div class="nom-preview" id="admin-nom-preview"></div>
+      <button class="btn btn-vert btn-full" onclick="confirmerNomAdmin()">C'est parti ! 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ATTENTE ══ -->
+<div id="ecran-admin-attente" class="ecran">
+  <div style="text-align:center;color:white;margin-bottom:8px;">
+    <div style="font-size:clamp(28px,8vw,36px);">👑</div>
+    <div id="admin-nom-attente" style="font-size:clamp(18px,5vw,22px);font-weight:bold;margin-top:6px;"></div>
+  </div>
+
+  <div class="code-display">
+    <div class="label">Code de la partie</div>
+    <div class="code" id="admin-code">------</div>
+    <div class="info">Partagez ce code avec les joueurs</div>
+  </div>
+
+  <div style="color:white;font-size:15px;margin-bottom:8px;">Joueurs connectés :</div>
+  <div class="joueurs-admin" id="joueurs-admin-attente">
+    <span style="color:rgba(255,255,255,0.5)">En attente...</span>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;width:100%;max-width:360px;margin-top:10px;">
+    <button class="btn btn-vert btn-full" onclick="lancerJeu()">🚀 Lancer la partie</button>
+    <button class="btn btn-rouge btn-full" onclick="annulerPartie()">❌ Annuler</button>
+  </div>
+</div>
+
+<!-- ══ JEU ADMIN ══ -->
+<div id="ecran-admin-jeu" class="ecran">
+
+  <div class="admin-header">
+    <h1 id="admin-nom-header">👑 Admin</h1>
+    <div class="admin-code-small" id="admin-code-small"></div>
+    <div class="joueurs-header" id="joueurs-jeu"></div>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- PANEL QUESTION -->
+    <div class="panel">
+      <h3>❓ Nouvelle question</h3>
+      <div class="question-form">
+        <textarea id="question-input" placeholder="Écris ta question ou énigme ici..."></textarea>
+
+        <label class="image-upload-label" for="image-input">📷 Ajouter une image (optionnel)</label>
+        <input type="file" id="image-input" accept="image/*" style="display:none" onchange="previewImage(this)">
+        <img id="image-preview" class="preview-image" alt="Aperçu">
+        <button style="display:none;background:#e05a5a;color:white;border:none;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;margin-bottom:8px;min-height:36px;"
+          id="btn-suppr-image" onclick="supprimerImage()">🗑 Supprimer</button>
+
+        <div class="form-row">
+          <div style="flex:1;">
+            <label>⏱ Temps (s)</label><br>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+              <input type="range" id="temps-slider" min="10" max="120" value="30" step="5"
+                oninput="document.getElementById('temps-val').textContent=this.value"
+                style="flex:1;min-height:36px;">
+              <span class="temps-val" id="temps-val">30</span>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <label>🏆 Points max</label><br>
+            <input type="number" id="points-max-input" value="3" min="1" max="10"
+              style="margin-top:6px;padding:8px;border:2px solid #e0d5c8;border-radius:8px;font-family:inherit;width:70px;outline:none;min-height:40px;font-size:16px;">
+          </div>
+        </div>
+
+        <div class="controles">
+          <button class="btn btn-vert" onclick="envoyerQuestion()">📤 Envoyer</button>
+          <button class="btn btn-rouge" onclick="couperTemps()">⏹ Couper</button>
+        </div>
+      </div>
+
+      <!-- INDICE -->
+      <div class="notif-indice" id="notif-indice">
+        <p id="notif-indice-texte">Des joueurs demandent un indice !</p>
+      </div>
+      <div class="indice-form">
+        <input type="text" id="indice-input" placeholder="💡 Indice..."
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter') envoyerIndice()">
+        <button class="btn btn-orange" style="padding:10px 14px;font-size:14px;margin:0;min-height:44px;" onclick="envoyerIndice()">Envoyer</button>
+      </div>
+    </div>
+
+    <!-- PANEL RÉPONSES -->
+    <div class="panel">
+      <h3>📋 Réponses des joueurs</h3>
+      <div class="verrou-banner" id="verrou-banner">🔒 Point attribué — prochaine question pour déverrouiller</div>
+      <div style="overflow-x:auto;">
+        <table class="table-reponses">
+          <thead>
+            <tr>
+              <th>Joueur</th>
+              <th>Historique</th>
+              <th>⏱ 1ère</th>
+              <th>Réactions</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody id="admin-reponses-tbody">
+            <tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">En attente de réponses...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PANEL SCORES -->
+    <div class="panel">
+      <h3>🏆 Scores en direct</h3>
+      <div id="admin-scores">
+        <div style="text-align:center;color:#aaa;font-size:14px;">Aucun point attribué</div>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-rouge btn-full" onclick="afficherFin()">🏁 Terminer la partie</button>
+      </div>
+    </div>
+
+    <!-- PANEL CHAT -->
+    <div class="panel">
+      <h3>💬 Chat</h3>
+      <div class="chat-box" id="chat-admin"></div>
+      <div class="chat-form">
+        <input type="text" id="chat-input-admin" placeholder="Ton message..."
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter') envoyerChatAdmin()">
+        <button class="btn btn-vert" onclick="envoyerChatAdmin()">➤</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ FIN ══ -->
+<div id="ecran-admin-fin" class="ecran">
+  <div class="fin-card">
+    <h2>🏁 Partie terminée !</h2>
+    <div id="admin-podium-fin" class="podium"></div>
+    <button class="btn btn-vert btn-full" onclick="nouvellePartie()" style="margin-top:16px;">🔄 Nouvelle partie</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  let adminCode = null;
+  let adminNom = '';
+  let adminNomAffiche = '';
+  let pointsMaxActuel = 3;
+  let pointVerrouille = false;
+
+  function allerVers(id) {
+    document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
+    document.getElementById(id).classList.add('actif');
+    window.scrollTo(0, 0);
+  }
+
+  function verrouiller() {
+    pointVerrouille = true;
+    document.getElementById('verrou-banner').style.display = 'block';
+    document.querySelectorAll('.btn-point').forEach(btn => { btn.disabled = true; btn.textContent = '🔒'; });
+    document.querySelectorAll('.points-zone input').forEach(inp => { inp.disabled = true; });
+  }
+
+  function deverrouiller() {
+    pointVerrouille = false;
+    document.getElementById('verrou-banner').style.display = 'none';
+    document.querySelectorAll('.btn-point').forEach(btn => { btn.disabled = false; btn.textContent = '✅'; });
+    document.querySelectorAll('.points-zone input').forEach(inp => { inp.disabled = false; });
+  }
+
+  function previewNomAdmin(val) {
+    document.getElementById('admin-nom-preview').textContent = val.trim() ? val.trim() + '_admin 👑' : '';
+  }
+
+  function confirmerNomAdmin() {
+    const val = document.getElementById('admin-nom-input').value.trim();
+    if (!val) {
+      document.getElementById('admin-nom-input').style.borderColor = '#e05a5a';
+      document.getElementById('admin-nom-input').placeholder = 'Écris ton prénom !';
+      return;
+    }
+    adminNom = val;
+    adminNomAffiche = val + '_admin 👑';
+    document.getElementById('admin-nom-attente').textContent = adminNomAffiche;
+    document.getElementById('admin-nom-header').textContent = adminNomAffiche;
+    allerVers('ecran-admin-attente');
+    socket.emit('admin_creer_partie', { codeExistant: localStorage.getItem('adminCode') });
+  }
+
+  function lancerJeu() {
+    if (!adminCode) return;
+    socket.emit('admin_lancer_jeu', { code: adminCode });
+    allerVers('ecran-admin-jeu');
+  }
+
+  function annulerPartie() {
+    if (confirm('Annuler la partie ?')) {
+      localStorage.removeItem('adminCode');
+      allerVers('ecran-admin-login');
+    }
+  }
+
+  function previewImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.getElementById('image-preview');
+      img.src = e.target.result;
+      img.style.display = 'block';
+      document.getElementById('btn-suppr-image').style.display = 'inline-block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function supprimerImage() {
+    document.getElementById('image-input').value = '';
+    document.getElementById('image-preview').src = '';
+    document.getElementById('image-preview').style.display = 'none';
+    document.getElementById('btn-suppr-image').style.display = 'none';
+  }
+
+  function envoyerQuestion() {
+    if (!adminCode) return;
+    const question = document.getElementById('question-input').value.trim();
+    const image = document.getElementById('image-preview').src || null;
+    const temps = parseInt(document.getElementById('temps-slider').value);
+    const pointsMax = parseInt(document.getElementById('points-max-input').value) || 3;
+    pointsMaxActuel = pointsMax;
+    deverrouiller();
+    socket.emit('admin_question', {
+      code: adminCode, question,
+      image: image && image.startsWith('data:') ? image : null,
+      temps, pointsMax
+    });
+    document.getElementById('question-input').value = '';
+    supprimerImage();
+    document.getElementById('admin-reponses-tbody').innerHTML =
+      '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">En attente de réponses...</td></tr>';
+    document.getElementById('notif-indice').style.display = 'none';
+  }
+
+  function couperTemps() {
+    if (!adminCode) return;
+    socket.emit('admin_couper_temps', { code: adminCode });
+  }
+
+  function donnerPoints(nom) {
+    if (pointVerrouille) return;
+    const input = document.getElementById('points-input-' + nom);
+    const pts = parseInt(input.value);
+    if (isNaN(pts) || pts < 0) return;
+    verrouiller();
+    socket.emit('admin_donner_points', { code: adminCode, nom, points: pts });
+  }
+
+  function adminReagir(nomCible, emoji) {
+    socket.emit('joueur_reaction', { code: adminCode, nomCible, emoji });
+  }
+
+  function envoyerIndice() {
+    const indice = document.getElementById('indice-input').value.trim();
+    if (!indice) return;
+    socket.emit('admin_envoyer_indice', { code: adminCode, indice });
+    document.getElementById('indice-input').value = '';
+    document.getElementById('notif-indice').style.display = 'none';
+  }
+
+  function envoyerChatAdmin() {
+    const msg = document.getElementById('chat-input-admin').value.trim();
+    if (!msg) return;
+    socket.emit('chat_message', { code: adminCode, nom: adminNomAffiche, message: msg });
+    document.getElementById('chat-input-admin').value = '';
+  }
+
+  function afficherFin() {
+    if (!confirm('Terminer la partie ?')) return;
+    socket.emit('admin_fin_partie', { code: adminCode });
+    allerVers('ecran-admin-fin');
+  }
+
+  function nouvellePartie() {
+    localStorage.removeItem('adminCode');
+    adminCode = null;
+    allerVers('ecran-admin-login');
+  }
+
+  // ══ SOCKETS ══
+
+  socket.on('partie_creee', ({ code }) => {
+    adminCode = code;
+    localStorage.setItem('adminCode', code);
+    document.getElementById('admin-code').textContent = code;
+    document.getElementById('admin-code-small').textContent = code;
+  });
+
+  socket.on('joueurs_update', (joueurs) => {
+    const listeAttente = document.getElementById('joueurs-admin-attente');
+    if (listeAttente) {
+      listeAttente.innerHTML = joueurs.length
+        ? joueurs.map(j => `<div class="joueur-chip">${j.nom}</div>`).join('')
+        : '<span style="color:rgba(255,255,255,0.5)">En attente...</span>';
+    }
+    const listeJeu = document.getElementById('joueurs-jeu');
+    if (listeJeu) listeJeu.innerHTML = joueurs.map(j => `<div class="joueur-tag">${j.nom}</div>`).join('');
+  });
+
+  socket.on('reponse_joueur', (reponses) => {
+    const tbody = document.getElementById('admin-reponses-tbody');
+    tbody.innerHTML = '';
+    reponses.forEach(r => {
+      const tr = document.createElement('tr');
+      const historiqueHtml = r.historique && r.historique.length > 0
+        ? r.historique.map((h, i) => `
+            <div class="histo-item ${i === r.historique.length - 1 ? 'derniere' : ''}">
+              ${h.reponse} <span class="temps-badge">⏱ ${h.tempsReponse}s</span>
+            </div>`).join('')
+        : '<span style="color:#aaa">(pas de réponse)</span>';
+
+      const premierTemps = r.historique && r.historique.length > 0 ? r.historique[0].tempsReponse : '--';
+      const btnDisabled = pointVerrouille ? 'disabled' : '';
+      const btnText = pointVerrouille ? '🔒' : '✅';
+      const inputDisabled = pointVerrouille ? 'disabled' : '';
+
+      tr.innerHTML = `
+        <td data-label="Joueur"><b>${r.nom}</b></td>
+        <td data-label="Historique"><div class="historique-admin">${historiqueHtml}</div></td>
+        <td data-label="1ère réponse"><span class="temps-badge">⏱ ${premierTemps}s</span></td>
+        <td data-label="Réactions">
+          <div class="emoji-btns-admin">
+            <button onclick="adminReagir('${r.nom}', '👍')">👍</button>
+            <button onclick="adminReagir('${r.nom}', '😂')">😂</button>
+            <button onclick="adminReagir('${r.nom}', '🔥')">🔥</button>
+            <button onclick="adminReagir('${r.nom}', '😮')">😮</button>
+          </div>
+          <div class="reactions-admin" id="admin-reactions-${r.nom}"></div>
+        </td>
+        <td data-label="Points">
+          <div class="points-zone">
+            <input type="number" id="points-input-${r.nom}" value="${pointsMaxActuel}" min="0" max="${pointsMaxActuel}" ${inputDisabled}>
+            <button class="btn-point" onclick="donnerPoints('${r.nom}')" ${btnDisabled}>${btnText}</button>
+          </div>
+          <div class="points-max-badge">max: ${pointsMaxActuel} pts</div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+
+  socket.on('point_deja_donne', () => verrouiller());
+
+  socket.on('demande_indice_update', ({ nbDemandes, nbJoueurs, majorite }) => {
+    if (majorite) {
+      document.getElementById('notif-indice').style.display = 'block';
+      document.getElementById('notif-indice-texte').textContent = `${nbDemandes}/${nbJoueurs} joueurs demandent un indice !`;
+    }
+  });
+
+  socket.on('reaction_update', ({ nomCible, reactions }) => {
+    const el = document.getElementById('admin-reactions-' + nomCible);
+    if (!el) return;
+    el.innerHTML = Object.entries(reactions).map(([e, c]) => `${e} ${c}`).join('  ');
+  });
+
+  socket.on('points_update', (data) => {
+    data.sort((a, b) => b.points - a.points);
+    document.getElementById('admin-scores').innerHTML = data.map((j, i) => `
+      <div class="score-ligne">
+        <span>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▪️'} ${j.nom}</span>
+        <span class="score-pts">${j.points} pts</span>
+      </div>
+    `).join('');
+  });
+
+  socket.on('chat_message', (data) => {
+    const el = document.getElementById('chat-admin');
+    const div = document.createElement('div');
+    div.className = 'chat-msg';
+    div.innerHTML = `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
+    el.appendChild(div);
+    el.scrollTop = el.scrollHeight;
+  });
+
+  socket.on('scores_finaux', (scores) => {
+    scores.sort((a, b) => b.points - a.points);
+    const classes = ['or', 'argent', 'bronze'];
+    const emojis = ['🥇', '🥈', '🥉'];
+    document.getElementById('admin-podium-fin').innerHTML = scores.map((j, i) => `
+      <div class="podium-ligne ${classes[i] || 'autre'}">
+        <span>${emojis[i] || (i + 1) + '.'} ${j.nom}</span>
+        <span class="podium-pts">${j.points} pts</span>
+      </div>
+    `).join('');
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#5a8a5a">
+  <title>🎮 Jeu-Enigmes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; min-height: 100vh; font-size: 16px; }
+
+    .ecran { display: none; min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
+    .ecran.actif { display: flex; }
+
+    /* ══ ACCUEIL ══ */
+    #ecran-accueil { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
+    .logo { font-size: clamp(36px, 10vw, 56px); font-weight: bold; color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.2); margin-bottom: 8px; text-align: center; }
+    .sous-titre { color: rgba(255,255,255,0.85); font-size: clamp(15px, 4vw, 20px); margin-bottom: 40px; text-align: center; }
+    .choix-profil { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 400px; }
+    .btn-profil { flex: 1; min-width: 130px; padding: clamp(18px, 5vw, 28px) 20px; font-size: clamp(18px, 5vw, 24px); font-weight: bold; border: none; border-radius: 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
+    .btn-profil:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.2); }
+    .btn-admin { background: #e8b86d; color: #3d2b1f; }
+    .btn-joueur { background: #6db88e; color: white; }
+
+    /* ══ CARD ══ */
+    .card { background: white; border-radius: 20px; padding: clamp(24px, 6vw, 40px); max-width: 480px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; }
+    .card h2 { font-size: clamp(22px, 6vw, 28px); margin-bottom: 20px; color: #5a8a5a; }
+
+    /* ══ INPUTS ══ */
+    input[type="text"], input[type="number"] {
+      width: 100%; padding: 14px 16px; font-size: clamp(16px, 4vw, 18px);
+      border: 3px solid #e0d5c8; border-radius: 12px; margin: 6px 0 14px;
+      outline: none; transition: border-color 0.2s; color: #3d2b1f;
+      -webkit-appearance: none; appearance: none;
+    }
+    input:focus { border-color: #6db88e; }
+
+    /* ══ BOUTONS ══ */
+    .btn { width: 100%; padding: clamp(12px, 3.5vw, 16px); font-size: clamp(16px, 4vw, 18px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 5px 0 rgba(0,0,0,0.15); margin: 6px 0; }
+    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+    .btn-vert { background: #6db88e; color: white; }
+    .btn-rouge { background: #e05a5a; color: white; }
+    .btn-orange { background: #e8b86d; color: #3d2b1f; }
+    .btn-petit { width: auto; padding: 12px 18px; font-size: clamp(14px, 3.5vw, 16px); border-radius: 10px; white-space: nowrap; }
+
+    .erreur { color: #e05a5a; font-size: 14px; margin: 6px 0; min-height: 20px; }
+
+    /* ══ ATTENTE ══ */
+    #ecran-attente { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 16px; justify-content: flex-start; padding-top: 40px; }
+    .attente-info { color: white; text-align: center; width: 100%; }
+    .attente-info h2 { font-size: clamp(22px, 6vw, 30px); margin-bottom: 8px; }
+    .attente-info p { font-size: clamp(14px, 3.5vw, 17px); opacity: 0.85; margin-bottom: 20px; }
+    .joueurs-liste { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 16px 0; }
+    .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 14px; border-radius: 20px; font-size: clamp(13px, 3.5vw, 16px); font-weight: bold; }
+
+    /* ══ QUESTION ══ */
+    #ecran-question { background: #f5ede0; justify-content: flex-start; padding: 0; }
+    .question-header { width: 100%; background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 10; }
+    .question-header h2 { font-size: clamp(15px, 4vw, 20px); }
+    .timer-cercle { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: clamp(18px, 5vw, 24px); font-weight: bold; border: 3px solid white; flex-shrink: 0; }
+
+    /* Indice bulle */
+    #indice-bulle { display: none; background: white; border: 3px solid #e8b86d; border-radius: 20px; border-bottom-left-radius: 4px; padding: 12px 16px; margin: 10px 16px; max-width: 100%; align-self: flex-start; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .indice-label { font-size: 12px; color: #8B5E3C; font-weight: bold; margin-bottom: 4px; }
+
+    .question-body { padding: 14px 16px; width: 100%; max-width: 700px; }
+    #question-image-joueur { max-width: 100%; width: 100%; border-radius: 12px; margin-bottom: 14px; display: none; object-fit: cover; max-height: 280px; }
+    .question-texte { font-size: clamp(16px, 4.5vw, 22px); font-weight: bold; color: #3d2b1f; margin-bottom: 14px; background: white; padding: 14px 16px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); line-height: 1.4; }
+    .pts-badge { display: inline-block; background: #e8b86d; color: #3d2b1f; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-bottom: 14px; }
+
+    .reponse-zone { display: flex; gap: 8px; margin-bottom: 14px; }
+    .reponse-zone input { flex: 1; margin: 0; font-size: clamp(15px, 4vw, 17px); padding: 12px 14px; min-width: 0; }
+    .reponse-zone button { flex-shrink: 0; margin: 0; padding: 12px 16px; font-size: clamp(14px, 3.5vw, 16px); }
+
+    .mes-reponses { background: white; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+    .mes-reponses h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(13px, 3.5vw, 15px); }
+    .mes-reponses-liste { display: flex; flex-direction: column; gap: 6px; }
+    .ma-reponse-item { display: flex; justify-content: space-between; align-items: center; font-size: clamp(13px, 3.5vw, 15px); padding: 8px 10px; border-radius: 8px; background: #f5ede0; gap: 8px; }
+    .ma-reponse-item.derniere { background: #d4edda; font-weight: bold; }
+    .temps-mini { font-size: 12px; background: #e8b86d; padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+
+    .indice-btn-zone { text-align: center; margin-bottom: 8px; }
+
+    /* ══ RECAP ══ */
+    #ecran-recap { background: #f5ede0; justify-content: flex-start; padding: 0; }
+    .recap-header { width: 100%; background: linear-gradient(135deg, #8B5E3C, #6d4a2e); padding: 14px 16px; color: white; text-align: center; position: sticky; top: 0; z-index: 10; }
+    .recap-header h2 { font-size: clamp(17px, 5vw, 24px); }
+    .recap-body { padding: 14px 16px; width: 100%; max-width: 900px; }
+
+    /* Tableau recap → cards sur mobile */
+    .recap-table { width: 100%; border-collapse: collapse; font-size: clamp(13px, 3.5vw, 15px); background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .recap-table th { background: #8B5E3C; color: white; padding: 12px 10px; text-align: left; font-size: clamp(12px, 3.5vw, 14px); }
+    .recap-table td { padding: 10px; border-bottom: 1px solid #e0d5c8; vertical-align: top; }
+    .recap-table tr:nth-child(even) { background: #fdf6ef; }
+    .recap-table tr:last-child td { border-bottom: none; }
+
+    /* Sur petit écran : masquer le tableau, afficher des cards */
+    @media (max-width: 600px) {
+      .recap-table thead { display: none; }
+      .recap-table, .recap-table tbody, .recap-table tr, .recap-table td { display: block; width: 100%; }
+      .recap-table tr { background: white !important; border-radius: 14px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); overflow: hidden; }
+      .recap-table td { padding: 10px 14px; border-bottom: 1px solid #f0e8df; }
+      .recap-table td:first-child { background: #8B5E3C; color: white; font-size: 16px; padding: 12px 14px; }
+      .recap-table td:last-child { border-bottom: none; }
+    }
+
+    .historique-recap { display: flex; flex-direction: column; gap: 4px; }
+    .histo-item { padding: 5px 8px; border-radius: 6px; background: #f5ede0; font-size: clamp(12px, 3.5vw, 14px); color: #888; }
+    .histo-item.derniere { background: #d4edda; color: #2d6a2d; font-weight: bold; }
+    .temps-badge { background: #e8b86d; color: #3d2b1f; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 6px; }
+
+    .emoji-btns-recap { display: flex; gap: 6px; flex-wrap: wrap; }
+    .emoji-btns-recap button { background: none; border: 2px solid #e0d5c8; border-radius: 8px; padding: 6px 10px; font-size: clamp(18px, 5vw, 22px); cursor: pointer; transition: transform 0.1s; min-width: 44px; min-height: 44px; }
+    .emoji-btns-recap button:active { transform: scale(1.3); }
+    .reactions-recap { font-size: 14px; margin-top: 6px; }
+
+    /* ══ SCORES ══ */
+    .scores-panel { background: white; border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .scores-panel h3 { color: #5a8a5a; margin-bottom: 12px; font-size: clamp(16px, 4.5vw, 20px); }
+    .score-ligne { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e0d5c8; font-size: clamp(14px, 4vw, 17px); gap: 8px; }
+    .score-ligne:last-child { border-bottom: none; }
+    .score-nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .score-pts { font-weight: bold; background: #6db88e; color: white; padding: 4px 12px; border-radius: 12px; white-space: nowrap; flex-shrink: 0; }
+
+    /* ══ CHAT ══ */
+    .chat-panel { background: white; border-radius: 14px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .chat-panel h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(14px, 4vw, 17px); }
+    .chat-messages { height: 130px; overflow-y: auto; background: #f5ede0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; }
+    .chat-msg { font-size: clamp(13px, 3.5vw, 15px); line-height: 1.4; word-break: break-word; }
+    .chat-nom { font-weight: bold; color: #8B5E3C; }
+    .chat-heure { font-size: 11px; color: #aaa; margin-left: 4px; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input-row input { flex: 1; margin: 0; padding: 10px 12px; font-size: clamp(14px, 3.5vw, 16px); border-radius: 10px; border: 2px solid #e0d5c8; outline: none; min-width: 0; }
+    .chat-input-row input:focus { border-color: #6db88e; }
+    .chat-input-row button { width: auto; padding: 10px 14px; font-size: clamp(13px, 3.5vw, 15px); margin: 0; border-radius: 10px; box-shadow: none; flex-shrink: 0; }
+
+    /* ══ TOUCH ══ */
+    @media (hover: none) {
+      .btn:hover, .btn-profil:hover { transform: none; }
+    }
+
+    /* ══ GRAND ÉCRAN ══ */
+    @media (min-width: 768px) {
+      .question-body { padding: 20px 24px; }
+      .recap-body { padding: 20px 24px; }
+      #question-image-joueur { max-height: 380px; }
+      .chat-messages { height: 180px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ACCUEIL -->
+  <div id="ecran-accueil" class="ecran actif">
+    <div class="logo">🎮 Jeu-Enigmes</div>
+    <div class="sous-titre">Le quiz en temps réel !</div>
+    <div class="choix-profil">
+      <button class="btn-profil btn-admin" onclick="window.location.href='admin.html'">👑 Admin</button>
+      <button class="btn-profil btn-joueur" onclick="allerVers('ecran-rejoindre')">🎯 Joueur</button>
+    </div>
+  </div>
+
+  <!-- REJOINDRE -->
+  <div id="ecran-rejoindre" class="ecran">
+    <div class="card">
+      <h2>🎯 Rejoindre une partie</h2>
+      <input type="text" id="input-code" placeholder="Code de la partie" maxlength="6" style="text-transform:uppercase" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <input type="text" id="input-nom" placeholder="Ton prénom" maxlength="20" autocomplete="off" />
+      <div id="erreur-rejoindre" class="erreur"></div>
+      <button class="btn btn-vert" onclick="rejoindrePartie()">Rejoindre !</button>
+      <button class="btn btn-orange" onclick="allerVers('ecran-accueil')">← Retour</button>
+    </div>
+  </div>
+
+  <!-- ATTENTE -->
+  <div id="ecran-attente" class="ecran">
+    <div class="attente-info">
+      <h2 id="attente-nom">Bonjour !</h2>
+      <p>En attente que l'admin lance la partie...</p>
+      <div class="joueurs-liste" id="joueurs-attente"></div>
+    </div>
+    <div style="width:100%;max-width:500px;margin-top:20px;">
+      <div class="chat-panel">
+        <h4>💬 Chat</h4>
+        <div class="chat-messages" id="chat-attente"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input-attente" placeholder="Écris un message..." onkeydown="if(event.key==='Enter') envoyerChat('attente')" autocomplete="off" />
+          <button class="btn btn-vert" onclick="envoyerChat('attente')">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUESTION -->
+  <div id="ecran-question" class="ecran">
+    <div class="question-header">
+      <h2>❓ Question</h2>
+      <div class="timer-cercle" id="timer-joueur">--</div>
+    </div>
+
+    <div id="indice-bulle">
+      <div class="indice-label">💡 Indice de l'admin :</div>
+      <span id="indice-texte"></span>
+    </div>
+
+    <div class="question-body">
+      <img id="question-image-joueur" src="" alt="Image question" />
+      <div class="question-texte" id="question-texte-joueur"></div>
+      <div class="pts-badge" id="pts-badge-joueur"></div>
+
+      <div class="reponse-zone">
+        <input type="text" id="input-reponse" placeholder="Ta réponse..." onkeydown="if(event.key==='Enter') envoyerReponse()" autocomplete="off" autocorrect="off" />
+        <button class="btn btn-vert btn-petit" onclick="envoyerReponse()">➤</button>
+      </div>
+
+      <div class="mes-reponses" id="mes-reponses-zone" style="display:none;">
+        <h4>📝 Tes réponses :</h4>
+        <div class="mes-reponses-liste" id="mes-reponses-liste"></div>
+      </div>
+
+      <div class="indice-btn-zone">
+        <button class="btn btn-orange btn-petit" onclick="demanderIndice()" id="btn-indice">💡 Demander un indice</button>
+      </div>
+
+      <div class="chat-panel" style="margin-top:14px;">
+        <h4>💬 Chat</h4>
+        <div class="chat-messages" id="chat-question"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input-question" placeholder="Écris un message..." onkeydown="if(event.key==='Enter') envoyerChat('question')" autocomplete="off" />
+          <button class="btn btn-vert" onclick="envoyerChat('question')">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECAP -->
+  <div id="ecran-recap" class="ecran">
+    <div class="recap-header">
+      <h2>📊 Résultats de la question</h2>
+    </div>
+    <div class="recap-body">
+
+      <table class="recap-table">
+        <thead>
+          <tr>
+            <th>👤 Joueur</th>
+            <th>📝 Réponses</th>
+            <th>🎭 Réactions</th>
+          </tr>
+        </thead>
+        <tbody id="recap-tbody-joueur"></tbody>
+      </table>
+
+      <div class="scores-panel">
+        <h3>🏆 Classement</h3>
+        <div id="scores-joueur"></div>
+      </div>
+
+      <div class="chat-panel">
+        <h4>💬 Chat</h4>
+        <div class="chat-messages" id="chat-recap"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input-recap" placeholder="Écris un message..." onkeydown="if(event.key==='Enter') envoyerChat('recap')" autocomplete="off" />
+          <button class="btn btn-vert" onclick="envoyerChat('recap')">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let monNom = '';
+    let monCode = '';
+    let timerInterval = null;
+    let indiceDejaDemandeFlag = false;
+    let mesReponses = [];
+
+    function allerVers(id) {
+      document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
+      const el = document.getElementById(id);
+      el.classList.add('actif');
+      window.scrollTo(0, 0);
+    }
+
+    function rejoindrePartie() {
+      const code = document.getElementById('input-code').value.trim().toUpperCase();
+      const nom = document.getElementById('input-nom').value.trim();
+      if (!code || !nom) {
+        document.getElementById('erreur-rejoindre').textContent = 'Remplis les deux champs !';
+        return;
+      }
+      socket.emit('joueur_rejoindre', { code, nom });
+    }
+
+    function envoyerReponse() {
+      const input = document.getElementById('input-reponse');
+      const reponse = input.value.trim();
+      if (!reponse) return;
+      socket.emit('joueur_reponse', { code: monCode, reponse });
+      input.value = '';
+      input.focus();
+    }
+
+    function demanderIndice() {
+      if (indiceDejaDemandeFlag) return;
+      indiceDejaDemandeFlag = true;
+      socket.emit('joueur_demande_indice', { code: monCode });
+      const btn = document.getElementById('btn-indice');
+      btn.textContent = '✅ Indice demandé';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+    }
+
+    function reagir(nomCible, emoji) {
+      socket.emit('joueur_reaction', { code: monCode, nomCible, emoji });
+    }
+
+    function envoyerChat(ecran) {
+      const input = document.getElementById('chat-input-' + ecran);
+      const msg = input.value.trim();
+      if (!msg) return;
+      socket.emit('chat_message', { code: monCode, nom: monNom, message: msg });
+      input.value = '';
+    }
+
+    function ajouterChatMessage(data) {
+      ['attente', 'question', 'recap'].forEach(ecran => {
+        const el = document.getElementById('chat-' + ecran);
+        if (!el) return;
+        const div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
+        el.appendChild(div);
+        el.scrollTop = el.scrollHeight;
+      });
+    }
+
+    // ══ SOCKETS ══
+
+    socket.on('erreur', (msg) => {
+      document.getElementById('erreur-rejoindre').textContent = msg;
+    });
+
+    socket.on('partie_rejointe', ({ code, nom }) => {
+      monCode = code;
+      monNom = nom;
+      document.getElementById('attente-nom').textContent = `Bonjour ${nom} ! 👋`;
+      allerVers('ecran-attente');
+    });
+
+    socket.on('joueurs_update', (joueurs) => {
+      const el = document.getElementById('joueurs-attente');
+      if (el) el.innerHTML = joueurs.map(j => `<div class="joueur-chip">${j.nom}</div>`).join('');
+    });
+
+    socket.on('nouvelle_question', (data) => {
+      mesReponses = [];
+      indiceDejaDemandeFlag = false;
+
+      const btn = document.getElementById('btn-indice');
+      btn.textContent = '💡 Demander un indice';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      document.getElementById('indice-bulle').style.display = 'none';
+      document.getElementById('mes-reponses-zone').style.display = 'none';
+      document.getElementById('mes-reponses-liste').innerHTML = '';
+
+      const texteEl = document.getElementById('question-texte-joueur');
+      texteEl.textContent = data.question || '';
+      texteEl.style.display = data.question ? 'block' : 'none';
+
+      const imgEl = document.getElementById('question-image-joueur');
+      if (data.image) {
+        imgEl.src = data.image;
+        imgEl.style.display = 'block';
+      } else {
+        imgEl.style.display = 'none';
+      }
+
+      document.getElementById('pts-badge-joueur').textContent = `⭐ Jusqu'à ${data.pointsMax} point(s)`;
+
+      if (timerInterval) clearInterval(timerInterval);
+      let temps = data.temps;
+      const timerEl = document.getElementById('timer-joueur');
+      timerEl.textContent = temps;
+      timerEl.style.color = 'white';
+      timerInterval = setInterval(() => {
+        temps--;
+        timerEl.textContent = Math.max(0, temps);
+        if (temps <= 10) timerEl.style.color = '#ffaaaa';
+        if (temps <= 0) clearInterval(timerInterval);
+      }, 1000);
+
+      allerVers('ecran-question');
+      document.getElementById('input-reponse').focus();
+    });
+
+    socket.on('reponse_confirmee', ({ historique }) => {
+      mesReponses = historique;
+      const zone = document.getElementById('mes-reponses-zone');
+      const liste = document.getElementById('mes-reponses-liste');
+      zone.style.display = 'block';
+      liste.innerHTML = mesReponses.map((r, i) => `
+        <div class="ma-reponse-item ${i === mesReponses.length - 1 ? 'derniere' : ''}">
+          <span>${r.reponse}</span>
+          <span class="temps-mini">⏱ ${r.tempsReponse}s</span>
+        </div>
+      `).join('');
+    });
+
+    socket.on('fin_question', ({ reponses }) => {
+      if (timerInterval) clearInterval(timerInterval);
+
+      const tbody = document.getElementById('recap-tbody-joueur');
+      tbody.innerHTML = '';
+      reponses.forEach(r => {
+        const tr = document.createElement('tr');
+        const historiqueHtml = r.historique.length > 0
+          ? r.historique.map((h, i) => `
+              <div class="histo-item ${i === r.historique.length - 1 ? 'derniere' : ''}">
+                ${h.reponse} <span class="temps-badge">⏱ ${h.tempsReponse}s</span>
+              </div>
+            `).join('')
+          : '<span style="color:#aaa">(pas de réponse)</span>';
+
+        tr.innerHTML = `
+          <td><b>${r.nom}</b></td>
+          <td><div class="historique-recap">${historiqueHtml}</div></td>
+          <td>
+            <div class="emoji-btns-recap">
+              <button onclick="reagir('${r.nom}', '👍')">👍</button>
+              <button onclick="reagir('${r.nom}', '😂')">😂</button>
+              <button onclick="reagir('${r.nom}', '🔥')">🔥</button>
+              <button onclick="reagir('${r.nom}', '😮')">😮</button>
+            </div>
+            <div class="reactions-recap" id="reactions-recap-${r.nom}"></div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      allerVers('ecran-recap');
+    });
+
+    socket.on('indice_recu', ({ indice }) => {
+      document.getElementById('indice-texte').textContent = indice;
+      const bulle = document.getElementById('indice-bulle');
+      bulle.style.display = 'block';
+      setTimeout(() => { bulle.style.display = 'none'; }, 10000);
+    });
+
+    socket.on('reaction_update', ({ nomCible, reactions }) => {
+      const el = document.getElementById('reactions-recap-' + nomCible);
+      if (!el) return;
+      el.innerHTML = Object.entries(reactions).map(([e, c]) => `${e} ${c}`).join('  ');
+    });
+
+    socket.on('points_update', (data) => {
+      const el = document.getElementById('scores-joueur');
+      if (!el) return;
+      data.sort((a, b) => b.points - a.points);
+      el.innerHTML = data.map((j, i) => `
+        <div class="score-ligne">
+          <span class="score-nom">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🏅'} ${j.nom}</span>
+          <span class="score-pts">${j.points} pts</span>
+        </div>
+      `).join('');
+    });
+
+    socket.on('admin_deconnecte', () => {
+      alert('⚠️ L\'admin s\'est déconnecté !');
+    });
+
+    socket.on('chat_message', ajouterChatMessage);
+  </script>
+</body>
+</html>
