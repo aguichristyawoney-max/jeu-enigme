@@ -3,99 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <meta name="theme-color" content="#5a8a5a">
   <title>🎮 Jeu-Enigmes</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; min-height: 100vh; font-size: 16px; }
+    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; min-height: 100vh; }
 
     .ecran { display: none; min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
     .ecran.actif { display: flex; }
 
-    /* ══ ACCUEIL ══ */
     #ecran-accueil { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
-    .logo { font-size: clamp(36px, 10vw, 56px); font-weight: bold; color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.2); margin-bottom: 8px; text-align: center; }
-    .sous-titre { color: rgba(255,255,255,0.85); font-size: clamp(15px, 4vw, 20px); margin-bottom: 40px; text-align: center; }
+    .logo { font-size: clamp(36px,10vw,56px); font-weight: bold; color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.2); margin-bottom: 8px; text-align: center; }
+    .sous-titre { color: rgba(255,255,255,0.85); font-size: clamp(15px,4vw,20px); margin-bottom: 40px; text-align: center; }
     .choix-profil { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 400px; }
-    .btn-profil { flex: 1; min-width: 130px; padding: clamp(18px, 5vw, 28px) 20px; font-size: clamp(18px, 5vw, 24px); font-weight: bold; border: none; border-radius: 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
+    .btn-profil { flex: 1; min-width: 130px; padding: clamp(18px,5vw,28px) 20px; font-size: clamp(18px,5vw,24px); font-weight: bold; border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
     .btn-profil:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.2); }
     .btn-admin { background: #e8b86d; color: #3d2b1f; }
     .btn-joueur { background: #6db88e; color: white; }
 
-    /* ══ CARD ══ */
-    .card { background: white; border-radius: 20px; padding: clamp(24px, 6vw, 40px); max-width: 480px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; }
-    .card h2 { font-size: clamp(22px, 6vw, 28px); margin-bottom: 20px; color: #5a8a5a; }
+    .card { background: white; border-radius: 20px; padding: clamp(24px,6vw,40px); max-width: 480px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; }
+    .card h2 { font-size: clamp(22px,6vw,28px); margin-bottom: 20px; color: #5a8a5a; }
 
-    /* ══ INPUTS ══ */
-    input[type="text"], input[type="number"] {
-      width: 100%; padding: 14px 16px; font-size: clamp(16px, 4vw, 18px);
-      border: 3px solid #e0d5c8; border-radius: 12px; margin: 6px 0 14px;
-      outline: none; transition: border-color 0.2s; color: #3d2b1f;
-      -webkit-appearance: none; appearance: none;
-    }
+    input[type="text"] { width: 100%; padding: 14px 16px; font-size: clamp(16px,4vw,18px); border: 3px solid #e0d5c8; border-radius: 12px; margin: 6px 0 14px; outline: none; color: #3d2b1f; }
     input:focus { border-color: #6db88e; }
 
-    /* ══ BOUTONS ══ */
-    .btn { width: 100%; padding: clamp(12px, 3.5vw, 16px); font-size: clamp(16px, 4vw, 18px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 5px 0 rgba(0,0,0,0.15); margin: 6px 0; }
+    .btn { width: 100%; padding: clamp(12px,3.5vw,16px); font-size: clamp(16px,4vw,18px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.15); margin: 6px 0; font-family: inherit; }
     .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
     .btn-vert { background: #6db88e; color: white; }
-    .btn-rouge { background: #e05a5a; color: white; }
     .btn-orange { background: #e8b86d; color: #3d2b1f; }
-    .btn-petit { width: auto; padding: 12px 18px; font-size: clamp(14px, 3.5vw, 16px); border-radius: 10px; white-space: nowrap; }
+    .btn-petit { width: auto; padding: 12px 18px; font-size: clamp(14px,3.5vw,16px); border-radius: 10px; white-space: nowrap; }
 
     .erreur { color: #e05a5a; font-size: 14px; margin: 6px 0; min-height: 20px; }
 
-    /* ══ ATTENTE ══ */
-    #ecran-attente { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 16px; justify-content: flex-start; padding-top: 40px; }
+    /* ATTENTE */
+    #ecran-attente { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); justify-content: flex-start; padding-top: 40px; }
     .attente-info { color: white; text-align: center; width: 100%; }
-    .attente-info h2 { font-size: clamp(22px, 6vw, 30px); margin-bottom: 8px; }
-    .attente-info p { font-size: clamp(14px, 3.5vw, 17px); opacity: 0.85; margin-bottom: 20px; }
+    .attente-info h2 { font-size: clamp(22px,6vw,30px); margin-bottom: 8px; }
+    .attente-info p { font-size: clamp(14px,3.5vw,17px); opacity: 0.85; margin-bottom: 20px; }
     .joueurs-liste { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 16px 0; }
-    .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 14px; border-radius: 20px; font-size: clamp(13px, 3.5vw, 16px); font-weight: bold; }
+    .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 14px; border-radius: 20px; font-size: clamp(13px,3.5vw,16px); font-weight: bold; }
 
-    /* ══ QUESTION ══ */
-    #ecran-question { background: #f5ede0; justify-content: flex-start; padding: 0; }
+    /* QUESTION */
+    #ecran-question { background: #f5ede0; justify-content: flex-start; padding: 0; align-items: stretch; }
     .question-header { width: 100%; background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 10; }
-    .question-header h2 { font-size: clamp(15px, 4vw, 20px); }
-    .timer-cercle { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: clamp(18px, 5vw, 24px); font-weight: bold; border: 3px solid white; flex-shrink: 0; }
+    .question-header h2 { font-size: clamp(15px,4vw,20px); }
+    .timer-cercle { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: clamp(18px,5vw,24px); font-weight: bold; border: 3px solid white; flex-shrink: 0; }
 
-    .image-container { width: 100%; display: flex; justify-content: center; margin-bottom: 14px; background: #eee; border-radius: 12px; overflow: hidden; }
-    #question-image-joueur { max-width: 100%; height: auto; display: none; object-fit: contain; max-height: 400px; }
-
-    #indice-bulle { display: none; background: white; border: 3px solid #e8b86d; border-radius: 20px; border-bottom-left-radius: 4px; padding: 12px 16px; margin: 10px 16px; max-width: 100%; align-self: flex-start; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .indice-label { font-size: 12px; color: #8B5E3C; font-weight: bold; margin-bottom: 4px; }
-
-    .question-body { padding: 14px 16px; width: 100%; max-width: 700px; }
-    .question-texte { font-size: clamp(16px, 4.5vw, 22px); font-weight: bold; color: #3d2b1f; margin-bottom: 14px; background: white; padding: 14px 16px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); line-height: 1.4; }
+    .question-body { padding: 14px 16px; width: 100%; max-width: 700px; align-self: center; }
+    .question-texte { font-size: clamp(16px,4.5vw,22px); font-weight: bold; color: #3d2b1f; margin-bottom: 14px; background: white; padding: 14px 16px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); line-height: 1.4; }
+    .question-image { max-width: 100%; border-radius: 12px; margin-bottom: 14px; display: none; }
     .pts-badge { display: inline-block; background: #e8b86d; color: #3d2b1f; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-bottom: 14px; }
 
     .reponse-zone { display: flex; gap: 8px; margin-bottom: 14px; }
-    .reponse-zone input { flex: 1; margin: 0; font-size: clamp(15px, 4vw, 17px); padding: 12px 14px; min-width: 0; }
-    .reponse-zone button { flex-shrink: 0; margin: 0; padding: 12px 16px; font-size: clamp(14px, 3.5vw, 16px); }
+    .reponse-zone input { flex: 1; margin: 0; font-size: clamp(15px,4vw,17px); padding: 12px 14px; min-width: 0; border: 3px solid #e0d5c8; border-radius: 12px; outline: none; color: #3d2b1f; }
+    .reponse-zone input:focus { border-color: #6db88e; }
 
     .mes-reponses { background: white; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
-    .mes-reponses h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(13px, 3.5vw, 15px); }
-    .mes-reponses-liste { display: flex; flex-direction: column; gap: 6px; }
-    .ma-reponse-item { display: flex; justify-content: space-between; align-items: center; font-size: clamp(13px, 3.5vw, 15px); padding: 8px 10px; border-radius: 8px; background: #f5ede0; gap: 8px; }
+    .mes-reponses h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(13px,3.5vw,15px); }
+    .ma-reponse-item { display: flex; justify-content: space-between; align-items: center; font-size: clamp(13px,3.5vw,15px); padding: 8px 10px; border-radius: 8px; background: #f5ede0; gap: 8px; margin-bottom: 4px; }
     .ma-reponse-item.derniere { background: #d4edda; font-weight: bold; }
-    .temps-mini { font-size: 12px; background: #e8b86d; padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+    .temps-mini { font-size: 12px; background: #e8b86d; padding: 2px 8px; border-radius: 10px; white-space: nowrap; color: white; font-weight: bold; flex-shrink: 0; }
 
-    .indice-btn-zone { text-align: center; margin-bottom: 8px; }
+    /* INDICE */
+    #indice-bulle { display: none; background: #fffbe6; border: 3px solid #e8b86d; border-radius: 20px; padding: 12px 16px; margin: 10px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .indice-label { font-size: 12px; color: #8B5E3C; font-weight: bold; margin-bottom: 4px; }
 
-    .chat-panel { background: white; border-radius: 14px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-    .chat-panel h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(14px, 4vw, 17px); }
-    .chat-messages { height: 130px; overflow-y: auto; background: #f5ede0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .chat-msg { font-size: clamp(13px, 3.5vw, 15px); line-height: 1.4; word-break: break-word; }
+    /* RÉCAP */
+    #ecran-recap { background: #f5ede0; justify-content: flex-start; padding: 0; align-items: stretch; }
+    .recap-header { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 20px; text-align: center; color: white; }
+    .recap-header h2 { font-size: clamp(20px,5vw,26px); }
+    .recap-body { padding: 16px; }
+
+    .recap-table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .recap-table th { background: #8B5E3C; color: white; padding: 12px; text-align: left; font-size: 13px; }
+    .recap-table td { padding: 12px; border-bottom: 1px solid #f0e8e0; font-size: 14px; vertical-align: top; }
+    .recap-table tr:last-child td { border-bottom: none; }
+    .temps-badge { background: #e8b86d; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+
+    .emoji-btns-recap { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
+    .emoji-btns-recap button { font-size: 20px; background: none; border: 2px solid #e0d5c8; border-radius: 8px; cursor: pointer; padding: 4px 6px; min-width: 38px; min-height: 38px; }
+    .emoji-btns-recap button:active { transform: scale(1.3); }
+    .reactions-recap { font-size: 12px; color: #8B5E3C; margin-top: 3px; }
+
+    .scores-section { background: white; border-radius: 14px; padding: 16px; margin-top: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .scores-section h3 { color: #5a8a5a; margin-bottom: 12px; }
+    .score-ligne { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0e8e0; font-size: 15px; }
+    .score-ligne:last-child { border-bottom: none; }
+    .score-pts { font-weight: bold; color: #8B5E3C; }
+
+    /* PERSONNE N'A TROUVÉ */
+    .personne-banner { background: #e05a5a; color: white; text-align: center; padding: 12px 16px; font-size: 16px; font-weight: bold; border-radius: 12px; margin: 10px 16px; display: none; }
+
+    /* CHAT */
+    .chat-panel { background: white; border-radius: 14px; padding: 14px; margin-top: 14px; }
+    .chat-panel h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(14px,4vw,17px); }
+    .chat-messages { height: 120px; overflow-y: auto; background: #f5ede0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .chat-msg { font-size: clamp(13px,3.5vw,15px); line-height: 1.4; word-break: break-word; }
     .chat-nom { font-weight: bold; color: #8B5E3C; }
     .chat-heure { font-size: 11px; color: #aaa; margin-left: 4px; }
     .chat-input-row { display: flex; gap: 8px; }
-    .chat-input-row input { flex: 1; margin: 0; padding: 10px 12px; font-size: clamp(14px, 3.5vw, 16px); border-radius: 10px; border: 2px solid #e0d5c8; outline: none; }
-    .chat-input-row button { width: auto; padding: 10px 14px; }
+    .chat-input-row input { flex: 1; margin: 0; padding: 10px 12px; font-size: clamp(14px,3.5vw,16px); border-radius: 10px; border: 2px solid #e0d5c8; outline: none; color: #3d2b1f; }
+    .chat-input-row input:focus { border-color: #6db88e; }
+    .chat-input-row button { width: auto; padding: 10px 14px; margin: 0; }
 
+    /* FIN PARTIE */
+    #ecran-fin { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
+    .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
+    .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
+    .podium-ligne { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; }
+    .podium-ligne.or { background: #fff8e1; border: 2px solid #ffd700; }
+    .podium-ligne.argent { background: #f5f5f5; border: 2px solid #c0c0c0; }
+    .podium-ligne.bronze { background: #fff3e0; border: 2px solid #cd7f32; }
+    .podium-ligne.autre { background: #f5ede0; border: 2px solid #e0d5c8; }
+    .podium-pts { font-weight: bold; color: #8B5E3C; }
   </style>
 </head>
 <body>
 
+  <!-- ACCUEIL -->
   <div id="ecran-accueil" class="ecran actif">
     <div class="logo">🎮 Jeu-Enigmes</div>
     <div class="sous-titre">Le quiz en temps réel !</div>
@@ -105,10 +129,11 @@
     </div>
   </div>
 
-  <div id="ecran-rejoindre" class="ecran">
+  <!-- REJOINDRE -->
+  <div id="ecran-rejoindre" class="ecran" style="background:linear-gradient(135deg,#6db88e,#3d6e3d);">
     <div class="card">
       <h2>🎯 Rejoindre une partie</h2>
-      <input type="text" id="input-code" placeholder="Code de la partie" maxlength="6" style="text-transform:uppercase" />
+      <input type="text" id="input-code" placeholder="Code de la partie" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:22px;text-align:center;" />
       <input type="text" id="input-nom" placeholder="Ton prénom" maxlength="20" />
       <div id="erreur-rejoindre" class="erreur"></div>
       <button class="btn btn-vert" onclick="rejoindrePartie()">Rejoindre !</button>
@@ -116,14 +141,24 @@
     </div>
   </div>
 
+  <!-- ATTENTE -->
   <div id="ecran-attente" class="ecran">
     <div class="attente-info">
       <h2 id="attente-nom">Bonjour !</h2>
       <p>En attente que l'admin lance la partie...</p>
       <div class="joueurs-liste" id="joueurs-attente"></div>
     </div>
+    <div class="chat-panel" style="width:100%;max-width:500px;margin-top:20px;">
+      <h4>💬 Chat</h4>
+      <div class="chat-messages" id="chat-attente"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input-attente" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('attente')" />
+        <button class="btn btn-vert btn-petit" onclick="envoyerChat('attente')">➤</button>
+      </div>
     </div>
+  </div>
 
+  <!-- QUESTION -->
   <div id="ecran-question" class="ecran">
     <div class="question-header">
       <h2>❓ Question</h2>
@@ -136,9 +171,7 @@
     </div>
 
     <div class="question-body">
-      <div class="image-container">
-        <img id="question-image-joueur" src="" alt="Image question" />
-      </div>
+      <img id="question-image" class="question-image" alt="Image question" />
       <div class="question-texte" id="question-texte-joueur"></div>
       <div class="pts-badge" id="pts-badge-joueur"></div>
 
@@ -149,8 +182,49 @@
 
       <div class="mes-reponses" id="mes-reponses-zone" style="display:none;">
         <h4>📝 Tes réponses :</h4>
-        <div class="mes-reponses-liste" id="mes-reponses-liste"></div>
+        <div id="mes-reponses-liste"></div>
       </div>
+
+      <div class="chat-panel">
+        <h4>💬 Chat</h4>
+        <div class="chat-messages" id="chat-question"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input-question" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('question')" />
+          <button class="btn btn-vert btn-petit" onclick="envoyerChat('question')">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉCAP -->
+  <div id="ecran-recap" class="ecran">
+    <div class="recap-header"><h2>📊 Résultats</h2></div>
+    <div class="personne-banner" id="personne-banner">🤷 Personne n'a trouvé ce tour !</div>
+    <div class="recap-body">
+      <table class="recap-table">
+        <thead><tr><th>Joueur</th><th>Réponse</th><th>Temps</th><th>Réagir</th></tr></thead>
+        <tbody id="recap-tbody"></tbody>
+      </table>
+      <div class="scores-section">
+        <h3>🏆 Scores</h3>
+        <div id="scores-joueur"></div>
+      </div>
+      <div class="chat-panel">
+        <h4>💬 Chat</h4>
+        <div class="chat-messages" id="chat-recap"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input-recap" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('recap')" />
+          <button class="btn btn-vert btn-petit" onclick="envoyerChat('recap')">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIN -->
+  <div id="ecran-fin" class="ecran">
+    <div class="fin-card">
+      <h2>🏁 Partie terminée !</h2>
+      <div id="podium-fin"></div>
     </div>
   </div>
 
@@ -160,7 +234,6 @@
     let monNom = '';
     let monCode = '';
     let timerInterval = null;
-    let mesReponses = [];
 
     function allerVers(id) {
       document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
@@ -171,7 +244,9 @@
     function rejoindrePartie() {
       const code = document.getElementById('input-code').value.trim().toUpperCase();
       const nom = document.getElementById('input-nom').value.trim();
-      if (!code || !nom) return;
+      if (!code || !nom) { document.getElementById('erreur-rejoindre').textContent = 'Remplis tous les champs !'; return; }
+      monNom = nom;
+      monCode = code;
       socket.emit('joueur_rejoindre', { code, nom });
     }
 
@@ -179,25 +254,44 @@
       const input = document.getElementById('input-reponse');
       const reponse = input.value.trim();
       if (!reponse || !monCode) return;
-      
-      const tempsRestant = parseInt(document.getElementById('timer-joueur').textContent) || 0;
-      socket.emit('joueur_reponse', { 
-        code: monCode, 
-        nom: monNom, 
-        reponse: reponse, 
-        tempsReponse: tempsRestant 
-      });
-      
+      socket.emit('joueur_repond', { code: monCode, nom: monNom, reponse });
       input.value = '';
     }
 
-    // ══ SOCKETS ══
+    function reagir(nomCible, emoji) {
+      socket.emit('joueur_reaction', { code: monCode, nomCible, emoji });
+    }
 
+    function envoyerChat(source) {
+      const inputId = 'chat-input-' + source;
+      const msg = document.getElementById(inputId).value.trim();
+      if (!msg) return;
+      socket.emit('chat_message', { code: monCode, nom: monNom, message: msg });
+      document.getElementById(inputId).value = '';
+    }
+
+    function ajouterChat(data) {
+      ['chat-attente', 'chat-question', 'chat-recap'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
+        el.appendChild(div);
+        el.scrollTop = el.scrollHeight;
+      });
+    }
+
+    // SOCKETS
     socket.on('partie_rejointe', ({ code, nom }) => {
       monCode = code;
       monNom = nom;
       document.getElementById('attente-nom').textContent = `Bonjour ${nom} ! 👋`;
       allerVers('ecran-attente');
+    });
+
+    socket.on('erreur', (msg) => {
+      document.getElementById('erreur-rejoindre').textContent = msg;
     });
 
     socket.on('joueurs_update', (joueurs) => {
@@ -206,25 +300,19 @@
     });
 
     socket.on('nouvelle_question', (data) => {
-      // Reset local
-      mesReponses = [];
-      document.getElementById('mes-reponses-zone').style.display = 'none';
-      document.getElementById('indice-bulle').style.display = 'none';
       document.getElementById('input-reponse').disabled = false;
+      document.getElementById('mes-reponses-zone').style.display = 'none';
+      document.getElementById('mes-reponses-liste').innerHTML = '';
+      document.getElementById('indice-bulle').style.display = 'none';
+      document.getElementById('personne-banner').style.display = 'none';
 
-      // Question & Image
-      document.getElementById('question-texte-joueur').textContent = data.question;
-      const imgEl = document.getElementById('question-image-joueur');
-      if (data.image) {
-        imgEl.src = data.image;
-        imgEl.style.display = 'block';
-      } else {
-        imgEl.style.display = 'none';
-      }
-      
+      document.getElementById('question-texte-joueur').textContent = data.question || '';
       document.getElementById('pts-badge-joueur').textContent = `⭐ Max : ${data.pointsMax} pts`;
 
-      // Timer
+      const imgEl = document.getElementById('question-image');
+      if (data.image) { imgEl.src = data.image; imgEl.style.display = 'block'; }
+      else { imgEl.style.display = 'none'; }
+
       if (timerInterval) clearInterval(timerInterval);
       let temps = data.temps;
       const timerEl = document.getElementById('timer-joueur');
@@ -239,40 +327,87 @@
     });
 
     socket.on('reponse_joueur', (tousLesJoueurs) => {
-        const moi = tousLesJoueurs.find(j => j.nom === monNom);
-        if (moi && moi.historique.length > 0) {
-            document.getElementById('mes-reponses-zone').style.display = 'block';
-            document.getElementById('mes-reponses-liste').innerHTML = moi.historique.map((r, i) => `
-                <div class="ma-reponse-item ${i === moi.historique.length - 1 ? 'derniere' : ''}">
-                    <span>${r.reponse}</span>
-                    <span class="temps-mini">⏱ ${r.tempsReponse}s</span>
-                </div>
-            `).join('');
-        }
+      const moi = tousLesJoueurs.find(r => r.nom === monNom);
+      if (moi && moi.historique && moi.historique.length > 0) {
+        document.getElementById('mes-reponses-zone').style.display = 'block';
+        document.getElementById('mes-reponses-liste').innerHTML = moi.historique.map((r, i) => `
+          <div class="ma-reponse-item ${i === moi.historique.length - 1 ? 'derniere' : ''}">
+            <span>${r.reponse}</span>
+            <span class="temps-mini">⏱ ${r.tempsReponse}s</span>
+          </div>
+        `).join('');
+      }
     });
 
-    // ÉCOUTEUR : Personne n'a trouvé
-    socket.on('personne_a_trouve_notif', (data) => {
-        alert(data.message);
-        document.getElementById('input-reponse').disabled = true;
+    socket.on('fin_question', ({ reponses }) => {
+      if (timerInterval) clearInterval(timerInterval);
+      document.getElementById('input-reponse').disabled = true;
+
+      const tbody = document.getElementById('recap-tbody');
+      tbody.innerHTML = '';
+      reponses.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><b>${r.nom}</b></td>
+          <td>${r.reponse}</td>
+          <td><span class="temps-badge">⏱ ${r.tempsReponse}s</span></td>
+          <td>
+            <div class="emoji-btns-recap">
+              <button onclick="reagir('${r.nom}', '👍')">👍</button>
+              <button onclick="reagir('${r.nom}', '😂')">😂</button>
+              <button onclick="reagir('${r.nom}', '🔥')">🔥</button>
+              <button onclick="reagir('${r.nom}', '😮')">😮</button>
+            </div>
+            <div class="reactions-recap" id="reactions-${r.nom}"></div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      allerVers('ecran-recap');
     });
 
-    // ÉCOUTEUR : Stop Timer
-    socket.on('stop_timer', () => {
-        if (timerInterval) clearInterval(timerInterval);
-        document.getElementById('timer-joueur').textContent = "0";
-        document.getElementById('input-reponse').disabled = true;
+    socket.on('personne_a_trouve', () => {
+      document.getElementById('personne-banner').style.display = 'block';
     });
 
-    // ÉCOUTEUR : Indice
-    socket.on('recevoir_indice', ({ indice }) => {
-        document.getElementById('indice-texte').textContent = indice;
-        document.getElementById('indice-bulle').style.display = 'block';
+    socket.on('indice_recu', ({ indice }) => {
+      document.getElementById('indice-texte').textContent = indice;
+      document.getElementById('indice-bulle').style.display = 'block';
     });
 
-    socket.on('erreur', (msg) => {
-      document.getElementById('erreur-rejoindre').textContent = msg;
+    socket.on('reaction_update', ({ nomCible, reactions }) => {
+      const el = document.getElementById('reactions-' + nomCible);
+      if (!el) return;
+      el.innerHTML = Object.entries(reactions).map(([e, c]) => `${e} ${c}`).join('  ');
     });
+
+    socket.on('points_update', (data) => {
+      const el = document.getElementById('scores-joueur');
+      if (!el) return;
+      data.sort((a, b) => b.points - a.points);
+      el.innerHTML = data.map((j, i) => `
+        <div class="score-ligne">
+          <span>${i===0?'🥇':i===1?'🥈':i===2?'🥉':''} ${j.nom}</span>
+          <span class="score-pts">${j.points} pts</span>
+        </div>
+      `).join('');
+    });
+
+    socket.on('scores_finaux', (scores) => {
+      scores.sort((a, b) => b.points - a.points);
+      const classes = ['or', 'argent', 'bronze'];
+      const emojis = ['🥇', '🥈', '🥉'];
+      document.getElementById('podium-fin').innerHTML = scores.map((j, i) => `
+        <div class="podium-ligne ${classes[i] || 'autre'}">
+          <span>${emojis[i] || (i+1)+'.'} ${j.nom}</span>
+          <span class="podium-pts">${j.points} pts</span>
+        </div>
+      `).join('');
+      allerVers('ecran-fin');
+    });
+
+    socket.on('chat_message', ajouterChat);
   </script>
 </body>
 </html>
