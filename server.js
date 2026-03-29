@@ -17,6 +17,19 @@ function genererCode() {
   return code;
 }
 
+function _buildReponses(partie) {
+  return Object.values(partie.reponses).map(r => ({
+    nom: r.nom,
+    reponse: r.historique && r.historique.length > 0
+      ? r.historique[r.historique.length - 1].reponse
+      : '(pas de réponse)',
+    tempsReponse: r.historique && r.historique.length > 0
+      ? r.historique[0].tempsReponse
+      : 0,
+    historique: r.historique || []
+  }));
+}
+
 io.on('connection', (socket) => {
   console.log('Connecté:', socket.id);
 
@@ -48,6 +61,10 @@ io.on('connection', (socket) => {
     const partie = parties[code];
     if (!partie) { socket.emit('erreur', 'Code de partie invalide !'); return; }
 
+    // Reconnexion : supprimer l'ancien socket si même nom
+    const ancienId = Object.keys(partie.joueurs).find(id => partie.joueurs[id].nom === nom);
+    if (ancienId) delete partie.joueurs[ancienId];
+
     partie.joueurs[socket.id] = { id: socket.id, nom };
     partie.scores[nom] = partie.scores[nom] || 0;
     socket.join(code);
@@ -56,12 +73,29 @@ io.on('connection', (socket) => {
 
     io.to(code).emit('joueurs_update', Object.values(partie.joueurs));
     socket.emit('partie_rejointe', { code, nom });
+
+    // Si question en cours, renvoyer la question au joueur
+    if (partie.phase === 'playing') {
+      socket.emit('nouvelle_question', {
+        question: partie.question,
+        image: partie.image,
+        temps: partie.tempsDuration,
+        pointsMax: partie.pointsMax
+      });
+    }
+
+    // Si résultat en cours, renvoyer le récap
+    if (partie.phase === 'resultat') {
+      socket.emit('fin_question', { reponses: _buildReponses(partie) });
+    }
   });
 
   socket.on('admin_question', ({ code, question, image, temps, pointsMax }) => {
     const partie = parties[code];
     if (!partie) return;
 
+    partie.question = question || null;
+    partie.image = image || null;
     partie.reponses = {};
     partie.reactions = {};
     partie.demandesIndice = new Set();
@@ -171,28 +205,41 @@ io.on('connection', (socket) => {
     delete parties[code];
   });
 
+  // Détection quitte/revient page
+  socket.on('joueur_quitte_page', ({ code, nom }) => {
+    const partie = parties[code];
+    if (!partie) return;
+    io.to(partie.adminId).emit('alerte_triche', {
+      nom,
+      message: `⚠️ ${nom} a quitté la page !`
+    });
+  });
+
+  socket.on('joueur_revient_page', ({ code, nom }) => {
+    const partie = parties[code];
+    if (!partie) return;
+    io.to(partie.adminId).emit('alerte_triche', {
+      nom,
+      message: `👀 ${nom} est revenu sur la page`
+    });
+  });
+
   socket.on('disconnect', () => {
     const code = socket.data.code;
     if (!code || !parties[code]) return;
+
     const partie = parties[code];
-    delete partie.joueurs[socket.id];
-    partie.demandesIndice.delete(socket.id);
-    io.to(code).emit('joueurs_update', Object.values(partie.joueurs));
+
+    setTimeout(() => {
+      const encoreConnecte = Object.keys(partie.joueurs).some(id => id === socket.id);
+      if (encoreConnecte) {
+        delete partie.joueurs[socket.id];
+        partie.demandesIndice.delete(socket.id);
+        io.to(code).emit('joueurs_update', Object.values(partie.joueurs));
+      }
+    }, 300000); // 5 minutes de grâce
   });
 });
-
-function _buildReponses(partie) {
-  return Object.values(partie.reponses).map(r => ({
-    nom: r.nom,
-    reponse: r.historique && r.historique.length > 0
-      ? r.historique[r.historique.length - 1].reponse
-      : '(pas de réponse)',
-    tempsReponse: r.historique && r.historique.length > 0
-      ? r.historique[0].tempsReponse
-      : 0,
-    historique: r.historique || []
-  }));
-}
 
 server.listen(3000, () => {
   console.log('Serveur lancé sur http://localhost:3000');

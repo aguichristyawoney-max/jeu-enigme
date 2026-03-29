@@ -88,6 +88,9 @@
 
     .verrou-banner { background: #e05a5a; color: white; text-align: center; padding: 8px; border-radius: 10px; font-weight: bold; font-size: 13px; margin-bottom: 10px; display: none; }
 
+    /* ALERTE TRICHE */
+    .alerte-triche { color: #e05a5a; font-weight: bold; font-size: 13px; }
+
     .score-ligne { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; background: #f5ede0; font-size: clamp(14px,3.5vw,16px); }
     .score-pts { font-weight: bold; color: #8B5E3C; background: white; padding: 4px 10px; border-radius: 10px; }
 
@@ -105,7 +108,7 @@
     #ecran-admin-fin { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
     .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
     .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
-    .podium-ligne { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; font-size: clamp(14px,4vw,16px); }
+    .podium-ligne { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; }
     .podium-ligne.or { background: #fff8e1; border: 2px solid #ffd700; }
     .podium-ligne.argent { background: #f5f5f5; border: 2px solid #c0c0c0; }
     .podium-ligne.bronze { background: #fff3e0; border: 2px solid #cd7f32; }
@@ -188,9 +191,7 @@
       <div style="overflow-x:auto;">
         <table class="table-reponses">
           <thead>
-            <tr>
-              <th>Joueur</th><th>Historique</th><th>⏱ 1ère</th><th>Réactions</th><th>Points</th>
-            </tr>
+            <tr><th>Joueur</th><th>Historique</th><th>⏱ 1ère</th><th>Réactions</th><th>Points</th></tr>
           </thead>
           <tbody id="admin-reponses-tbody">
             <tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">En attente de réponses...</td></tr>
@@ -343,6 +344,7 @@
 
   function nouvellePartie() {
     adminCode = '';
+    localStorage.removeItem('adminCode');
     socket.emit('admin_creer_partie');
     allerVers('ecran-admin-attente');
   }
@@ -350,6 +352,7 @@
   // SOCKETS
   socket.on('partie_creee', ({ code }) => {
     adminCode = code;
+    localStorage.setItem('adminCode', code);
     document.getElementById('admin-code').textContent = code;
     document.getElementById('admin-code-small').textContent = code;
   });
@@ -428,6 +431,16 @@
     `).join('');
   });
 
+  // Alertes triche dans le chat
+  socket.on('alerte_triche', ({ message }) => {
+    const el = document.getElementById('chat-admin');
+    const div = document.createElement('div');
+    div.className = 'chat-msg alerte-triche';
+    div.textContent = message;
+    el.appendChild(div);
+    el.scrollTop = el.scrollHeight;
+  });
+
   socket.on('chat_message', (data) => {
     const el = document.getElementById('chat-admin');
     const div = document.createElement('div');
@@ -450,8 +463,11 @@
     allerVers('ecran-admin-fin');
   });
 
-  // Créer la partie au chargement
-  socket.emit('admin_creer_partie');
+  // Auto-reconnect admin
+  window.addEventListener('load', () => {
+    const savedCode = localStorage.getItem('adminCode');
+    socket.emit('admin_creer_partie');
+  });
 </script>
 </body>
 </html>

@@ -34,7 +34,6 @@
 
     .erreur { color: #e05a5a; font-size: 14px; margin: 6px 0; min-height: 20px; }
 
-    /* ATTENTE */
     #ecran-attente { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); justify-content: flex-start; padding-top: 40px; }
     .attente-info { color: white; text-align: center; width: 100%; }
     .attente-info h2 { font-size: clamp(22px,6vw,30px); margin-bottom: 8px; }
@@ -42,7 +41,6 @@
     .joueurs-liste { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 16px 0; }
     .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 14px; border-radius: 20px; font-size: clamp(13px,3.5vw,16px); font-weight: bold; }
 
-    /* QUESTION */
     #ecran-question { background: #f5ede0; justify-content: flex-start; padding: 0; align-items: stretch; }
     .question-header { width: 100%; background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 10; }
     .question-header h2 { font-size: clamp(15px,4vw,20px); }
@@ -63,11 +61,9 @@
     .ma-reponse-item.derniere { background: #d4edda; font-weight: bold; }
     .temps-mini { font-size: 12px; background: #e8b86d; padding: 2px 8px; border-radius: 10px; white-space: nowrap; color: white; font-weight: bold; flex-shrink: 0; }
 
-    /* INDICE */
     #indice-bulle { display: none; background: #fffbe6; border: 3px solid #e8b86d; border-radius: 20px; padding: 12px 16px; margin: 10px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .indice-label { font-size: 12px; color: #8B5E3C; font-weight: bold; margin-bottom: 4px; }
 
-    /* RÉCAP */
     #ecran-recap { background: #f5ede0; justify-content: flex-start; padding: 0; align-items: stretch; }
     .recap-header { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 20px; text-align: center; color: white; }
     .recap-header h2 { font-size: clamp(20px,5vw,26px); }
@@ -90,10 +86,8 @@
     .score-ligne:last-child { border-bottom: none; }
     .score-pts { font-weight: bold; color: #8B5E3C; }
 
-    /* PERSONNE N'A TROUVÉ */
     .personne-banner { background: #e05a5a; color: white; text-align: center; padding: 12px 16px; font-size: 16px; font-weight: bold; border-radius: 12px; margin: 10px 16px; display: none; }
 
-    /* CHAT */
     .chat-panel { background: white; border-radius: 14px; padding: 14px; margin-top: 14px; }
     .chat-panel h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(14px,4vw,17px); }
     .chat-messages { height: 120px; overflow-y: auto; background: #f5ede0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
@@ -105,7 +99,6 @@
     .chat-input-row input:focus { border-color: #6db88e; }
     .chat-input-row button { width: auto; padding: 10px 14px; margin: 0; }
 
-    /* FIN PARTIE */
     #ecran-fin { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
     .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
     .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
@@ -286,6 +279,8 @@
     socket.on('partie_rejointe', ({ code, nom }) => {
       monCode = code;
       monNom = nom;
+      localStorage.setItem('jeu_code', code);
+      localStorage.setItem('jeu_nom', nom);
       document.getElementById('attente-nom').textContent = `Bonjour ${nom} ! 👋`;
       allerVers('ecran-attente');
     });
@@ -408,6 +403,27 @@
     });
 
     socket.on('chat_message', ajouterChat);
+
+    // Détection quitte/revient page
+    document.addEventListener('visibilitychange', () => {
+      if (!monCode || !monNom) return;
+      if (document.hidden) {
+        socket.emit('joueur_quitte_page', { code: monCode, nom: monNom });
+      } else {
+        socket.emit('joueur_revient_page', { code: monCode, nom: monNom });
+      }
+    });
+
+    // Auto-reconnect au chargement
+    window.addEventListener('load', () => {
+      const code = localStorage.getItem('jeu_code');
+      const nom = localStorage.getItem('jeu_nom');
+      if (code && nom) {
+        monCode = code;
+        monNom = nom;
+        socket.emit('joueur_rejoindre', { code, nom });
+      }
+    });
   </script>
 </body>
 </html>
