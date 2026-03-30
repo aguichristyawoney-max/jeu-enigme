@@ -107,7 +107,7 @@
     .score-pts { font-weight: bold; color: #8B5E3C; background: white; padding: 4px 10px; border-radius: 10px; }
  
     .chat-box { height: clamp(130px,25vw,180px); overflow-y: auto; border: 2px solid #e0d5c8; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fdfaf7; }
-    .chat-msg { margin-bottom: 8px; font-size: 14px; line-height: 1.4; cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; }
+    .chat-msg { margin-bottom: 8px; font-size: 14px; line-height: 1.4; cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; user-select: none; -webkit-user-select: none; }
     .chat-msg:hover { background: #f0e8e0; }
     .chat-msg.selected { background: #e8f5e9; }
     .chat-nom { font-weight: bold; color: #8B5E3C; margin-right: 4px; }
@@ -188,7 +188,7 @@
     <div class="panel">
       <h3>❓ Nouvelle question</h3>
       <div class="question-form">
-        <textarea id="question-input" placeholder="Écris ta question..."></textarea>
+        <textarea id="question-input" placeholder="Écris ta question... (optionnel si image)"></textarea>
         <label class="image-upload-label" for="image-input">📷 Ajouter une image (optionnel)</label>
         <input type="file" id="image-input" accept="image/*" style="display:none" onchange="previewImage(this)">
         <img id="image-preview" class="preview-image" alt="Aperçu">
@@ -362,22 +362,27 @@
  
   // ══════════════════════════════════════
   //  QUESTION
+  //  🐛 BUG 1 CORRIGÉ : question ET image sont indépendants
+  //  On accepte l'envoi si on a au moins l'un des deux
   // ══════════════════════════════════════
   function envoyerQuestion() {
     if (!adminCode) return;
-    const question = document.getElementById('question-input').value.trim();
-    if (!question) return;
  
-    // ✅ FIX : validation stricte de l'image avant envoi
+    const question = document.getElementById('question-input').value.trim();
     const imgEl = document.getElementById('image-preview');
     const imgSrc = imgEl.src || '';
     const image = imgSrc.startsWith('data:image') ? imgSrc : null;
+ 
+    // ✅ On exige au moins une question OU une image
+    if (!question && !image) {
+      alert('Veuillez entrer une question ou ajouter une image.');
+      return;
+    }
  
     const temps = parseInt(document.getElementById('temps-slider').value);
     const pointsMax = parseInt(document.getElementById('points-max-input').value) || 3;
     pointsMaxActuel = pointsMax;
  
-    // ✅ deverrouiller avant l'emit pour éviter la race condition
     deverrouiller();
  
     socket.emit('admin_question', { code: adminCode, question, image, temps, pointsMax });
@@ -400,11 +405,16 @@
     const pts = parseInt(document.getElementById('points-input-' + nom).value) || 0;
     if (pts < 0) return;
     socket.emit('admin_donner_points', { code: adminCode, nom, points: pts });
+    // 🐛 BUG 2 CORRIGÉ : arrêter le chrono quand on donne un point
+    stopAdminTimer();
   }
  
   function personneNaTrouve() {
     if (!adminCode || pointVerrouille) return;
     socket.emit('admin_personne_a_trouve', { code: adminCode });
+    // Cohérence : stopAdminTimer est aussi déclenché via fin_question côté serveur,
+    // mais on l'appelle ici immédiatement pour la réactivité
+    stopAdminTimer();
   }
  
   function adminReagir(nomCible, emoji) {
@@ -465,7 +475,40 @@
  
   // ══════════════════════════════════════
   //  CHAT AVEC REPLY
+  //  🐛 BUG 3 CORRIGÉ : support tactile mobile via touchend
   // ══════════════════════════════════════
+  function attacherEvenementsChatMsg(div, data) {
+    // Fonction commune pour sélectionner un message (reply)
+    function selectionnerMessage() {
+      replyToAdmin = { id: data.id, nom: data.nom, message: data.message };
+      const apercu = data.message.substring(0, 40) + (data.message.length > 40 ? '...' : '');
+      document.getElementById('reply-bar-texte-admin').textContent = `↩ ${data.nom} : ${apercu}`;
+      document.getElementById('reply-bar-admin').classList.add('visible');
+      document.getElementById('chat-input-admin').focus();
+      document.querySelectorAll('#chat-admin .chat-msg').forEach(m => m.classList.remove('selected'));
+      div.classList.add('selected');
+    }
+ 
+    // Click classique (desktop)
+    div.addEventListener('click', selectionnerMessage);
+ 
+    // 🐛 BUG 3 : Support tactile mobile
+    // On utilise touchend pour éviter le conflit avec le scroll
+    let touchStartY = 0;
+    div.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+ 
+    div.addEventListener('touchend', (e) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      // On ne déclenche la sélection que si c'est un tap (pas un scroll)
+      if (Math.abs(touchEndY - touchStartY) < 10) {
+        e.preventDefault();
+        selectionnerMessage();
+      }
+    });
+  }
+ 
   function ajouterChatAdmin(data) {
     const el = document.getElementById('chat-admin');
     const div = document.createElement('div');
@@ -481,14 +524,7 @@
     html += `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
     div.innerHTML = html;
  
-    div.addEventListener('click', () => {
-      replyToAdmin = { id: data.id, nom: data.nom, message: data.message };
-      document.getElementById('reply-bar-texte-admin').textContent = `↩ ${data.nom} : ${data.message.substring(0, 40)}${data.message.length > 40 ? '...' : ''}`;
-      document.getElementById('reply-bar-admin').classList.add('visible');
-      document.getElementById('chat-input-admin').focus();
-      document.querySelectorAll('#chat-admin .chat-msg').forEach(m => m.classList.remove('selected'));
-      div.classList.add('selected');
-    });
+    attacherEvenementsChatMsg(div, data);
  
     el.appendChild(div);
     el.scrollTop = el.scrollHeight;
@@ -548,7 +584,6 @@
     startAdminTimer(temps, question);
     allerVers('ecran-admin-jeu');
     document.getElementById('admin-code-small').textContent = adminCode;
-    // ✅ FIX : restaurer le nom dans le header à la reconnexion
     document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
   });
  
@@ -590,7 +625,12 @@
     });
   });
  
-  socket.on('point_deja_donne', () => verrouiller());
+  // 🐛 BUG 2 CORRIGÉ : stopAdminTimer aussi sur point_deja_donne (sécurité si double clic)
+  socket.on('point_deja_donne', () => {
+    verrouiller();
+    stopAdminTimer();
+  });
+ 
   socket.on('fin_question', () => stopAdminTimer());
  
   socket.on('demande_indice_update', ({ nbDemandes, nbJoueurs, majorite }) => {
@@ -651,7 +691,6 @@
     if (savedCode && savedNom) {
       adminCode = savedCode;
       adminNom = savedNom;
-      // ✅ FIX : appliquer le nom à l'interface dès la reconnexion
       document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
       socket.emit('admin_rejoindre', { code: savedCode });
     }

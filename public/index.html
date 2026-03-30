@@ -91,12 +91,19 @@
     .chat-panel { background: white; border-radius: 14px; padding: 14px; margin-top: 14px; }
     .chat-panel h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(14px,4vw,17px); }
     .chat-messages { height: 120px; overflow-y: auto; background: #f5ede0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .chat-msg { font-size: clamp(13px,3.5vw,15px); line-height: 1.4; word-break: break-word; }
+    .chat-msg { font-size: clamp(13px,3.5vw,15px); line-height: 1.4; word-break: break-word; cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; user-select: none; -webkit-user-select: none; }
+    .chat-msg:hover { background: rgba(0,0,0,0.05); }
+    .chat-msg.selected { background: #d4edda; }
     .chat-nom { font-weight: bold; color: #8B5E3C; }
     .chat-heure { font-size: 11px; color: #aaa; margin-left: 4px; }
-    .chat-input-row { display: flex; gap: 8px; }
+    .chat-reply-preview { background: rgba(139,94,60,0.1); border-left: 3px solid #8B5E3C; padding: 4px 8px; border-radius: 0 6px 6px 0; font-size: 12px; color: #888; margin-bottom: 4px; }
+    .reply-bar { background: #fff3cd; border: 1px solid #e8b86d; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; font-size: 13px; color: #856404; display: none; align-items: center; justify-content: space-between; }
+    .reply-bar.visible { display: flex; }
+    .reply-bar-close { cursor: pointer; font-size: 16px; color: #e05a5a; font-weight: bold; padding: 0 4px; }
+    .chat-input-row { display: flex; gap: 8px; flex-direction: column; }
     .chat-input-row input { flex: 1; margin: 0; padding: 10px 12px; font-size: clamp(14px,3.5vw,16px); border-radius: 10px; border: 2px solid #e0d5c8; outline: none; color: #3d2b1f; }
     .chat-input-row input:focus { border-color: #6db88e; }
+    .chat-input-send { display: flex; gap: 8px; }
     .chat-input-row button { width: auto; padding: 10px 14px; margin: 0; }
  
     .reconnect-banner { display: none; position: fixed; top: 0; left: 0; right: 0; background: #e05a5a; color: white; text-align: center; padding: 10px; font-size: 14px; font-weight: bold; z-index: 9999; }
@@ -153,9 +160,15 @@
     <div class="chat-panel" style="width:100%;max-width:500px;margin-top:20px;">
       <h4>💬 Chat</h4>
       <div class="chat-messages" id="chat-attente"></div>
+      <div id="reply-bar-attente" class="reply-bar">
+        <span id="reply-bar-texte-attente">↩ Réponse à ...</span>
+        <span class="reply-bar-close" onclick="annulerReply('attente')">✕</span>
+      </div>
       <div class="chat-input-row">
-        <input type="text" id="chat-input-attente" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('attente')" />
-        <button class="btn btn-vert btn-petit" onclick="envoyerChat('attente')">➤</button>
+        <div class="chat-input-send">
+          <input type="text" id="chat-input-attente" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('attente')" />
+          <button class="btn btn-vert btn-petit" onclick="envoyerChat('attente')">➤</button>
+        </div>
       </div>
     </div>
   </div>
@@ -194,9 +207,15 @@
       <div class="chat-panel">
         <h4>💬 Chat</h4>
         <div class="chat-messages" id="chat-question"></div>
+        <div id="reply-bar-question" class="reply-bar">
+          <span id="reply-bar-texte-question">↩ Réponse à ...</span>
+          <span class="reply-bar-close" onclick="annulerReply('question')">✕</span>
+        </div>
         <div class="chat-input-row">
-          <input type="text" id="chat-input-question" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('question')" />
-          <button class="btn btn-vert btn-petit" onclick="envoyerChat('question')">➤</button>
+          <div class="chat-input-send">
+            <input type="text" id="chat-input-question" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('question')" />
+            <button class="btn btn-vert btn-petit" onclick="envoyerChat('question')">➤</button>
+          </div>
         </div>
       </div>
     </div>
@@ -218,9 +237,15 @@
       <div class="chat-panel">
         <h4>💬 Chat</h4>
         <div class="chat-messages" id="chat-recap"></div>
+        <div id="reply-bar-recap" class="reply-bar">
+          <span id="reply-bar-texte-recap">↩ Réponse à ...</span>
+          <span class="reply-bar-close" onclick="annulerReply('recap')">✕</span>
+        </div>
         <div class="chat-input-row">
-          <input type="text" id="chat-input-recap" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('recap')" />
-          <button class="btn btn-vert btn-petit" onclick="envoyerChat('recap')">➤</button>
+          <div class="chat-input-send">
+            <input type="text" id="chat-input-recap" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('recap')" />
+            <button class="btn btn-vert btn-petit" onclick="envoyerChat('recap')">➤</button>
+          </div>
         </div>
       </div>
     </div>
@@ -241,9 +266,10 @@
     let monCode = '';
     let timerInterval = null;
     let demandeIndiceEnvoye = false;
- 
-    // ✅ FIX : variable pour mesurer le temps de réponse côté joueur
     let tempsDepart = null;
+ 
+    // État reply par zone de chat
+    const replyTo = { attente: null, question: null, recap: null };
  
     // ══════════════════════════════════════
     //  NAVIGATION
@@ -287,13 +313,7 @@
       const input = document.getElementById('input-reponse');
       const reponse = input.value.trim();
       if (!reponse || !monCode) return;
- 
-      // ✅ FIX : calculer le temps écoulé depuis le début de la question
-      const tempsReponse = tempsDepart
-        ? Math.floor((Date.now() - tempsDepart) / 1000)
-        : 0;
- 
-      // ✅ FIX : nom de l'événement corrigé 'joueur_reponse' + tempsReponse inclus
+      const tempsReponse = tempsDepart ? Math.floor((Date.now() - tempsDepart) / 1000) : 0;
       socket.emit('joueur_reponse', { code: monCode, nom: monNom, reponse, tempsReponse });
       input.value = '';
     }
@@ -319,23 +339,79 @@
     }
  
     // ══════════════════════════════════════
-    //  CHAT
+    //  CHAT AVEC REPLY — BUG 3 CORRIGÉ MOBILE
     // ══════════════════════════════════════
+    function annulerReply(source) {
+      replyTo[source] = null;
+      document.getElementById('reply-bar-' + source).classList.remove('visible');
+      const chatEl = document.getElementById('chat-' + source);
+      if (chatEl) chatEl.querySelectorAll('.chat-msg').forEach(m => m.classList.remove('selected'));
+    }
+ 
+    function attacherEvenementsChatMsg(div, data, source) {
+      function selectionnerMessage() {
+        replyTo[source] = { id: data.id, nom: data.nom, message: data.message };
+        const apercu = data.message.substring(0, 40) + (data.message.length > 40 ? '...' : '');
+        document.getElementById('reply-bar-texte-' + source).textContent = `↩ ${data.nom} : ${apercu}`;
+        document.getElementById('reply-bar-' + source).classList.add('visible');
+        document.getElementById('chat-input-' + source).focus();
+        const chatEl = document.getElementById('chat-' + source);
+        if (chatEl) chatEl.querySelectorAll('.chat-msg').forEach(m => m.classList.remove('selected'));
+        div.classList.add('selected');
+      }
+ 
+      // Click desktop
+      div.addEventListener('click', selectionnerMessage);
+ 
+      // 🐛 BUG 3 CORRIGÉ : support tactile mobile
+      let touchStartY = 0;
+      div.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+ 
+      div.addEventListener('touchend', (e) => {
+        const touchEndY = e.changedTouches[0].clientY;
+        // Seulement si c'est un tap (pas un scroll)
+        if (Math.abs(touchEndY - touchStartY) < 10) {
+          e.preventDefault();
+          selectionnerMessage();
+        }
+      });
+    }
+ 
     function envoyerChat(source) {
       const inputId = 'chat-input-' + source;
       const msg = document.getElementById(inputId).value.trim();
       if (!msg) return;
-      socket.emit('chat_message', { code: monCode, nom: monNom, message: msg });
+      socket.emit('chat_message', {
+        code: monCode,
+        nom: monNom,
+        message: msg,
+        replyTo: replyTo[source] || null
+      });
       document.getElementById(inputId).value = '';
+      annulerReply(source);
     }
  
     function ajouterChat(data) {
-      ['chat-attente', 'chat-question', 'chat-recap'].forEach(id => {
-        const el = document.getElementById(id);
+      // On détermine dans quel(s) panel(s) ajouter le message
+      const sources = ['attente', 'question', 'recap'];
+      sources.forEach(source => {
+        const el = document.getElementById('chat-' + source);
         if (!el) return;
         const div = document.createElement('div');
         div.className = 'chat-msg';
-        div.innerHTML = `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
+ 
+        let html = '';
+        if (data.replyTo) {
+          html += `<div class="chat-reply-preview">↩ <b>${data.replyTo.nom}</b> : ${data.replyTo.message}</div>`;
+        }
+        html += `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
+        div.innerHTML = html;
+ 
+        // Attacher les événements de reply sur chaque instance du message
+        attacherEvenementsChatMsg(div, data, source);
+ 
         el.appendChild(div);
         el.scrollTop = el.scrollHeight;
       });
@@ -363,24 +439,24 @@
     });
  
     socket.on('nouvelle_question', (data) => {
-      // Reset
       document.getElementById('input-reponse').disabled = false;
       document.getElementById('mes-reponses-zone').style.display = 'none';
       document.getElementById('mes-reponses-liste').innerHTML = '';
       document.getElementById('indice-bulle').style.display = 'none';
       document.getElementById('personne-banner').style.display = 'none';
  
-      // Reset bouton indice
       demandeIndiceEnvoye = false;
       const btnIndice = document.getElementById('btn-demande-indice');
       btnIndice.classList.remove('demande');
       btnIndice.textContent = '💡 Demander un indice';
       btnIndice.disabled = false;
  
+      // Réinitialiser les reply
+      ['attente', 'question', 'recap'].forEach(s => annulerReply(s));
+ 
       document.getElementById('question-texte-joueur').textContent = data.question || '';
       document.getElementById('pts-badge-joueur').textContent = `⭐ Max : ${data.pointsMax} pts`;
  
-      // ✅ FIX : afficher l'image correctement
       const imgEl = document.getElementById('question-image');
       if (data.image && data.image.startsWith('data:image')) {
         imgEl.src = data.image;
@@ -390,8 +466,6 @@
         imgEl.style.display = 'none';
       }
  
-      // ✅ FIX : recalibrer tempsDepart selon le temps restant reçu
-      // Si reconnexion en cours de question, tempsTotal permet de reconstruire l'horloge
       if (data.tempsTotal && data.tempsTotal !== data.temps) {
         const dejaEcoule = (data.tempsTotal - data.temps) * 1000;
         tempsDepart = Date.now() - dejaEcoule;
@@ -399,7 +473,6 @@
         tempsDepart = Date.now();
       }
  
-      // Timer
       if (timerInterval) clearInterval(timerInterval);
       let temps = data.temps;
       const timerEl = document.getElementById('timer-joueur');
