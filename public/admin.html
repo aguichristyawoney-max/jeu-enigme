@@ -7,29 +7,27 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; }
-
+ 
     .ecran { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px; }
     .ecran.actif { display: flex; }
-
-    /* ══ ÉCRAN NOM ADMIN ══ */
+ 
     #ecran-admin-nom { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
     .nom-card { background: white; border-radius: 20px; padding: 32px 28px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
     .nom-card h2 { color: #8B5E3C; margin-bottom: 8px; font-size: clamp(20px,5vw,24px); }
     .nom-card p { color: #888; font-size: 14px; margin-bottom: 20px; }
     .nom-card input { width: 100%; padding: 14px; font-size: 18px; border: 3px solid #e0d5c8; border-radius: 12px; font-family: inherit; outline: none; text-align: center; margin-bottom: 16px; }
     .nom-card input:focus { border-color: #8B5E3C; }
-
-    /* ══ ÉCRAN ATTENTE ══ */
+ 
     #ecran-admin-attente { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
     .code-display { background: rgba(255,255,255,0.15); border-radius: 20px; padding: clamp(20px,5vw,30px) clamp(24px,8vw,50px); text-align: center; color: white; margin: 16px 0; width: 100%; max-width: 360px; }
     .code-display .label { font-size: 15px; opacity: 0.8; margin-bottom: 8px; }
     .code-display .code { font-size: clamp(36px,12vw,56px); font-weight: bold; letter-spacing: 6px; }
     .code-display .info { font-size: 13px; opacity: 0.7; margin-top: 8px; }
     .nom-admin-badge { color: white; font-size: clamp(16px,4vw,20px); font-weight: bold; margin-bottom: 12px; }
-
+ 
     .joueurs-admin { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; max-width: 400px; }
     .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 15px; font-weight: bold; }
-
+ 
     .btn { padding: clamp(12px,3vw,14px) clamp(18px,5vw,28px); font-size: clamp(15px,4vw,17px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 5px 0 rgba(0,0,0,0.2); margin: 6px; font-family: inherit; min-height: 48px; }
     .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
     .btn-vert { background: #6db88e; color: white; }
@@ -37,46 +35,44 @@
     .btn-orange { background: #e8b86d; color: #3d2b1f; }
     .btn-gris { background: #aaa; color: white; }
     .btn-full { width: 100%; margin: 4px 0; }
-
-    /* ══ ÉCRAN JEU ══ */
+ 
     #ecran-admin-jeu { background: #f5ede0; align-items: stretch; padding: 0; }
     .admin-header { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; color: white; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 100; }
     .admin-header h1 { font-size: clamp(14px,3.5vw,18px); }
     .admin-code-small { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: clamp(15px,4vw,18px); font-weight: bold; letter-spacing: 3px; }
     .joueurs-header { display: flex; flex-wrap: wrap; gap: 5px; }
     .joueur-tag { background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 10px; font-size: 12px; }
-
-    /* ✅ Chrono admin */
+ 
     .admin-timer-bar { background: #6d4a2e; padding: 8px 16px; display: flex; align-items: center; gap: 12px; color: white; }
     .admin-timer-cercle { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; border: 3px solid white; flex-shrink: 0; transition: background 0.3s; }
     .admin-timer-cercle.urgent { background: #e05a5a; border-color: #ffaaaa; }
     .admin-timer-label { font-size: 14px; opacity: 0.85; }
-
+ 
     .admin-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
     @media (max-width: 700px) { .admin-body { grid-template-columns: 1fr; } }
-
+ 
     .panel { background: white; border-radius: 16px; padding: clamp(14px,4vw,20px); }
     .panel h3 { color: #8B5E3C; margin-bottom: 14px; font-size: clamp(15px,4vw,17px); border-bottom: 2px solid #f5ede0; padding-bottom: 8px; }
-
+ 
     .question-form textarea { width: 100%; padding: 12px; border: 2px solid #e0d5c8; border-radius: 10px; font-size: clamp(14px,3.5vw,15px); font-family: inherit; resize: vertical; min-height: 80px; outline: none; }
     .question-form textarea:focus { border-color: #8B5E3C; }
-
+ 
     .form-row { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
     .form-row label { font-size: 13px; color: #8B5E3C; font-weight: bold; }
     .form-row input[type="number"], .form-row input[type="range"] { flex: 1; padding: 8px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; outline: none; }
     .form-row input:focus { border-color: #8B5E3C; }
-
+ 
     .preview-image { max-width: 100%; max-height: 130px; border-radius: 10px; margin: 8px 0; display: none; object-fit: contain; }
     .image-upload-label { display: block; padding: 10px; text-align: center; border: 2px dashed #e0d5c8; border-radius: 10px; cursor: pointer; color: #aaa; font-size: 14px; margin: 8px 0; transition: border-color 0.2s; }
     .image-upload-label:hover { border-color: #8B5E3C; color: #8B5E3C; }
     .temps-val { font-weight: bold; color: #8B5E3C; min-width: 30px; text-align: center; }
-
+ 
     .notif-indice { background: #fff3cd; border: 2px solid #e8b86d; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: none; }
     .notif-indice p { color: #856404; font-weight: bold; font-size: 13px; }
     .indice-form { display: flex; gap: 8px; }
     .indice-form input { flex: 1; padding: 10px; border: 2px solid #e0d5c8; border-radius: 10px; font-family: inherit; outline: none; font-size: 14px; min-height: 44px; }
     .indice-form input:focus { border-color: #8B5E3C; }
-
+ 
     .table-reponses { width: 100%; border-collapse: collapse; font-size: 14px; }
     .table-reponses th { background: #f5ede0; padding: 8px 6px; text-align: left; color: #8B5E3C; font-size: 12px; border-bottom: 2px solid #e0d5c8; }
     .table-reponses td { padding: 8px 6px; border-bottom: 1px solid #f0e8e0; vertical-align: top; }
@@ -87,30 +83,29 @@
       .table-reponses td { border: none; padding: 4px 0; }
       .table-reponses td::before { content: attr(data-label); font-weight: bold; color: #8B5E3C; font-size: 12px; display: block; margin-bottom: 3px; }
     }
-
+ 
     .historique-admin { display: flex; flex-direction: column; gap: 3px; }
     .histo-item { font-size: 13px; color: #888; padding: 3px 6px; border-radius: 6px; background: #f5f5f5; }
     .histo-item.derniere { color: #3d2b1f; font-weight: bold; background: #e8f5e9; }
     .temps-badge { background: #e8b86d; color: white; border-radius: 8px; padding: 2px 6px; font-size: 12px; font-weight: bold; }
-
+ 
     .emoji-btns-admin { display: flex; gap: 4px; flex-wrap: wrap; }
     .emoji-btns-admin button { font-size: 20px; background: none; border: 2px solid #e0d5c8; border-radius: 8px; cursor: pointer; padding: 5px 7px; transition: transform 0.1s; min-width: 40px; min-height: 40px; }
     .emoji-btns-admin button:active { transform: scale(1.3); }
     .reactions-admin { font-size: 13px; margin-top: 4px; color: #666; }
-
+ 
     .points-zone { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .points-zone input { width: 56px; padding: 6px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; text-align: center; font-size: 15px; min-height: 40px; }
     .btn-point { background: #6db88e; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 16px; font-family: inherit; min-height: 44px; min-width: 44px; }
     .btn-point:disabled { background: #ccc; opacity: 0.4; cursor: not-allowed; }
     .points-max-badge { font-size: 12px; color: #aaa; margin-top: 3px; }
-
+ 
     .verrou-banner { background: #e05a5a; color: white; text-align: center; padding: 8px; border-radius: 10px; font-weight: bold; font-size: 13px; margin-bottom: 10px; display: none; }
     .alerte-triche { color: #e05a5a; font-weight: bold; font-size: 13px; }
-
+ 
     .score-ligne { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; background: #f5ede0; font-size: clamp(14px,3.5vw,16px); }
     .score-pts { font-weight: bold; color: #8B5E3C; background: white; padding: 4px 10px; border-radius: 10px; }
-
-    /* ✅ CHAT avec reply */
+ 
     .chat-box { height: clamp(130px,25vw,180px); overflow-y: auto; border: 2px solid #e0d5c8; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fdfaf7; }
     .chat-msg { margin-bottom: 8px; font-size: 14px; line-height: 1.4; cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; }
     .chat-msg:hover { background: #f0e8e0; }
@@ -118,17 +113,16 @@
     .chat-nom { font-weight: bold; color: #8B5E3C; margin-right: 4px; }
     .chat-heure { font-size: 11px; color: #aaa; margin-right: 4px; }
     .chat-reply-preview { background: #f5ede0; border-left: 3px solid #8B5E3C; padding: 4px 8px; border-radius: 0 6px 6px 0; font-size: 12px; color: #888; margin-bottom: 4px; }
-    .reply-bar { background: #fff3cd; border: 1px solid #e8b86d; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; display: none; font-size: 13px; color: #856404; display: none; align-items: center; justify-content: space-between; }
+    .reply-bar { background: #fff3cd; border: 1px solid #e8b86d; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; font-size: 13px; color: #856404; display: none; align-items: center; justify-content: space-between; }
     .reply-bar.visible { display: flex; }
     .reply-bar-close { cursor: pointer; font-size: 16px; color: #e05a5a; font-weight: bold; padding: 0 4px; }
     .chat-form { display: flex; gap: 6px; }
     .chat-form input { flex: 1; padding: 10px; border: 2px solid #e0d5c8; border-radius: 10px; font-family: inherit; outline: none; font-size: 14px; min-height: 44px; }
     .chat-form input:focus { border-color: #8B5E3C; }
-
+ 
     .controles { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 10px 0; }
     .controles .btn { flex: 1; min-width: 130px; }
-
-    /* ══ ÉCRAN FIN ══ */
+ 
     #ecran-admin-fin { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
     .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
     .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
@@ -141,8 +135,8 @@
   </style>
 </head>
 <body>
-
-<!-- ══ ÉCRAN NOM ADMIN ══ -->
+ 
+<!-- ÉCRAN NOM ADMIN -->
 <div id="ecran-admin-nom" class="ecran actif">
   <div class="nom-card">
     <div style="font-size:48px;margin-bottom:12px;">👑</div>
@@ -154,8 +148,8 @@
     <button class="btn btn-gris btn-full" onclick="history.back()">← Retour</button>
   </div>
 </div>
-
-<!-- ══ ÉCRAN ATTENTE ══ -->
+ 
+<!-- ÉCRAN ATTENTE -->
 <div id="ecran-admin-attente" class="ecran">
   <div class="nom-admin-badge" id="nom-admin-badge">👑</div>
   <div class="code-display">
@@ -172,16 +166,15 @@
     <button class="btn btn-rouge btn-full" onclick="annulerPartie()">❌ Annuler la partie</button>
   </div>
 </div>
-
-<!-- ══ ÉCRAN JEU ══ -->
+ 
+<!-- ÉCRAN JEU -->
 <div id="ecran-admin-jeu" class="ecran">
   <div class="admin-header">
     <h1 id="admin-nom-header">👑 Admin</h1>
     <div class="admin-code-small" id="admin-code-small"></div>
     <div class="joueurs-header" id="joueurs-jeu"></div>
   </div>
-
-  <!-- ✅ Barre chrono admin -->
+ 
   <div class="admin-timer-bar" id="admin-timer-bar" style="display:none;">
     <div class="admin-timer-cercle" id="admin-timer-cercle">--</div>
     <div>
@@ -189,9 +182,9 @@
       <div id="admin-timer-question" style="font-size:13px;color:rgba(255,255,255,0.7);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
     </div>
   </div>
-
+ 
   <div class="admin-body">
-
+ 
     <div class="panel">
       <h3>❓ Nouvelle question</h3>
       <div class="question-form">
@@ -221,7 +214,7 @@
           <button class="btn btn-orange" onclick="personneNaTrouve()">🤷 Personne n'a trouvé</button>
         </div>
       </div>
-
+ 
       <div class="notif-indice" id="notif-indice">
         <p id="notif-indice-texte">Des joueurs demandent un indice !</p>
       </div>
@@ -231,7 +224,7 @@
         <button class="btn btn-orange" style="padding:10px 14px;font-size:14px;margin:0;min-height:44px;" onclick="envoyerIndice()">Envoyer</button>
       </div>
     </div>
-
+ 
     <div class="panel">
       <h3>📋 Réponses des joueurs</h3>
       <div class="verrou-banner" id="verrou-banner">🔒 Point attribué — prochaine question pour déverrouiller</div>
@@ -246,7 +239,7 @@
         </table>
       </div>
     </div>
-
+ 
     <div class="panel">
       <h3>🏆 Scores en direct</h3>
       <div id="admin-scores"><div style="text-align:center;color:#aaa;font-size:14px;">Aucun point attribué</div></div>
@@ -254,11 +247,10 @@
         <button class="btn btn-rouge btn-full" onclick="afficherFin()">🏁 Terminer la partie</button>
       </div>
     </div>
-
+ 
     <div class="panel">
       <h3>💬 Chat</h3>
       <div class="chat-box" id="chat-admin"></div>
-      <!-- ✅ Barre reply -->
       <div class="reply-bar" id="reply-bar-admin">
         <span id="reply-bar-texte-admin">↩ Réponse à ...</span>
         <span class="reply-bar-close" onclick="annulerReplyAdmin()">✕</span>
@@ -269,11 +261,11 @@
         <button class="btn btn-vert" style="margin:0;padding:10px 14px;" onclick="envoyerChatAdmin()">➤</button>
       </div>
     </div>
-
+ 
   </div>
 </div>
-
-<!-- ══ FIN ══ -->
+ 
+<!-- FIN -->
 <div id="ecran-admin-fin" class="ecran">
   <div class="fin-card">
     <h2>🏁 Partie terminée !</h2>
@@ -281,7 +273,7 @@
     <button class="btn btn-vert btn-full" onclick="nouvellePartie()" style="margin-top:16px;">🔄 Nouvelle partie</button>
   </div>
 </div>
-
+ 
 <script src="/socket.io/socket.io.js"></script>
 <script>
   const socket = io();
@@ -290,8 +282,8 @@
   let pointsMaxActuel = 3;
   let pointVerrouille = false;
   let adminTimerInterval = null;
-  let replyToAdmin = null; // ✅ Pour le chat reply
-
+  let replyToAdmin = null;
+ 
   // ══════════════════════════════════════
   //  NAVIGATION
   // ══════════════════════════════════════
@@ -300,16 +292,16 @@
     document.getElementById(id).classList.add('actif');
     window.scrollTo(0, 0);
   }
-
+ 
   // ══════════════════════════════════════
-  //  CRÉER PARTIE (avec nom)
+  //  CRÉER PARTIE
   // ══════════════════════════════════════
   function creerPartie() {
     const nomInput = document.getElementById('input-nom-admin').value.trim();
     adminNom = nomInput || 'Admin';
     socket.emit('admin_creer_partie', { nomAdmin: adminNom });
   }
-
+ 
   // ══════════════════════════════════════
   //  LANCER / ANNULER
   // ══════════════════════════════════════
@@ -318,15 +310,16 @@
     document.getElementById('admin-code-small').textContent = adminCode;
     document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
   }
-
+ 
   function annulerPartie() {
     if (!confirm('Annuler la partie ? Tous les joueurs seront déconnectés.')) return;
     socket.emit('admin_annuler_partie', { code: adminCode });
     adminCode = '';
     localStorage.removeItem('adminCode');
+    localStorage.removeItem('adminNom');
     allerVers('ecran-admin-nom');
   }
-
+ 
   // ══════════════════════════════════════
   //  VERROU
   // ══════════════════════════════════════
@@ -336,14 +329,14 @@
     document.querySelectorAll('.btn-point').forEach(btn => { btn.disabled = true; btn.textContent = '🔒'; });
     document.querySelectorAll('.points-zone input').forEach(inp => { inp.disabled = true; });
   }
-
+ 
   function deverrouiller() {
     pointVerrouille = false;
     document.getElementById('verrou-banner').style.display = 'none';
     document.querySelectorAll('.btn-point').forEach(btn => { btn.disabled = false; btn.textContent = '✅'; });
     document.querySelectorAll('.points-zone input').forEach(inp => { inp.disabled = false; });
   }
-
+ 
   // ══════════════════════════════════════
   //  IMAGE
   // ══════════════════════════════════════
@@ -359,14 +352,14 @@
     };
     reader.readAsDataURL(file);
   }
-
+ 
   function supprimerImage() {
     document.getElementById('image-input').value = '';
     document.getElementById('image-preview').src = '';
     document.getElementById('image-preview').style.display = 'none';
     document.getElementById('btn-suppr-image').style.display = 'none';
   }
-
+ 
   // ══════════════════════════════════════
   //  QUESTION
   // ══════════════════════════════════════
@@ -374,45 +367,50 @@
     if (!adminCode) return;
     const question = document.getElementById('question-input').value.trim();
     if (!question) return;
-    const image = document.getElementById('image-preview').src || null;
+ 
+    // ✅ FIX : validation stricte de l'image avant envoi
+    const imgEl = document.getElementById('image-preview');
+    const imgSrc = imgEl.src || '';
+    const image = imgSrc.startsWith('data:image') ? imgSrc : null;
+ 
     const temps = parseInt(document.getElementById('temps-slider').value);
     const pointsMax = parseInt(document.getElementById('points-max-input').value) || 3;
     pointsMaxActuel = pointsMax;
+ 
+    // ✅ deverrouiller avant l'emit pour éviter la race condition
     deverrouiller();
-    socket.emit('admin_question', {
-      code: adminCode, question,
-      image: image && image.startsWith('data:') ? image : null,
-      temps, pointsMax
-    });
+ 
+    socket.emit('admin_question', { code: adminCode, question, image, temps, pointsMax });
+ 
     document.getElementById('question-input').value = '';
     supprimerImage();
     document.getElementById('admin-reponses-tbody').innerHTML =
       '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">En attente de réponses...</td></tr>';
     document.getElementById('notif-indice').style.display = 'none';
   }
-
+ 
   function couperTemps() {
     if (!adminCode) return;
     socket.emit('admin_couper_temps', { code: adminCode });
     stopAdminTimer();
   }
-
+ 
   function donnerPoints(nom) {
     if (pointVerrouille) return;
     const pts = parseInt(document.getElementById('points-input-' + nom).value) || 0;
     if (pts < 0) return;
     socket.emit('admin_donner_points', { code: adminCode, nom, points: pts });
   }
-
+ 
   function personneNaTrouve() {
     if (!adminCode || pointVerrouille) return;
     socket.emit('admin_personne_a_trouve', { code: adminCode });
   }
-
+ 
   function adminReagir(nomCible, emoji) {
     socket.emit('joueur_reaction', { code: adminCode, nomCible, emoji });
   }
-
+ 
   function envoyerIndice() {
     const indice = document.getElementById('indice-input').value.trim();
     if (!indice) return;
@@ -420,21 +418,22 @@
     document.getElementById('indice-input').value = '';
     document.getElementById('notif-indice').style.display = 'none';
   }
-
+ 
   function afficherFin() {
     if (!confirm('Terminer la partie ?')) return;
     socket.emit('admin_fin_partie', { code: adminCode });
     stopAdminTimer();
   }
-
+ 
   function nouvellePartie() {
     adminCode = '';
     localStorage.removeItem('adminCode');
+    localStorage.removeItem('adminNom');
     allerVers('ecran-admin-nom');
   }
-
+ 
   // ══════════════════════════════════════
-  //  ✅ CHRONO ADMIN
+  //  CHRONO ADMIN
   // ══════════════════════════════════════
   function startAdminTimer(temps, question) {
     stopAdminTimer();
@@ -446,7 +445,7 @@
     qLabel.textContent = question || '';
     cercle.textContent = restant;
     cercle.classList.remove('urgent');
-
+ 
     adminTimerInterval = setInterval(() => {
       restant--;
       cercle.textContent = restant;
@@ -457,15 +456,15 @@
       }
     }, 1000);
   }
-
+ 
   function stopAdminTimer() {
     if (adminTimerInterval) clearInterval(adminTimerInterval);
     adminTimerInterval = null;
     document.getElementById('admin-timer-bar').style.display = 'none';
   }
-
+ 
   // ══════════════════════════════════════
-  //  ✅ CHAT AVEC REPLY
+  //  CHAT AVEC REPLY
   // ══════════════════════════════════════
   function ajouterChatAdmin(data) {
     const el = document.getElementById('chat-admin');
@@ -474,35 +473,33 @@
     div.dataset.id = data.id || '';
     div.dataset.nom = data.nom || '';
     div.dataset.message = data.message || '';
-
+ 
     let html = '';
     if (data.replyTo) {
       html += `<div class="chat-reply-preview">↩ <b>${data.replyTo.nom}</b> : ${data.replyTo.message}</div>`;
     }
     html += `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
     div.innerHTML = html;
-
-    // Clic pour répondre
+ 
     div.addEventListener('click', () => {
       replyToAdmin = { id: data.id, nom: data.nom, message: data.message };
       document.getElementById('reply-bar-texte-admin').textContent = `↩ ${data.nom} : ${data.message.substring(0, 40)}${data.message.length > 40 ? '...' : ''}`;
       document.getElementById('reply-bar-admin').classList.add('visible');
       document.getElementById('chat-input-admin').focus();
-      // Highlight
       document.querySelectorAll('#chat-admin .chat-msg').forEach(m => m.classList.remove('selected'));
       div.classList.add('selected');
     });
-
+ 
     el.appendChild(div);
     el.scrollTop = el.scrollHeight;
   }
-
+ 
   function annulerReplyAdmin() {
     replyToAdmin = null;
     document.getElementById('reply-bar-admin').classList.remove('visible');
     document.querySelectorAll('#chat-admin .chat-msg').forEach(m => m.classList.remove('selected'));
   }
-
+ 
   function envoyerChatAdmin() {
     const msg = document.getElementById('chat-input-admin').value.trim();
     if (!msg) return;
@@ -516,19 +513,20 @@
     document.getElementById('chat-input-admin').value = '';
     annulerReplyAdmin();
   }
-
+ 
   // ══════════════════════════════════════
   //  SOCKETS
   // ══════════════════════════════════════
   socket.on('partie_creee', ({ code, nomAdmin }) => {
     adminCode = code;
     localStorage.setItem('adminCode', code);
+    localStorage.setItem('adminNom', adminNom);
     document.getElementById('admin-code').textContent = code;
     document.getElementById('admin-code-small').textContent = code;
     document.getElementById('nom-admin-badge').textContent = nomAdmin || '👑 Admin';
     allerVers('ecran-admin-attente');
   });
-
+ 
   socket.on('joueurs_update', (joueurs) => {
     const listeAttente = document.getElementById('joueurs-admin-attente');
     if (listeAttente) {
@@ -539,21 +537,21 @@
     const listeJeu = document.getElementById('joueurs-jeu');
     if (listeJeu) listeJeu.innerHTML = joueurs.map(j => `<div class="joueur-tag">${j.nom}</div>`).join('');
   });
-
-  // ✅ Chrono admin reçu
+ 
   socket.on('admin_chrono_start', ({ temps }) => {
     const question = document.getElementById('question-input').value || '';
     startAdminTimer(temps, question);
   });
-
-  // ✅ Question en cours (reconnexion admin)
+ 
   socket.on('admin_question_encours', ({ question, image, temps, pointsMax }) => {
     pointsMaxActuel = pointsMax;
     startAdminTimer(temps, question);
     allerVers('ecran-admin-jeu');
     document.getElementById('admin-code-small').textContent = adminCode;
+    // ✅ FIX : restaurer le nom dans le header à la reconnexion
+    document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
   });
-
+ 
   socket.on('reponse_joueur', (reponses) => {
     const tbody = document.getElementById('admin-reponses-tbody');
     tbody.innerHTML = '';
@@ -564,7 +562,7 @@
               ${h.reponse} <span class="temps-badge">⏱ ${h.tempsReponse}s</span>
             </div>`).join('')
         : '<span style="color:#aaa">(pas de réponse)</span>';
-
+ 
       const premierTemps = r.historique && r.historique.length > 0 ? r.historique[0].tempsReponse : '--';
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -591,24 +589,23 @@
       tbody.appendChild(tr);
     });
   });
-
+ 
   socket.on('point_deja_donne', () => verrouiller());
-
   socket.on('fin_question', () => stopAdminTimer());
-
+ 
   socket.on('demande_indice_update', ({ nbDemandes, nbJoueurs, majorite }) => {
     if (majorite) {
       document.getElementById('notif-indice').style.display = 'block';
       document.getElementById('notif-indice-texte').textContent = `${nbDemandes}/${nbJoueurs} joueurs demandent un indice !`;
     }
   });
-
+ 
   socket.on('reaction_update', ({ nomCible, reactions }) => {
     const el = document.getElementById('admin-reactions-' + nomCible);
     if (!el) return;
     el.innerHTML = Object.entries(reactions).map(([e, c]) => `${e} ${c}`).join('  ');
   });
-
+ 
   socket.on('points_update', (joueurs) => {
     joueurs.sort((a, b) => b.points - a.points);
     document.getElementById('admin-scores').innerHTML = joueurs.map((j, i) => `
@@ -618,7 +615,7 @@
       </div>
     `).join('');
   });
-
+ 
   socket.on('alerte_triche', ({ message }) => {
     const el = document.getElementById('chat-admin');
     const div = document.createElement('div');
@@ -627,11 +624,9 @@
     el.appendChild(div);
     el.scrollTop = el.scrollHeight;
   });
-
-  socket.on('chat_message', (data) => {
-    ajouterChatAdmin(data);
-  });
-
+ 
+  socket.on('chat_message', (data) => ajouterChatAdmin(data));
+ 
   socket.on('scores_finaux', (scores) => {
     scores.sort((a, b) => b.points - a.points);
     const classes = ['or', 'argent', 'bronze'];
@@ -644,11 +639,9 @@
     `).join('');
     allerVers('ecran-admin-fin');
   });
-
-  socket.on('partie_annulee', () => {
-    allerVers('ecran-admin-nom');
-  });
-
+ 
+  socket.on('partie_annulee', () => allerVers('ecran-admin-nom'));
+ 
   // ══════════════════════════════════════
   //  AUTO-RECONNECT ADMIN
   // ══════════════════════════════════════
@@ -658,14 +651,10 @@
     if (savedCode && savedNom) {
       adminCode = savedCode;
       adminNom = savedNom;
+      // ✅ FIX : appliquer le nom à l'interface dès la reconnexion
+      document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
       socket.emit('admin_rejoindre', { code: savedCode });
     }
-    // Sinon on reste sur l'écran nom
-  });
-
-  // Sauvegarder nom admin
-  socket.on('partie_creee', ({ code, nomAdmin }) => {
-    localStorage.setItem('adminNom', adminNom);
   });
 </script>
 </body>

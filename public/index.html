@@ -7,10 +7,10 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; min-height: 100vh; }
-
+ 
     .ecran { display: none; min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
     .ecran.actif { display: flex; }
-
+ 
     #ecran-accueil { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
     .logo { font-size: clamp(36px,10vw,56px); font-weight: bold; color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.2); margin-bottom: 8px; text-align: center; }
     .sous-titre { color: rgba(255,255,255,0.85); font-size: clamp(15px,4vw,20px); margin-bottom: 40px; text-align: center; }
@@ -19,75 +19,75 @@
     .btn-profil:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.2); }
     .btn-admin { background: #e8b86d; color: #3d2b1f; }
     .btn-joueur { background: #6db88e; color: white; }
-
+ 
     .card { background: white; border-radius: 20px; padding: clamp(24px,6vw,40px); max-width: 480px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; }
     .card h2 { font-size: clamp(22px,6vw,28px); margin-bottom: 20px; color: #5a8a5a; }
-
+ 
     input[type="text"] { width: 100%; padding: 14px 16px; font-size: clamp(16px,4vw,18px); border: 3px solid #e0d5c8; border-radius: 12px; margin: 6px 0 14px; outline: none; color: #3d2b1f; }
     input:focus { border-color: #6db88e; }
-
+ 
     .btn { width: 100%; padding: clamp(12px,3.5vw,16px); font-size: clamp(16px,4vw,18px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.15); margin: 6px 0; font-family: inherit; }
     .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
     .btn-vert { background: #6db88e; color: white; }
     .btn-orange { background: #e8b86d; color: #3d2b1f; }
     .btn-petit { width: auto; padding: 12px 18px; font-size: clamp(14px,3.5vw,16px); border-radius: 10px; white-space: nowrap; }
-
+ 
     .erreur { color: #e05a5a; font-size: 14px; margin: 6px 0; min-height: 20px; }
-
+ 
     #ecran-attente { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); justify-content: flex-start; padding-top: 40px; }
     .attente-info { color: white; text-align: center; width: 100%; }
     .attente-info h2 { font-size: clamp(22px,6vw,30px); margin-bottom: 8px; }
     .attente-info p { font-size: clamp(14px,3.5vw,17px); opacity: 0.85; margin-bottom: 20px; }
     .joueurs-liste { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 16px 0; }
     .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 14px; border-radius: 20px; font-size: clamp(13px,3.5vw,16px); font-weight: bold; }
-
+ 
     #ecran-question { background: #f5ede0; justify-content: flex-start; padding: 0; align-items: stretch; }
     .question-header { width: 100%; background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 10; }
     .question-header h2 { font-size: clamp(15px,4vw,20px); }
     .timer-cercle { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: clamp(18px,5vw,24px); font-weight: bold; border: 3px solid white; flex-shrink: 0; }
-
+ 
     .question-body { padding: 14px 16px; width: 100%; max-width: 700px; align-self: center; }
     .question-texte { font-size: clamp(16px,4.5vw,22px); font-weight: bold; color: #3d2b1f; margin-bottom: 14px; background: white; padding: 14px 16px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); line-height: 1.4; }
     .question-image { max-width: 100%; border-radius: 12px; margin-bottom: 14px; display: none; }
     .pts-badge { display: inline-block; background: #e8b86d; color: #3d2b1f; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-bottom: 14px; }
-
+ 
     .reponse-zone { display: flex; gap: 8px; margin-bottom: 14px; }
     .reponse-zone input { flex: 1; margin: 0; font-size: clamp(15px,4vw,17px); padding: 12px 14px; min-width: 0; border: 3px solid #e0d5c8; border-radius: 12px; outline: none; color: #3d2b1f; }
     .reponse-zone input:focus { border-color: #6db88e; }
-
+ 
     .mes-reponses { background: white; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
     .mes-reponses h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(13px,3.5vw,15px); }
     .ma-reponse-item { display: flex; justify-content: space-between; align-items: center; font-size: clamp(13px,3.5vw,15px); padding: 8px 10px; border-radius: 8px; background: #f5ede0; gap: 8px; margin-bottom: 4px; }
     .ma-reponse-item.derniere { background: #d4edda; font-weight: bold; }
     .temps-mini { font-size: 12px; background: #e8b86d; padding: 2px 8px; border-radius: 10px; white-space: nowrap; color: white; font-weight: bold; flex-shrink: 0; }
-
+ 
     #indice-bulle { display: none; background: #fffbe6; border: 3px solid #e8b86d; border-radius: 20px; padding: 12px 16px; margin: 10px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .indice-label { font-size: 12px; color: #8B5E3C; font-weight: bold; margin-bottom: 4px; }
-
+ 
     #ecran-recap { background: #f5ede0; justify-content: flex-start; padding: 0; align-items: stretch; }
     .recap-header { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 20px; text-align: center; color: white; }
     .recap-header h2 { font-size: clamp(20px,5vw,26px); }
     .recap-body { padding: 16px; }
-
+ 
     .recap-table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
     .recap-table th { background: #8B5E3C; color: white; padding: 12px; text-align: left; font-size: 13px; }
     .recap-table td { padding: 12px; border-bottom: 1px solid #f0e8e0; font-size: 14px; vertical-align: top; }
     .recap-table tr:last-child td { border-bottom: none; }
     .temps-badge { background: #e8b86d; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
-
+ 
     .emoji-btns-recap { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
     .emoji-btns-recap button { font-size: 20px; background: none; border: 2px solid #e0d5c8; border-radius: 8px; cursor: pointer; padding: 4px 6px; min-width: 38px; min-height: 38px; }
     .emoji-btns-recap button:active { transform: scale(1.3); }
     .reactions-recap { font-size: 12px; color: #8B5E3C; margin-top: 3px; }
-
+ 
     .scores-section { background: white; border-radius: 14px; padding: 16px; margin-top: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
     .scores-section h3 { color: #5a8a5a; margin-bottom: 12px; }
     .score-ligne { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0e8e0; font-size: 15px; }
     .score-ligne:last-child { border-bottom: none; }
     .score-pts { font-weight: bold; color: #8B5E3C; }
-
+ 
     .personne-banner { background: #e05a5a; color: white; text-align: center; padding: 12px 16px; font-size: 16px; font-weight: bold; border-radius: 12px; margin: 10px 16px; display: none; }
-
+ 
     .chat-panel { background: white; border-radius: 14px; padding: 14px; margin-top: 14px; }
     .chat-panel h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(14px,4vw,17px); }
     .chat-messages { height: 120px; overflow-y: auto; background: #f5ede0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
@@ -98,16 +98,14 @@
     .chat-input-row input { flex: 1; margin: 0; padding: 10px 12px; font-size: clamp(14px,3.5vw,16px); border-radius: 10px; border: 2px solid #e0d5c8; outline: none; color: #3d2b1f; }
     .chat-input-row input:focus { border-color: #6db88e; }
     .chat-input-row button { width: auto; padding: 10px 14px; margin: 0; }
-
-    /* ✅ NOUVEAU : bannière reconnexion */
+ 
     .reconnect-banner { display: none; position: fixed; top: 0; left: 0; right: 0; background: #e05a5a; color: white; text-align: center; padding: 10px; font-size: 14px; font-weight: bold; z-index: 9999; }
     .reconnect-banner.visible { display: block; }
-
-    /* ✅ NOUVEAU : bouton demande indice */
+ 
     .btn-indice { background: #fffbe6; border: 2px solid #e8b86d; color: #8B5E3C; font-weight: bold; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-size: clamp(13px,3.5vw,15px); margin-bottom: 10px; width: 100%; font-family: inherit; }
     .btn-indice:active { transform: translateY(2px); }
     .btn-indice.demande { background: #e8b86d; color: white; }
-
+ 
     #ecran-fin { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
     .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
     .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
@@ -120,10 +118,9 @@
   </style>
 </head>
 <body>
-
-  <!-- ✅ NOUVEAU : bannière reconnexion -->
+ 
   <div class="reconnect-banner" id="reconnect-banner">⚠️ Connexion perdue... Reconnexion en cours</div>
-
+ 
   <!-- ACCUEIL -->
   <div id="ecran-accueil" class="ecran actif">
     <div class="logo">🎮 Jeu-Enigmes</div>
@@ -133,7 +130,7 @@
       <button class="btn-profil btn-joueur" onclick="allerVers('ecran-rejoindre')">🎯 Joueur</button>
     </div>
   </div>
-
+ 
   <!-- REJOINDRE -->
   <div id="ecran-rejoindre" class="ecran" style="background:linear-gradient(135deg,#6db88e,#3d6e3d);">
     <div class="card">
@@ -145,7 +142,7 @@
       <button class="btn btn-orange" onclick="allerVers('ecran-accueil')">← Retour</button>
     </div>
   </div>
-
+ 
   <!-- ATTENTE -->
   <div id="ecran-attente" class="ecran">
     <div class="attente-info">
@@ -162,39 +159,38 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- QUESTION -->
   <div id="ecran-question" class="ecran">
     <div class="question-header">
       <h2>❓ Question</h2>
       <div class="timer-cercle" id="timer-joueur">--</div>
     </div>
-
+ 
     <div id="indice-bulle">
       <div class="indice-label">💡 Indice de l'admin :</div>
       <span id="indice-texte"></span>
     </div>
-
+ 
     <div class="question-body">
       <img id="question-image" class="question-image" alt="Image question" />
       <div class="question-texte" id="question-texte-joueur"></div>
       <div class="pts-badge" id="pts-badge-joueur"></div>
-
-      <!-- ✅ NOUVEAU : bouton demande indice -->
+ 
       <button class="btn-indice" id="btn-demande-indice" onclick="demanderIndice()">
         💡 Demander un indice
       </button>
-
+ 
       <div class="reponse-zone">
         <input type="text" id="input-reponse" placeholder="Ta réponse..." onkeydown="if(event.key==='Enter') envoyerReponse()" autocomplete="off" />
         <button class="btn btn-vert btn-petit" onclick="envoyerReponse()">➤</button>
       </div>
-
+ 
       <div class="mes-reponses" id="mes-reponses-zone" style="display:none;">
         <h4>📝 Tes réponses :</h4>
         <div id="mes-reponses-liste"></div>
       </div>
-
+ 
       <div class="chat-panel">
         <h4>💬 Chat</h4>
         <div class="chat-messages" id="chat-question"></div>
@@ -205,7 +201,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- RÉCAP -->
   <div id="ecran-recap" class="ecran">
     <div class="recap-header"><h2>📊 Résultats</h2></div>
@@ -229,7 +225,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- FIN -->
   <div id="ecran-fin" class="ecran">
     <div class="fin-card">
@@ -237,15 +233,18 @@
       <div id="podium-fin"></div>
     </div>
   </div>
-
+ 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
     let monNom = '';
     let monCode = '';
     let timerInterval = null;
-    let demandeIndiceEnvoye = false; // ✅ anti-spam indice
-
+    let demandeIndiceEnvoye = false;
+ 
+    // ✅ FIX : variable pour mesurer le temps de réponse côté joueur
+    let tempsDepart = null;
+ 
     // ══════════════════════════════════════
     //  NAVIGATION
     // ══════════════════════════════════════
@@ -254,23 +253,16 @@
       document.getElementById(id).classList.add('actif');
       window.scrollTo(0, 0);
     }
-
-    // ✅ Empêcher fermeture accidentelle si en partie
+ 
     window.addEventListener('beforeunload', (e) => {
-      if (monCode && monNom) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
+      if (monCode && monNom) { e.preventDefault(); e.returnValue = ''; }
     });
-
-    // ✅ Bouton retour navigateur = rester dans la partie
+ 
     history.pushState(null, '', window.location.href);
     window.addEventListener('popstate', () => {
-      if (monCode && monNom) {
-        history.pushState(null, '', window.location.href);
-      }
+      if (monCode && monNom) history.pushState(null, '', window.location.href);
     });
-
+ 
     // ══════════════════════════════════════
     //  REJOINDRE
     // ══════════════════════════════════════
@@ -287,7 +279,7 @@
       localStorage.setItem('jeu_nom', nom);
       socket.emit('joueur_rejoindre', { code, nom });
     }
-
+ 
     // ══════════════════════════════════════
     //  RÉPONSE
     // ══════════════════════════════════════
@@ -295,10 +287,17 @@
       const input = document.getElementById('input-reponse');
       const reponse = input.value.trim();
       if (!reponse || !monCode) return;
-      socket.emit('joueur_repond', { code: monCode, nom: monNom, reponse });
+ 
+      // ✅ FIX : calculer le temps écoulé depuis le début de la question
+      const tempsReponse = tempsDepart
+        ? Math.floor((Date.now() - tempsDepart) / 1000)
+        : 0;
+ 
+      // ✅ FIX : nom de l'événement corrigé 'joueur_reponse' + tempsReponse inclus
+      socket.emit('joueur_reponse', { code: monCode, nom: monNom, reponse, tempsReponse });
       input.value = '';
     }
-
+ 
     // ══════════════════════════════════════
     //  INDICE
     // ══════════════════════════════════════
@@ -311,14 +310,14 @@
       btn.textContent = '💡 Indice demandé !';
       btn.disabled = true;
     }
-
+ 
     // ══════════════════════════════════════
     //  RÉACTIONS
     // ══════════════════════════════════════
     function reagir(nomCible, emoji) {
       socket.emit('joueur_reaction', { code: monCode, nomCible, emoji });
     }
-
+ 
     // ══════════════════════════════════════
     //  CHAT
     // ══════════════════════════════════════
@@ -329,7 +328,7 @@
       socket.emit('chat_message', { code: monCode, nom: monNom, message: msg });
       document.getElementById(inputId).value = '';
     }
-
+ 
     function ajouterChat(data) {
       ['chat-attente', 'chat-question', 'chat-recap'].forEach(id => {
         const el = document.getElementById(id);
@@ -341,7 +340,7 @@
         el.scrollTop = el.scrollHeight;
       });
     }
-
+ 
     // ══════════════════════════════════════
     //  SOCKETS
     // ══════════════════════════════════════
@@ -353,16 +352,16 @@
       document.getElementById('attente-nom').textContent = `Bonjour ${nom} ! 👋`;
       allerVers('ecran-attente');
     });
-
+ 
     socket.on('erreur', (msg) => {
       document.getElementById('erreur-rejoindre').textContent = msg;
     });
-
+ 
     socket.on('joueurs_update', (joueurs) => {
       const el = document.getElementById('joueurs-attente');
       if (el) el.innerHTML = joueurs.map(j => `<div class="joueur-chip">${j.nom}</div>`).join('');
     });
-
+ 
     socket.on('nouvelle_question', (data) => {
       // Reset
       document.getElementById('input-reponse').disabled = false;
@@ -370,21 +369,36 @@
       document.getElementById('mes-reponses-liste').innerHTML = '';
       document.getElementById('indice-bulle').style.display = 'none';
       document.getElementById('personne-banner').style.display = 'none';
-
-      // ✅ Reset bouton indice
+ 
+      // Reset bouton indice
       demandeIndiceEnvoye = false;
       const btnIndice = document.getElementById('btn-demande-indice');
       btnIndice.classList.remove('demande');
       btnIndice.textContent = '💡 Demander un indice';
       btnIndice.disabled = false;
-
+ 
       document.getElementById('question-texte-joueur').textContent = data.question || '';
       document.getElementById('pts-badge-joueur').textContent = `⭐ Max : ${data.pointsMax} pts`;
-
+ 
+      // ✅ FIX : afficher l'image correctement
       const imgEl = document.getElementById('question-image');
-      if (data.image) { imgEl.src = data.image; imgEl.style.display = 'block'; }
-      else { imgEl.style.display = 'none'; }
-
+      if (data.image && data.image.startsWith('data:image')) {
+        imgEl.src = data.image;
+        imgEl.style.display = 'block';
+      } else {
+        imgEl.src = '';
+        imgEl.style.display = 'none';
+      }
+ 
+      // ✅ FIX : recalibrer tempsDepart selon le temps restant reçu
+      // Si reconnexion en cours de question, tempsTotal permet de reconstruire l'horloge
+      if (data.tempsTotal && data.tempsTotal !== data.temps) {
+        const dejaEcoule = (data.tempsTotal - data.temps) * 1000;
+        tempsDepart = Date.now() - dejaEcoule;
+      } else {
+        tempsDepart = Date.now();
+      }
+ 
       // Timer
       if (timerInterval) clearInterval(timerInterval);
       let temps = data.temps;
@@ -394,14 +408,13 @@
       timerInterval = setInterval(() => {
         temps--;
         timerEl.textContent = Math.max(0, temps);
-        // ✅ Timer rouge quand <= 10s
         if (temps <= 10) timerEl.style.borderColor = '#ff6b6b';
         if (temps <= 0) clearInterval(timerInterval);
       }, 1000);
-
+ 
       allerVers('ecran-question');
     });
-
+ 
     socket.on('reponse_joueur', (tousLesJoueurs) => {
       const moi = tousLesJoueurs.find(r => r.nom === monNom);
       if (moi && moi.historique && moi.historique.length > 0) {
@@ -414,11 +427,12 @@
         `).join('');
       }
     });
-
+ 
     socket.on('fin_question', ({ reponses }) => {
       if (timerInterval) clearInterval(timerInterval);
+      tempsDepart = null;
       document.getElementById('input-reponse').disabled = true;
-
+ 
       const tbody = document.getElementById('recap-tbody');
       tbody.innerHTML = '';
       reponses.forEach(r => {
@@ -439,25 +453,25 @@
         `;
         tbody.appendChild(tr);
       });
-
+ 
       allerVers('ecran-recap');
     });
-
+ 
     socket.on('personne_a_trouve', () => {
       document.getElementById('personne-banner').style.display = 'block';
     });
-
+ 
     socket.on('indice_recu', ({ indice }) => {
       document.getElementById('indice-texte').textContent = indice;
       document.getElementById('indice-bulle').style.display = 'block';
     });
-
+ 
     socket.on('reaction_update', ({ nomCible, reactions }) => {
       const el = document.getElementById('reactions-' + nomCible);
       if (!el) return;
       el.innerHTML = Object.entries(reactions).map(([e, c]) => `${e} ${c}`).join('  ');
     });
-
+ 
     socket.on('points_update', (data) => {
       const el = document.getElementById('scores-joueur');
       if (!el) return;
@@ -469,7 +483,7 @@
         </div>
       `).join('');
     });
-
+ 
     socket.on('scores_finaux', (scores) => {
       scores.sort((a, b) => b.points - a.points);
       const classes = ['or', 'argent', 'bronze'];
@@ -482,23 +496,20 @@
       `).join('');
       allerVers('ecran-fin');
     });
-
+ 
     socket.on('chat_message', ajouterChat);
-
-    // ✅ Reconnexion automatique
+ 
     socket.on('disconnect', () => {
       document.getElementById('reconnect-banner').classList.add('visible');
     });
-
+ 
     socket.on('connect', () => {
       document.getElementById('reconnect-banner').classList.remove('visible');
-      // Si on était dans une partie, on se reconnecte
       if (monCode && monNom) {
         socket.emit('joueur_rejoindre', { code: monCode, nom: monNom });
       }
     });
-
-    // Détection quitte/revient page
+ 
     document.addEventListener('visibilitychange', () => {
       if (!monCode || !monNom) return;
       if (document.hidden) {
@@ -507,8 +518,7 @@
         socket.emit('joueur_revient_page', { code: monCode, nom: monNom });
       }
     });
-
-    // Auto-reconnect au chargement
+ 
     window.addEventListener('load', () => {
       const code = localStorage.getItem('jeu_code');
       const nom = localStorage.getItem('jeu_nom');
