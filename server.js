@@ -33,13 +33,17 @@ function _buildReponses(partie) {
 io.on('connection', (socket) => {
   console.log('Connecté:', socket.id);
 
-  socket.on('admin_creer_partie', () => {
+  // ✅ NOUVEAU : admin crée avec son nom
+  socket.on('admin_creer_partie', ({ nomAdmin } = {}) => {
     let code = genererCode();
     while (parties[code]) code = genererCode();
+
+    const nomAffiche = nomAdmin ? `${nomAdmin} 👑` : '👑 Admin';
 
     parties[code] = {
       code,
       adminId: socket.id,
+      nomAdmin: nomAffiche,
       joueurs: {},
       scores: {},
       reponses: {},
@@ -50,18 +54,49 @@ io.on('connection', (socket) => {
       tempsDuration: null,
       pointsMax: 1,
       timerInterval: null,
-      messages: []
+      messages: [],
+      questionActuelle: null,
+      imageActuelle: null,
     };
 
     socket.join(code);
-    socket.emit('partie_creee', { code });
+    socket.data.code = code;
+    socket.data.isAdmin = true;
+    socket.emit('partie_creee', { code, nomAdmin: nomAffiche });
+  });
+
+  // ✅ NOUVEAU : admin se reconnecte à sa partie
+  socket.on('admin_rejoindre', ({ code }) => {
+    const partie = parties[code];
+    if (!partie) { socket.emit('erreur', 'Partie introuvable'); return; }
+    partie.adminId = socket.id;
+    socket.join(code);
+    socket.data.code = code;
+    socket.data.isAdmin = true;
+    socket.emit('partie_creee', { code, nomAdmin: partie.nomAdmin });
+    socket.emit('joueurs_update', Object.values(partie.joueurs));
+    // Renvoyer scores
+    const scores = Object.entries(partie.scores).map(([nom, points]) => ({ nom, points }));
+    socket.emit('points_update', scores);
+    // Renvoyer messages chat
+    partie.messages.forEach(m => socket.emit('chat_message', m));
+    // Si question en cours
+    if (partie.phase === 'playing' && partie.tempsDepart) {
+      const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
+      const restant = Math.max(0, partie.tempsDuration - ecoule);
+      socket.emit('admin_question_encours', {
+        question: partie.questionActuelle,
+        image: partie.imageActuelle,
+        temps: restant,
+        pointsMax: partie.pointsMax
+      });
+    }
   });
 
   socket.on('joueur_rejoindre', ({ code, nom }) => {
     const partie = parties[code];
     if (!partie) { socket.emit('erreur', 'Code de partie invalide !'); return; }
 
-    // Reconnexion : supprimer l'ancien socket si même nom
     const ancienId = Object.keys(partie.joueurs).find(id => partie.joueurs[id].nom === nom);
     if (ancienId) delete partie.joueurs[ancienId];
 
@@ -74,18 +109,25 @@ io.on('connection', (socket) => {
     io.to(code).emit('joueurs_update', Object.values(partie.joueurs));
     socket.emit('partie_rejointe', { code, nom });
 
-    // Si question en cours, renvoyer la question au joueur
-    if (partie.phase === 'playing') {
+    // Renvoyer scores existants
+    const scores = Object.entries(partie.scores).map(([n, pts]) => ({ nom: n, points: pts }));
+    socket.emit('points_update', scores);
+
+    // Renvoyer messages chat
+    partie.messages.forEach(m => socket.emit('chat_message', m));
+
+    if (partie.phase === 'playing' && partie.tempsDepart) {
+      const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
+      const restant = Math.max(0, partie.tempsDuration - ecoule);
       socket.emit('nouvelle_question', {
-        question: partie.question,
-        image: partie.image,
-        temps: partie.tempsDuration,
+        question: partie.questionActuelle,
+        image: partie.imageActuelle,
+        temps: restant,
         pointsMax: partie.pointsMax
       });
     }
 
-    // Si résultat en cours, renvoyer le récap
-    if (partie.phase === 'resultat') {
+    if (partie.phase === 'recap') {
       socket.emit('fin_question', { reponses: _buildReponses(partie) });
     }
   });
@@ -94,8 +136,6 @@ io.on('connection', (socket) => {
     const partie = parties[code];
     if (!partie) return;
 
-    partie.question = question || null;
-    partie.image = image || null;
     partie.reponses = {};
     partie.reactions = {};
     partie.demandesIndice = new Set();
@@ -103,62 +143,62 @@ io.on('connection', (socket) => {
     partie.tempsDepart = Date.now();
     partie.tempsDuration = temps;
     partie.pointsMax = pointsMax || 1;
+    partie.questionActuelle = question;
+    partie.imageActuelle = image || null;
+    partie.pointDonneCetteQuestion = false;
 
-    if (partie.timerInterval) clearTimeout(partie.timerInterval);
+    if (partie.timerInterval) clearInterval(partie.timerInterval);
 
-    io.to(code).emit('nouvelle_question', { question, image, temps, pointsMax: partie.pointsMax });
+    io.to(code).emit('nouvelle_question', { question, image, temps, pointsMax });
+    // ✅ Envoyer chrono à l'admin aussi
+    io.to(partie.adminId).emit('admin_chrono_start', { temps });
 
-    partie.timerInterval = setTimeout(() => {
-      if (partie.phase !== 'playing') return;
-      partie.phase = 'resultat';
-      io.to(code).emit('fin_question', { reponses: _buildReponses(partie) });
-    }, temps * 1000);
-  });
-
-  socket.on('joueur_repond', ({ code, nom, reponse }) => {
-    const partie = parties[code];
-    if (!partie || partie.phase !== 'playing') return;
-
-    const tempsEcoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
-
-    if (!partie.reponses[socket.id]) {
-      partie.reponses[socket.id] = { nom, historique: [] };
-    }
-    partie.reponses[socket.id].historique.push({ reponse, tempsReponse: tempsEcoule });
-
-    io.to(partie.adminId).emit('reponse_joueur', Object.values(partie.reponses));
+    partie.timerInterval = setInterval(() => {
+      if (!parties[code]) { clearInterval(partie.timerInterval); return; }
+      const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
+      if (ecoule >= temps) {
+        clearInterval(partie.timerInterval);
+        partie.phase = 'recap';
+        const reponses = _buildReponses(partie);
+        io.to(code).emit('fin_question', { reponses });
+      }
+    }, 1000);
   });
 
   socket.on('admin_couper_temps', ({ code }) => {
     const partie = parties[code];
     if (!partie) return;
-    if (partie.timerInterval) clearTimeout(partie.timerInterval);
-    partie.phase = 'resultat';
-    io.to(code).emit('fin_question', { reponses: _buildReponses(partie) });
+    if (partie.timerInterval) clearInterval(partie.timerInterval);
+    partie.phase = 'recap';
+    const reponses = _buildReponses(partie);
+    io.to(code).emit('fin_question', { reponses });
+  });
+
+  socket.on('joueur_reponse', ({ code, nom, reponse, tempsReponse }) => {
+    const partie = parties[code];
+    if (!partie || partie.phase !== 'playing') return;
+    if (!partie.reponses[nom]) partie.reponses[nom] = { nom, historique: [] };
+    partie.reponses[nom].historique.push({ reponse, tempsReponse });
+    io.to(partie.adminId).emit('reponse_joueur', _buildReponses(partie));
+    socket.emit('reponse_joueur', _buildReponses(partie));
   });
 
   socket.on('admin_donner_points', ({ code, nom, points }) => {
     const partie = parties[code];
-    if (!partie) return;
-
+    if (!partie || partie.pointDonneCetteQuestion) return;
     partie.scores[nom] = (partie.scores[nom] || 0) + points;
-    const scoresArray = Object.entries(partie.scores).map(([n, p]) => ({ nom: n, points: p }));
-    io.to(code).emit('points_update', scoresArray);
-
-    if (partie.timerInterval) clearTimeout(partie.timerInterval);
-    partie.phase = 'resultat';
-    io.to(code).emit('fin_question', { reponses: _buildReponses(partie) });
-    socket.emit('point_deja_donne');
+    partie.pointDonneCetteQuestion = true;
+    const scores = Object.entries(partie.scores).map(([n, p]) => ({ nom: n, points: p }));
+    io.to(code).emit('points_update', scores);
+    io.to(partie.adminId).emit('point_deja_donne');
   });
 
   socket.on('admin_personne_a_trouve', ({ code }) => {
     const partie = parties[code];
     if (!partie) return;
-    if (partie.timerInterval) clearTimeout(partie.timerInterval);
-    partie.phase = 'resultat';
-    io.to(code).emit('fin_question', { reponses: _buildReponses(partie) });
+    partie.pointDonneCetteQuestion = true;
     io.to(code).emit('personne_a_trouve');
-    socket.emit('point_deja_donne');
+    io.to(partie.adminId).emit('point_deja_donne');
   });
 
   socket.on('joueur_reaction', ({ code, nomCible, emoji }) => {
@@ -186,11 +226,15 @@ io.on('connection', (socket) => {
     io.to(code).emit('indice_recu', { indice });
   });
 
-  socket.on('chat_message', ({ code, nom, message }) => {
+  // ✅ NOUVEAU : chat avec reply
+  socket.on('chat_message', ({ code, nom, message, replyTo }) => {
     const partie = parties[code];
     if (!partie) return;
     const msg = {
-      nom, message,
+      id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      nom,
+      message,
+      replyTo: replyTo || null,
       heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
     };
     partie.messages.push(msg);
@@ -200,44 +244,44 @@ io.on('connection', (socket) => {
   socket.on('admin_fin_partie', ({ code }) => {
     const partie = parties[code];
     if (!partie) return;
+    if (partie.timerInterval) clearInterval(partie.timerInterval);
     const scores = Object.entries(partie.scores).map(([nom, points]) => ({ nom, points }));
     io.to(code).emit('scores_finaux', scores);
     delete parties[code];
   });
 
-  // Détection quitte/revient page
+  // ✅ NOUVEAU : annuler la partie
+  socket.on('admin_annuler_partie', ({ code }) => {
+    const partie = parties[code];
+    if (!partie) return;
+    if (partie.timerInterval) clearInterval(partie.timerInterval);
+    io.to(code).emit('partie_annulee');
+    delete parties[code];
+  });
+
   socket.on('joueur_quitte_page', ({ code, nom }) => {
     const partie = parties[code];
     if (!partie) return;
-    io.to(partie.adminId).emit('alerte_triche', {
-      nom,
-      message: `⚠️ ${nom} a quitté la page !`
-    });
+    io.to(partie.adminId).emit('alerte_triche', { nom, message: `⚠️ ${nom} a quitté la page !` });
   });
 
   socket.on('joueur_revient_page', ({ code, nom }) => {
     const partie = parties[code];
     if (!partie) return;
-    io.to(partie.adminId).emit('alerte_triche', {
-      nom,
-      message: `👀 ${nom} est revenu sur la page`
-    });
+    io.to(partie.adminId).emit('alerte_triche', { nom, message: `👀 ${nom} est revenu sur la page` });
   });
 
   socket.on('disconnect', () => {
     const code = socket.data.code;
     if (!code || !parties[code]) return;
-
     const partie = parties[code];
-
     setTimeout(() => {
-      const encoreConnecte = Object.keys(partie.joueurs).some(id => id === socket.id);
-      if (encoreConnecte) {
+      if (partie.joueurs && partie.joueurs[socket.id]) {
         delete partie.joueurs[socket.id];
         partie.demandesIndice.delete(socket.id);
         io.to(code).emit('joueurs_update', Object.values(partie.joueurs));
       }
-    }, 300000); // 5 minutes de grâce
+    }, 300000);
   });
 });
 

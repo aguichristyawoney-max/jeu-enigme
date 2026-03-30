@@ -99,6 +99,15 @@
     .chat-input-row input:focus { border-color: #6db88e; }
     .chat-input-row button { width: auto; padding: 10px 14px; margin: 0; }
 
+    /* ✅ NOUVEAU : bannière reconnexion */
+    .reconnect-banner { display: none; position: fixed; top: 0; left: 0; right: 0; background: #e05a5a; color: white; text-align: center; padding: 10px; font-size: 14px; font-weight: bold; z-index: 9999; }
+    .reconnect-banner.visible { display: block; }
+
+    /* ✅ NOUVEAU : bouton demande indice */
+    .btn-indice { background: #fffbe6; border: 2px solid #e8b86d; color: #8B5E3C; font-weight: bold; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-size: clamp(13px,3.5vw,15px); margin-bottom: 10px; width: 100%; font-family: inherit; }
+    .btn-indice:active { transform: translateY(2px); }
+    .btn-indice.demande { background: #e8b86d; color: white; }
+
     #ecran-fin { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
     .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
     .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
@@ -111,6 +120,9 @@
   </style>
 </head>
 <body>
+
+  <!-- ✅ NOUVEAU : bannière reconnexion -->
+  <div class="reconnect-banner" id="reconnect-banner">⚠️ Connexion perdue... Reconnexion en cours</div>
 
   <!-- ACCUEIL -->
   <div id="ecran-accueil" class="ecran actif">
@@ -167,6 +179,11 @@
       <img id="question-image" class="question-image" alt="Image question" />
       <div class="question-texte" id="question-texte-joueur"></div>
       <div class="pts-badge" id="pts-badge-joueur"></div>
+
+      <!-- ✅ NOUVEAU : bouton demande indice -->
+      <button class="btn-indice" id="btn-demande-indice" onclick="demanderIndice()">
+        💡 Demander un indice
+      </button>
 
       <div class="reponse-zone">
         <input type="text" id="input-reponse" placeholder="Ta réponse..." onkeydown="if(event.key==='Enter') envoyerReponse()" autocomplete="off" />
@@ -227,22 +244,53 @@
     let monNom = '';
     let monCode = '';
     let timerInterval = null;
+    let demandeIndiceEnvoye = false; // ✅ anti-spam indice
 
+    // ══════════════════════════════════════
+    //  NAVIGATION
+    // ══════════════════════════════════════
     function allerVers(id) {
       document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
       document.getElementById(id).classList.add('actif');
       window.scrollTo(0, 0);
     }
 
+    // ✅ Empêcher fermeture accidentelle si en partie
+    window.addEventListener('beforeunload', (e) => {
+      if (monCode && monNom) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    // ✅ Bouton retour navigateur = rester dans la partie
+    history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', () => {
+      if (monCode && monNom) {
+        history.pushState(null, '', window.location.href);
+      }
+    });
+
+    // ══════════════════════════════════════
+    //  REJOINDRE
+    // ══════════════════════════════════════
     function rejoindrePartie() {
       const code = document.getElementById('input-code').value.trim().toUpperCase();
       const nom = document.getElementById('input-nom').value.trim();
-      if (!code || !nom) { document.getElementById('erreur-rejoindre').textContent = 'Remplis tous les champs !'; return; }
+      if (!code || !nom) {
+        document.getElementById('erreur-rejoindre').textContent = 'Remplis tous les champs !';
+        return;
+      }
       monNom = nom;
       monCode = code;
+      localStorage.setItem('jeu_code', code);
+      localStorage.setItem('jeu_nom', nom);
       socket.emit('joueur_rejoindre', { code, nom });
     }
 
+    // ══════════════════════════════════════
+    //  RÉPONSE
+    // ══════════════════════════════════════
     function envoyerReponse() {
       const input = document.getElementById('input-reponse');
       const reponse = input.value.trim();
@@ -251,10 +299,29 @@
       input.value = '';
     }
 
+    // ══════════════════════════════════════
+    //  INDICE
+    // ══════════════════════════════════════
+    function demanderIndice() {
+      if (demandeIndiceEnvoye) return;
+      demandeIndiceEnvoye = true;
+      socket.emit('joueur_demande_indice', { code: monCode, nom: monNom });
+      const btn = document.getElementById('btn-demande-indice');
+      btn.classList.add('demande');
+      btn.textContent = '💡 Indice demandé !';
+      btn.disabled = true;
+    }
+
+    // ══════════════════════════════════════
+    //  RÉACTIONS
+    // ══════════════════════════════════════
     function reagir(nomCible, emoji) {
       socket.emit('joueur_reaction', { code: monCode, nomCible, emoji });
     }
 
+    // ══════════════════════════════════════
+    //  CHAT
+    // ══════════════════════════════════════
     function envoyerChat(source) {
       const inputId = 'chat-input-' + source;
       const msg = document.getElementById(inputId).value.trim();
@@ -275,7 +342,9 @@
       });
     }
 
-    // SOCKETS
+    // ══════════════════════════════════════
+    //  SOCKETS
+    // ══════════════════════════════════════
     socket.on('partie_rejointe', ({ code, nom }) => {
       monCode = code;
       monNom = nom;
@@ -295,11 +364,19 @@
     });
 
     socket.on('nouvelle_question', (data) => {
+      // Reset
       document.getElementById('input-reponse').disabled = false;
       document.getElementById('mes-reponses-zone').style.display = 'none';
       document.getElementById('mes-reponses-liste').innerHTML = '';
       document.getElementById('indice-bulle').style.display = 'none';
       document.getElementById('personne-banner').style.display = 'none';
+
+      // ✅ Reset bouton indice
+      demandeIndiceEnvoye = false;
+      const btnIndice = document.getElementById('btn-demande-indice');
+      btnIndice.classList.remove('demande');
+      btnIndice.textContent = '💡 Demander un indice';
+      btnIndice.disabled = false;
 
       document.getElementById('question-texte-joueur').textContent = data.question || '';
       document.getElementById('pts-badge-joueur').textContent = `⭐ Max : ${data.pointsMax} pts`;
@@ -308,13 +385,17 @@
       if (data.image) { imgEl.src = data.image; imgEl.style.display = 'block'; }
       else { imgEl.style.display = 'none'; }
 
+      // Timer
       if (timerInterval) clearInterval(timerInterval);
       let temps = data.temps;
       const timerEl = document.getElementById('timer-joueur');
       timerEl.textContent = temps;
+      timerEl.style.borderColor = 'white';
       timerInterval = setInterval(() => {
         temps--;
         timerEl.textContent = Math.max(0, temps);
+        // ✅ Timer rouge quand <= 10s
+        if (temps <= 10) timerEl.style.borderColor = '#ff6b6b';
         if (temps <= 0) clearInterval(timerInterval);
       }, 1000);
 
@@ -403,6 +484,19 @@
     });
 
     socket.on('chat_message', ajouterChat);
+
+    // ✅ Reconnexion automatique
+    socket.on('disconnect', () => {
+      document.getElementById('reconnect-banner').classList.add('visible');
+    });
+
+    socket.on('connect', () => {
+      document.getElementById('reconnect-banner').classList.remove('visible');
+      // Si on était dans une partie, on se reconnecte
+      if (monCode && monNom) {
+        socket.emit('joueur_rejoindre', { code: monCode, nom: monNom });
+      }
+    });
 
     // Détection quitte/revient page
     document.addEventListener('visibilitychange', () => {
