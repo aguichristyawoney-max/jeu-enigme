@@ -268,7 +268,7 @@
     let demandeIndiceEnvoye = false;
     let tempsDepart = null;
     let scoresAvant = {};  // AJOUT : pour détecter le gagnant
- 
+
     // État reply par zone de chat
     const replyTo = { attente: null, question: null, recap: null };
  
@@ -440,7 +440,7 @@
       document.getElementById('mes-reponses-liste').innerHTML = '';
       document.getElementById('indice-bulle').style.display = 'none';
       document.getElementById('personne-banner').style.display = 'none';
- 
+
       scoresAvant = {};  // AJOUT : réinitialiser à chaque nouvelle question
  
       demandeIndiceEnvoye = false;
@@ -569,7 +569,7 @@
         }
         scoresAvant[j.nom] = j.points;
       });
- 
+
       // Code existant : affichage des scores
       const el = document.getElementById('scores-joueur');
       if (!el) return;
