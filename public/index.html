@@ -267,6 +267,7 @@
     let timerInterval = null;
     let demandeIndiceEnvoye = false;
     let tempsDepart = null;
+    let scoresAvant = {};  // AJOUT : pour détecter le gagnant
  
     // État reply par zone de chat
     const replyTo = { attente: null, question: null, recap: null };
@@ -339,7 +340,7 @@
     }
  
     // ══════════════════════════════════════
-    //  CHAT AVEC REPLY — BUG 3 CORRIGÉ MOBILE
+    //  CHAT AVEC REPLY
     // ══════════════════════════════════════
     function annulerReply(source) {
       replyTo[source] = null;
@@ -360,10 +361,8 @@
         div.classList.add('selected');
       }
  
-      // Click desktop
       div.addEventListener('click', selectionnerMessage);
  
-      // 🐛 BUG 3 CORRIGÉ : support tactile mobile
       let touchStartY = 0;
       div.addEventListener('touchstart', (e) => {
         touchStartY = e.touches[0].clientY;
@@ -371,7 +370,6 @@
  
       div.addEventListener('touchend', (e) => {
         const touchEndY = e.changedTouches[0].clientY;
-        // Seulement si c'est un tap (pas un scroll)
         if (Math.abs(touchEndY - touchStartY) < 10) {
           e.preventDefault();
           selectionnerMessage();
@@ -394,7 +392,6 @@
     }
  
     function ajouterChat(data) {
-      // On détermine dans quel(s) panel(s) ajouter le message
       const sources = ['attente', 'question', 'recap'];
       sources.forEach(source => {
         const el = document.getElementById('chat-' + source);
@@ -409,7 +406,6 @@
         html += `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
         div.innerHTML = html;
  
-        // Attacher les événements de reply sur chaque instance du message
         attacherEvenementsChatMsg(div, data, source);
  
         el.appendChild(div);
@@ -445,13 +441,14 @@
       document.getElementById('indice-bulle').style.display = 'none';
       document.getElementById('personne-banner').style.display = 'none';
  
+      scoresAvant = {};  // AJOUT : réinitialiser à chaque nouvelle question
+ 
       demandeIndiceEnvoye = false;
       const btnIndice = document.getElementById('btn-demande-indice');
       btnIndice.classList.remove('demande');
       btnIndice.textContent = '💡 Demander un indice';
       btnIndice.disabled = false;
  
-      // Réinitialiser les reply
       ['attente', 'question', 'recap'].forEach(s => annulerReply(s));
  
       document.getElementById('question-texte-joueur').textContent = data.question || '';
@@ -510,9 +507,16 @@
       tbody.innerHTML = '';
       reponses.forEach(r => {
         const tr = document.createElement('tr');
+        tr.dataset.nom = r.nom;  // AJOUT : stocker le nom pour pouvoir retrouver la ligne
         tr.innerHTML = `
           <td><b>${r.nom}</b></td>
-          <td>${r.reponse}</td>
+          <td>${
+            (r.historique && r.historique.length > 0)
+              ? r.historique.map((h, i) =>
+                  `<div class="recap-reponse-div" style="font-size:13px;${i === r.historique.length - 1 ? 'font-weight:bold;' : 'color:#aaa;text-decoration:line-through;'}">${h.reponse}</div>`
+                ).join('')
+              : '<span style="color:#aaa">—</span>'
+          }</td>
           <td><span class="temps-badge">⏱ ${r.tempsReponse}s</span></td>
           <td>
             <div class="emoji-btns-recap">
@@ -546,6 +550,27 @@
     });
  
     socket.on('points_update', (data) => {
+      // AJOUT : détecter le gagnant et mettre sa dernière réponse en vert
+      data.forEach(j => {
+        const avant = scoresAvant[j.nom] !== undefined ? scoresAvant[j.nom] : null;
+        if (avant !== null && j.points > avant) {
+          // Ce joueur vient de recevoir des points : on met sa dernière réponse en vert
+          const tbody = document.getElementById('recap-tbody');
+          if (tbody) {
+            tbody.querySelectorAll('tr').forEach(tr => {
+              if (tr.dataset.nom === j.nom) {
+                const divs = tr.querySelectorAll('.recap-reponse-div');
+                if (divs.length > 0) {
+                  divs[divs.length - 1].style.cssText = 'font-size:13px;font-weight:bold;color:#3d6e3d;';
+                }
+              }
+            });
+          }
+        }
+        scoresAvant[j.nom] = j.points;
+      });
+ 
+      // Code existant : affichage des scores
       const el = document.getElementById('scores-joueur');
       if (!el) return;
       data.sort((a, b) => b.points - a.points);
