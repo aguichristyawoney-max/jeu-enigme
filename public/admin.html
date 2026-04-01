@@ -73,32 +73,55 @@
     .indice-form input { flex: 1; padding: 10px; border: 2px solid #e0d5c8; border-radius: 10px; font-family: inherit; outline: none; font-size: 14px; min-height: 44px; }
     .indice-form input:focus { border-color: #8B5E3C; }
  
-    .table-reponses { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .table-reponses th { background: #f5ede0; padding: 8px 6px; text-align: left; color: #8B5E3C; font-size: 12px; border-bottom: 2px solid #e0d5c8; }
-    .table-reponses td { padding: 8px 6px; border-bottom: 1px solid #f0e8e0; vertical-align: top; }
-    @media (max-width: 700px) {
-      .table-reponses thead { display: none; }
-      .table-reponses, .table-reponses tbody, .table-reponses tr, .table-reponses td { display: block; width: 100%; }
-      .table-reponses tr { background: white; border: 2px solid #e0d5c8; border-radius: 14px; margin-bottom: 12px; padding: 12px; }
-      .table-reponses td { border: none; padding: 4px 0; }
-      .table-reponses td::before { content: attr(data-label); font-weight: bold; color: #8B5E3C; font-size: 12px; display: block; margin-bottom: 3px; }
+    /* ═══════════════════════════════════════
+       CARTES ACCORDÉON JOUEURS
+    ═══════════════════════════════════════ */
+    .joueur-cards { display: flex; flex-direction: column; gap: 8px; }
+ 
+    .joueur-card { background: #fdfaf7; border: 2px solid #e0d5c8; border-radius: 12px; overflow: hidden; }
+    .joueur-card.has-reponse { border-color: #6db88e; }
+ 
+    /* Ligne condensée — toujours visible */
+    .joueur-card-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; cursor: pointer;
+      user-select: none; -webkit-user-select: none;
     }
+    .joueur-card-nom { font-weight: bold; font-size: 14px; color: #3d2b1f; min-width: 70px; flex-shrink: 0; }
+    .joueur-card-fleche { font-size: 12px; color: #aaa; flex-shrink: 0; transition: transform 0.2s; }
+    .joueur-card.open .joueur-card-fleche { transform: rotate(90deg); }
+    .joueur-card-derniere { flex: 1; font-size: 13px; color: #5a8a5a; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .joueur-card-derniere.vide { color: #bbb; font-weight: normal; font-style: italic; }
+    .joueur-card-temps { font-size: 11px; background: #e8b86d; color: white; padding: 2px 7px; border-radius: 8px; font-weight: bold; flex-shrink: 0; }
  
-    .historique-admin { display: flex; flex-direction: column; gap: 3px; }
-    .histo-item { font-size: 13px; color: #888; padding: 3px 6px; border-radius: 6px; background: #f5f5f5; }
+    /* Corps déplié */
+    .joueur-card-body { display: none; padding: 0 12px 12px; border-top: 1px solid #f0e8e0; }
+    .joueur-card.open .joueur-card-body { display: block; }
+ 
+    .historique-liste { margin: 10px 0 8px; display: flex; flex-direction: column; gap: 4px; }
+    .histo-item { font-size: 13px; color: #888; padding: 4px 8px; border-radius: 6px; background: #f5f5f5; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     .histo-item.derniere { color: #3d2b1f; font-weight: bold; background: #e8f5e9; }
-    .temps-badge { background: #e8b86d; color: white; border-radius: 8px; padding: 2px 6px; font-size: 12px; font-weight: bold; }
+    .temps-badge { background: #e8b86d; color: white; border-radius: 8px; padding: 2px 6px; font-size: 11px; font-weight: bold; flex-shrink: 0; }
  
-    .emoji-btns-admin { display: flex; gap: 4px; flex-wrap: wrap; }
-    .emoji-btns-admin button { font-size: 20px; background: none; border: 2px solid #e0d5c8; border-radius: 8px; cursor: pointer; padding: 5px 7px; transition: transform 0.1s; min-width: 40px; min-height: 40px; }
+    /* Ligne actions : emojis + points */
+    .joueur-card-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+ 
+    /* Emojis réduits */
+    .emoji-btns-admin { display: flex; gap: 3px; }
+    .emoji-btns-admin button {
+      font-size: 15px; background: none; border: 1.5px solid #e0d5c8;
+      border-radius: 6px; cursor: pointer; padding: 3px 5px;
+      min-width: 30px; min-height: 30px; line-height: 1;
+    }
     .emoji-btns-admin button:active { transform: scale(1.3); }
-    .reactions-admin { font-size: 13px; margin-top: 4px; color: #666; }
+    .reactions-admin { font-size: 12px; color: #666; }
  
-    .points-zone { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-    .points-zone input { width: 56px; padding: 6px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; text-align: center; font-size: 15px; min-height: 40px; }
-    .btn-point { background: #6db88e; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 16px; font-family: inherit; min-height: 44px; min-width: 44px; }
+    .points-zone { display: flex; gap: 5px; align-items: center; margin-left: auto; }
+    .points-zone input { width: 48px; padding: 5px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; text-align: center; font-size: 14px; min-height: 32px; }
+    .btn-point { background: #6db88e; color: white; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 15px; font-family: inherit; min-height: 32px; min-width: 34px; }
     .btn-point:disabled { background: #ccc; opacity: 0.4; cursor: not-allowed; }
-    .points-max-badge { font-size: 12px; color: #aaa; margin-top: 3px; }
+    .points-max-badge { font-size: 11px; color: #aaa; margin-top: 2px; text-align: right; }
+    /* ═══════════════════════════════════════ */
  
     .verrou-banner { background: #e05a5a; color: white; text-align: center; padding: 8px; border-radius: 10px; font-weight: bold; font-size: 13px; margin-bottom: 10px; display: none; }
     .alerte-triche { color: #e05a5a; font-weight: bold; font-size: 13px; }
@@ -228,15 +251,9 @@
     <div class="panel">
       <h3>📋 Réponses des joueurs</h3>
       <div class="verrou-banner" id="verrou-banner">🔒 Point attribué — prochaine question pour déverrouiller</div>
-      <div style="overflow-x:auto;">
-        <table class="table-reponses">
-          <thead>
-            <tr><th>Joueur</th><th>Historique</th><th>⏱ 1ère</th><th>Réactions</th><th>Points</th></tr>
-          </thead>
-          <tbody id="admin-reponses-tbody">
-            <tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">En attente de réponses...</td></tr>
-          </tbody>
-        </table>
+      <!-- Cartes accordéon : une par joueur -->
+      <div class="joueur-cards" id="joueur-cards">
+        <div style="text-align:center;color:#aaa;padding:20px;font-size:14px;">En attente de réponses...</div>
       </div>
     </div>
  
@@ -283,6 +300,9 @@
   let pointVerrouille = false;
   let adminTimerInterval = null;
   let replyToAdmin = null;
+ 
+  // Mémorise quelles cartes sont ouvertes entre les mises à jour
+  const cardsOuvertes = {};
  
   // ══════════════════════════════════════
   //  NAVIGATION
@@ -362,35 +382,27 @@
  
   // ══════════════════════════════════════
   //  QUESTION
-  //  🐛 BUG 1 CORRIGÉ : question ET image sont indépendants
-  //  On accepte l'envoi si on a au moins l'un des deux
   // ══════════════════════════════════════
   function envoyerQuestion() {
     if (!adminCode) return;
- 
     const question = document.getElementById('question-input').value.trim();
     const imgEl = document.getElementById('image-preview');
     const imgSrc = imgEl.src || '';
     const image = imgSrc.startsWith('data:image') ? imgSrc : null;
- 
-    // ✅ On exige au moins une question OU une image
-    if (!question && !image) {
-      alert('Veuillez entrer une question ou ajouter une image.');
-      return;
-    }
- 
+    if (!question && !image) { alert('Veuillez entrer une question ou ajouter une image.'); return; }
     const temps = parseInt(document.getElementById('temps-slider').value);
     const pointsMax = parseInt(document.getElementById('points-max-input').value) || 3;
     pointsMaxActuel = pointsMax;
- 
     deverrouiller();
  
-    socket.emit('admin_question', { code: adminCode, question, image, temps, pointsMax });
+    // Réinitialiser les cartes et l'état ouvert/fermé
+    Object.keys(cardsOuvertes).forEach(k => delete cardsOuvertes[k]);
+    document.getElementById('joueur-cards').innerHTML =
+      '<div style="text-align:center;color:#aaa;padding:20px;font-size:14px;">En attente de réponses...</div>';
  
+    socket.emit('admin_question', { code: adminCode, question, image, temps, pointsMax });
     document.getElementById('question-input').value = '';
     supprimerImage();
-    document.getElementById('admin-reponses-tbody').innerHTML =
-      '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">En attente de réponses...</td></tr>';
     document.getElementById('notif-indice').style.display = 'none';
   }
  
@@ -400,20 +412,9 @@
     stopAdminTimer();
   }
  
-  function donnerPoints(nom) {
-    if (pointVerrouille) return;
-    const pts = parseInt(document.getElementById('points-input-' + nom).value) || 0;
-    if (pts < 0) return;
-    socket.emit('admin_donner_points', { code: adminCode, nom, points: pts });
-    // 🐛 BUG 2 CORRIGÉ : arrêter le chrono quand on donne un point
-    stopAdminTimer();
-  }
- 
   function personneNaTrouve() {
     if (!adminCode || pointVerrouille) return;
     socket.emit('admin_personne_a_trouve', { code: adminCode });
-    // Cohérence : stopAdminTimer est aussi déclenché via fin_question côté serveur,
-    // mais on l'appelle ici immédiatement pour la réactivité
     stopAdminTimer();
   }
  
@@ -455,15 +456,11 @@
     qLabel.textContent = question || '';
     cercle.textContent = restant;
     cercle.classList.remove('urgent');
- 
     adminTimerInterval = setInterval(() => {
       restant--;
       cercle.textContent = restant;
       if (restant <= 10) cercle.classList.add('urgent');
-      if (restant <= 0) {
-        stopAdminTimer();
-        cercle.textContent = '⏹';
-      }
+      if (restant <= 0) { stopAdminTimer(); cercle.textContent = '⏹'; }
     }, 1000);
   }
  
@@ -474,11 +471,99 @@
   }
  
   // ══════════════════════════════════════
+  //  ACCORDÉON — toggle ouverture carte
+  // ══════════════════════════════════════
+  function toggleCard(nomEscape) {
+    cardsOuvertes[nomEscape] = !cardsOuvertes[nomEscape];
+    const card = document.getElementById('card-' + nomEscape);
+    if (!card) return;
+    card.classList.toggle('open', cardsOuvertes[nomEscape]);
+  }
+ 
+  // ══════════════════════════════════════
+  //  ACCORDÉON — donner points
+  // ══════════════════════════════════════
+  function donnerPoints(nom, nomEscape) {
+    if (pointVerrouille) return;
+    const pts = parseInt(document.getElementById('points-input-' + nomEscape).value) || 0;
+    if (pts < 0) return;
+    socket.emit('admin_donner_points', { code: adminCode, nom, points: pts });
+    stopAdminTimer();
+  }
+ 
+  // ══════════════════════════════════════
+  //  ACCORDÉON — rendu complet des cartes
+  // ══════════════════════════════════════
+  function rendreCartes(reponses) {
+    const container = document.getElementById('joueur-cards');
+    container.innerHTML = '';
+ 
+    reponses.forEach(r => {
+      const aDerniere = r.historique && r.historique.length > 0;
+      const derniere = aDerniere ? r.historique[r.historique.length - 1] : null;
+ 
+      // ID safe : on remplace tout ce qui n'est pas alphanumérique par _
+      const nomEscape = r.nom.replace(/[^a-zA-Z0-9]/g, '_');
+      const estOuverte = cardsOuvertes[nomEscape] || false;
+ 
+      // Historique
+      const historiqueHtml = aDerniere
+        ? r.historique.map((h, i) => `
+            <div class="histo-item ${i === r.historique.length - 1 ? 'derniere' : ''}">
+              <span>${h.reponse}</span>
+              <span class="temps-badge">⏱ ${h.tempsReponse}s</span>
+            </div>`).join('')
+        : '<div style="color:#bbb;font-size:13px;font-style:italic;padding:4px 0;">Pas encore de réponse</div>';
+ 
+      // Nom echappé pour les inline onclick (apostrophes)
+      const nomJs = r.nom.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+ 
+      const card = document.createElement('div');
+      card.className = `joueur-card${aDerniere ? ' has-reponse' : ''}${estOuverte ? ' open' : ''}`;
+      card.id = 'card-' + nomEscape;
+ 
+      card.innerHTML = `
+        <div class="joueur-card-header" onclick="toggleCard('${nomEscape}')">
+          <span class="joueur-card-nom">${r.nom}</span>
+          <span class="joueur-card-fleche">▶</span>
+          <span class="joueur-card-derniere${aDerniere ? '' : ' vide'}">
+            ${aDerniere ? derniere.reponse : 'Pas encore répondu'}
+          </span>
+          ${aDerniere ? `<span class="joueur-card-temps">⏱ ${derniere.tempsReponse}s</span>` : ''}
+        </div>
+        <div class="joueur-card-body">
+          <div class="historique-liste">${historiqueHtml}</div>
+          <div class="joueur-card-actions">
+            <div class="emoji-btns-admin">
+              <button onclick="adminReagir('${nomJs}','👍')">👍</button>
+              <button onclick="adminReagir('${nomJs}','😂')">😂</button>
+              <button onclick="adminReagir('${nomJs}','🔥')">🔥</button>
+              <button onclick="adminReagir('${nomJs}','😮')">😮</button>
+            </div>
+            <div class="reactions-admin" id="admin-reactions-${nomEscape}"></div>
+            <div class="points-zone">
+              <input type="number" id="points-input-${nomEscape}"
+                value="${pointsMaxActuel}" min="0" max="${pointsMaxActuel}"
+                ${pointVerrouille ? 'disabled' : ''}>
+              <button class="btn-point"
+                onclick="donnerPoints('${nomJs}','${nomEscape}')"
+                ${pointVerrouille ? 'disabled' : ''}>
+                ${pointVerrouille ? '🔒' : '✅'}
+              </button>
+            </div>
+          </div>
+          <div class="points-max-badge">max : ${pointsMaxActuel} pts</div>
+        </div>
+      `;
+ 
+      container.appendChild(card);
+    });
+  }
+ 
+  // ══════════════════════════════════════
   //  CHAT AVEC REPLY
-  //  🐛 BUG 3 CORRIGÉ : support tactile mobile via touchend
   // ══════════════════════════════════════
   function attacherEvenementsChatMsg(div, data) {
-    // Fonction commune pour sélectionner un message (reply)
     function selectionnerMessage() {
       replyToAdmin = { id: data.id, nom: data.nom, message: data.message };
       const apercu = data.message.substring(0, 40) + (data.message.length > 40 ? '...' : '');
@@ -488,24 +573,12 @@
       document.querySelectorAll('#chat-admin .chat-msg').forEach(m => m.classList.remove('selected'));
       div.classList.add('selected');
     }
- 
-    // Click classique (desktop)
     div.addEventListener('click', selectionnerMessage);
- 
-    // 🐛 BUG 3 : Support tactile mobile
-    // On utilise touchend pour éviter le conflit avec le scroll
     let touchStartY = 0;
-    div.addEventListener('touchstart', (e) => {
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
- 
+    div.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
     div.addEventListener('touchend', (e) => {
       const touchEndY = e.changedTouches[0].clientY;
-      // On ne déclenche la sélection que si c'est un tap (pas un scroll)
-      if (Math.abs(touchEndY - touchStartY) < 10) {
-        e.preventDefault();
-        selectionnerMessage();
-      }
+      if (Math.abs(touchEndY - touchStartY) < 10) { e.preventDefault(); selectionnerMessage(); }
     });
   }
  
@@ -513,19 +586,13 @@
     const el = document.getElementById('chat-admin');
     const div = document.createElement('div');
     div.className = 'chat-msg';
-    div.dataset.id = data.id || '';
-    div.dataset.nom = data.nom || '';
-    div.dataset.message = data.message || '';
- 
     let html = '';
     if (data.replyTo) {
       html += `<div class="chat-reply-preview">↩ <b>${data.replyTo.nom}</b> : ${data.replyTo.message}</div>`;
     }
     html += `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
     div.innerHTML = html;
- 
     attacherEvenementsChatMsg(div, data);
- 
     el.appendChild(div);
     el.scrollTop = el.scrollHeight;
   }
@@ -540,12 +607,7 @@
     const msg = document.getElementById('chat-input-admin').value.trim();
     if (!msg) return;
     const nomAdmin = adminNom ? `${adminNom} 👑` : '👑 Admin';
-    socket.emit('chat_message', {
-      code: adminCode,
-      nom: nomAdmin,
-      message: msg,
-      replyTo: replyToAdmin
-    });
+    socket.emit('chat_message', { code: adminCode, nom: nomAdmin, message: msg, replyTo: replyToAdmin });
     document.getElementById('chat-input-admin').value = '';
     annulerReplyAdmin();
   }
@@ -588,44 +650,9 @@
   });
  
   socket.on('reponse_joueur', (reponses) => {
-    const tbody = document.getElementById('admin-reponses-tbody');
-    tbody.innerHTML = '';
-    reponses.forEach(r => {
-      const historiqueHtml = r.historique && r.historique.length > 0
-        ? r.historique.map((h, i) => `
-            <div class="histo-item ${i === r.historique.length - 1 ? 'derniere' : ''}">
-              ${h.reponse} <span class="temps-badge">⏱ ${h.tempsReponse}s</span>
-            </div>`).join('')
-        : '<span style="color:#aaa">(pas de réponse)</span>';
- 
-      const premierTemps = r.historique && r.historique.length > 0 ? r.historique[0].tempsReponse : '--';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td data-label="Joueur"><b>${r.nom}</b></td>
-        <td data-label="Historique"><div class="historique-admin">${historiqueHtml}</div></td>
-        <td data-label="1ère réponse"><span class="temps-badge">⏱ ${premierTemps}s</span></td>
-        <td data-label="Réactions">
-          <div class="emoji-btns-admin">
-            <button onclick="adminReagir('${r.nom}', '👍')">👍</button>
-            <button onclick="adminReagir('${r.nom}', '😂')">😂</button>
-            <button onclick="adminReagir('${r.nom}', '🔥')">🔥</button>
-            <button onclick="adminReagir('${r.nom}', '😮')">😮</button>
-          </div>
-          <div class="reactions-admin" id="admin-reactions-${r.nom}"></div>
-        </td>
-        <td data-label="Points">
-          <div class="points-zone">
-            <input type="number" id="points-input-${r.nom}" value="${pointsMaxActuel}" min="0" max="${pointsMaxActuel}">
-            <button class="btn-point" onclick="donnerPoints('${r.nom}')">✅</button>
-          </div>
-          <div class="points-max-badge">max: ${pointsMaxActuel} pts</div>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    rendreCartes(reponses);
   });
  
-  // 🐛 BUG 2 CORRIGÉ : stopAdminTimer aussi sur point_deja_donne (sécurité si double clic)
   socket.on('point_deja_donne', () => {
     verrouiller();
     stopAdminTimer();
@@ -641,7 +668,8 @@
   });
  
   socket.on('reaction_update', ({ nomCible, reactions }) => {
-    const el = document.getElementById('admin-reactions-' + nomCible);
+    const nomEscape = nomCible.replace(/[^a-zA-Z0-9]/g, '_');
+    const el = document.getElementById('admin-reactions-' + nomEscape);
     if (!el) return;
     el.innerHTML = Object.entries(reactions).map(([e, c]) => `${e} ${c}`).join('  ');
   });

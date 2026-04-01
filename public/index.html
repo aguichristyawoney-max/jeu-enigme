@@ -88,6 +88,20 @@
  
     .personne-banner { background: #e05a5a; color: white; text-align: center; padding: 12px 16px; font-size: 16px; font-weight: bold; border-radius: 12px; margin: 10px 16px; display: none; }
  
+    /* ── Notification correction de score ── */
+    .correction-toast {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-80px);
+      background: #3d2b1f; color: white; padding: 12px 20px; border-radius: 14px;
+      font-size: 14px; font-weight: bold; z-index: 9999; white-space: nowrap;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s;
+      opacity: 0; pointer-events: none;
+    }
+    .correction-toast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+ 
     .chat-panel { background: white; border-radius: 14px; padding: 14px; margin-top: 14px; }
     .chat-panel h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(14px,4vw,17px); }
     .chat-messages { height: 120px; overflow-y: auto; background: #f5ede0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
@@ -127,6 +141,9 @@
 <body>
  
   <div class="reconnect-banner" id="reconnect-banner">⚠️ Connexion perdue... Reconnexion en cours</div>
+ 
+  <!-- Toast correction score -->
+  <div class="correction-toast" id="correction-toast"></div>
  
   <!-- ACCUEIL -->
   <div id="ecran-accueil" class="ecran actif">
@@ -267,9 +284,10 @@
     let timerInterval = null;
     let demandeIndiceEnvoye = false;
     let tempsDepart = null;
-    let scoresAvant = {};  // AJOUT : pour détecter le gagnant
-
-    // État reply par zone de chat
+    let scoresAvant = {};
+    let nomGagnantCeRound = null;
+    let correctionToastTimeout = null;
+ 
     const replyTo = { attente: null, question: null, recap: null };
  
     // ══════════════════════════════════════
@@ -289,6 +307,19 @@
     window.addEventListener('popstate', () => {
       if (monCode && monNom) history.pushState(null, '', window.location.href);
     });
+ 
+    // ══════════════════════════════════════
+    //  TOAST CORRECTION SCORE
+    // ══════════════════════════════════════
+    function afficherCorrectionToast(message) {
+      const toast = document.getElementById('correction-toast');
+      toast.textContent = message;
+      toast.classList.add('visible');
+      if (correctionToastTimeout) clearTimeout(correctionToastTimeout);
+      correctionToastTimeout = setTimeout(() => {
+        toast.classList.remove('visible');
+      }, 4000);
+    }
  
     // ══════════════════════════════════════
     //  REJOINDRE
@@ -360,20 +391,12 @@
         if (chatEl) chatEl.querySelectorAll('.chat-msg').forEach(m => m.classList.remove('selected'));
         div.classList.add('selected');
       }
- 
       div.addEventListener('click', selectionnerMessage);
- 
       let touchStartY = 0;
-      div.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
-      }, { passive: true });
- 
+      div.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
       div.addEventListener('touchend', (e) => {
         const touchEndY = e.changedTouches[0].clientY;
-        if (Math.abs(touchEndY - touchStartY) < 10) {
-          e.preventDefault();
-          selectionnerMessage();
-        }
+        if (Math.abs(touchEndY - touchStartY) < 10) { e.preventDefault(); selectionnerMessage(); }
       });
     }
  
@@ -381,12 +404,7 @@
       const inputId = 'chat-input-' + source;
       const msg = document.getElementById(inputId).value.trim();
       if (!msg) return;
-      socket.emit('chat_message', {
-        code: monCode,
-        nom: monNom,
-        message: msg,
-        replyTo: replyTo[source] || null
-      });
+      socket.emit('chat_message', { code: monCode, nom: monNom, message: msg, replyTo: replyTo[source] || null });
       document.getElementById(inputId).value = '';
       annulerReply(source);
     }
@@ -398,18 +416,31 @@
         if (!el) return;
         const div = document.createElement('div');
         div.className = 'chat-msg';
- 
         let html = '';
         if (data.replyTo) {
           html += `<div class="chat-reply-preview">↩ <b>${data.replyTo.nom}</b> : ${data.replyTo.message}</div>`;
         }
         html += `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
         div.innerHTML = html;
- 
         attacherEvenementsChatMsg(div, data, source);
- 
         el.appendChild(div);
         el.scrollTop = el.scrollHeight;
+      });
+    }
+ 
+    // ══════════════════════════════════════
+    //  APPLIQUER LE VERT SUR LE GAGNANT
+    // ══════════════════════════════════════
+    function appliquerVertGagnant(nom) {
+      const tbody = document.getElementById('recap-tbody');
+      if (!tbody) return;
+      tbody.querySelectorAll('tr').forEach(tr => {
+        if (tr.dataset.nom === nom) {
+          const divs = tr.querySelectorAll('.recap-reponse-div');
+          if (divs.length > 0) {
+            divs[divs.length - 1].style.cssText = 'font-size:13px;font-weight:bold;color:#3d6e3d;';
+          }
+        }
       });
     }
  
@@ -440,8 +471,9 @@
       document.getElementById('mes-reponses-liste').innerHTML = '';
       document.getElementById('indice-bulle').style.display = 'none';
       document.getElementById('personne-banner').style.display = 'none';
-
-      scoresAvant = {};  // AJOUT : réinitialiser à chaque nouvelle question
+ 
+      scoresAvant = {};
+      nomGagnantCeRound = null;
  
       demandeIndiceEnvoye = false;
       const btnIndice = document.getElementById('btn-demande-indice');
@@ -507,7 +539,7 @@
       tbody.innerHTML = '';
       reponses.forEach(r => {
         const tr = document.createElement('tr');
-        tr.dataset.nom = r.nom;  // AJOUT : stocker le nom pour pouvoir retrouver la ligne
+        tr.dataset.nom = r.nom;
         tr.innerHTML = `
           <td><b>${r.nom}</b></td>
           <td>${
@@ -531,6 +563,7 @@
         tbody.appendChild(tr);
       });
  
+      if (nomGagnantCeRound) appliquerVertGagnant(nomGagnantCeRound);
       allerVers('ecran-recap');
     });
  
@@ -550,27 +583,15 @@
     });
  
     socket.on('points_update', (data) => {
-      // AJOUT : détecter le gagnant et mettre sa dernière réponse en vert
       data.forEach(j => {
         const avant = scoresAvant[j.nom] !== undefined ? scoresAvant[j.nom] : null;
         if (avant !== null && j.points > avant) {
-          // Ce joueur vient de recevoir des points : on met sa dernière réponse en vert
-          const tbody = document.getElementById('recap-tbody');
-          if (tbody) {
-            tbody.querySelectorAll('tr').forEach(tr => {
-              if (tr.dataset.nom === j.nom) {
-                const divs = tr.querySelectorAll('.recap-reponse-div');
-                if (divs.length > 0) {
-                  divs[divs.length - 1].style.cssText = 'font-size:13px;font-weight:bold;color:#3d6e3d;';
-                }
-              }
-            });
-          }
+          nomGagnantCeRound = j.nom;
+          appliquerVertGagnant(j.nom);
         }
         scoresAvant[j.nom] = j.points;
       });
-
-      // Code existant : affichage des scores
+ 
       const el = document.getElementById('scores-joueur');
       if (!el) return;
       data.sort((a, b) => b.points - a.points);
@@ -580,6 +601,13 @@
           <span class="score-pts">${j.points} pts</span>
         </div>
       `).join('');
+    });
+ 
+    // ── Notification de correction de score ──
+    socket.on('correction_score', ({ nom, ancienScore, nouveauScore }) => {
+      const fleche = nouveauScore > ancienScore ? '📈' : '📉';
+      const msg = `${fleche} Score corrigé — ${nom} : ${ancienScore} pts → ${nouveauScore} pts`;
+      afficherCorrectionToast(msg);
     });
  
     socket.on('scores_finaux', (scores) => {
@@ -603,18 +631,13 @@
  
     socket.on('connect', () => {
       document.getElementById('reconnect-banner').classList.remove('visible');
-      if (monCode && monNom) {
-        socket.emit('joueur_rejoindre', { code: monCode, nom: monNom });
-      }
+      if (monCode && monNom) socket.emit('joueur_rejoindre', { code: monCode, nom: monNom });
     });
  
     document.addEventListener('visibilitychange', () => {
       if (!monCode || !monNom) return;
-      if (document.hidden) {
-        socket.emit('joueur_quitte_page', { code: monCode, nom: monNom });
-      } else {
-        socket.emit('joueur_revient_page', { code: monCode, nom: monNom });
-      }
+      if (document.hidden) socket.emit('joueur_quitte_page', { code: monCode, nom: monNom });
+      else socket.emit('joueur_revient_page', { code: monCode, nom: monNom });
     });
  
     window.addEventListener('load', () => {

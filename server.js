@@ -188,17 +188,14 @@ io.on('connection', (socket) => {
     if (!partie || partie.pointDonneCetteQuestion) return;
     partie.scores[nom] = (partie.scores[nom] || 0) + points;
     partie.pointDonneCetteQuestion = true;
-
-    // Arrêter le timer serveur si encore en cours
+ 
     if (partie.timerInterval) clearInterval(partie.timerInterval);
     partie.phase = 'recap';
-
-    // Scores mis à jour côté joueurs (s'actualise sur le récap si déjà dessus)
+ 
     const scores = Object.entries(partie.scores).map(([n, p]) => ({ nom: n, points: p }));
     io.to(code).emit('points_update', scores);
     io.to(partie.adminId).emit('point_deja_donne');
-
-    // fin_question pour basculer les joueurs encore sur l'écran question vers le récap
+ 
     const reponses = _buildReponses(partie);
     io.to(code).emit('fin_question', { reponses });
   });
@@ -207,18 +204,40 @@ io.on('connection', (socket) => {
     const partie = parties[code];
     if (!partie) return;
     partie.pointDonneCetteQuestion = true;
-
-    // Arrêter le timer serveur
+ 
     if (partie.timerInterval) clearInterval(partie.timerInterval);
     partie.phase = 'recap';
-
-    // Bannière "personne n'a trouvé" côté joueurs
+ 
     io.to(code).emit('personne_a_trouve');
     io.to(partie.adminId).emit('point_deja_donne');
-
-    // Basculer tout le monde vers le récap
+ 
     const reponses = _buildReponses(partie);
     io.to(code).emit('fin_question', { reponses });
+  });
+ 
+  // ══════════════════════════════════════
+  //  CORRECTION DE SCORE PAR L'ADMIN
+  // ══════════════════════════════════════
+  socket.on('admin_corriger_score', ({ code, nom, nouveauScore }) => {
+    const partie = parties[code];
+    if (!partie) return;
+    if (partie.adminId !== socket.id) return; // sécurité : seul l'admin peut corriger
+ 
+    const ancienScore = partie.scores[nom] || 0;
+    const nouveau = Math.max(0, parseInt(nouveauScore) || 0);
+    partie.scores[nom] = nouveau;
+ 
+    const scores = Object.entries(partie.scores).map(([n, p]) => ({ nom: n, points: p }));
+ 
+    // Notifier tout le monde du changement de scores
+    io.to(code).emit('points_update', scores);
+ 
+    // Envoyer une notification spéciale aux joueurs
+    io.to(code).emit('correction_score', {
+      nom,
+      ancienScore,
+      nouveauScore: nouveau
+    });
   });
  
   socket.on('joueur_reaction', ({ code, nomCible, emoji }) => {
