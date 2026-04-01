@@ -2,15 +2,18 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>👑 Admin - Jeu-Enigmes</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; }
+    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; overscroll-behavior: none; }
  
     .ecran { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px; }
     .ecran.actif { display: flex; }
  
+    /* ══════════════════════════════════════
+       ÉCRAN NOM
+    ══════════════════════════════════════ */
     #ecran-admin-nom { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
     .nom-card { background: white; border-radius: 20px; padding: 32px 28px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
     .nom-card h2 { color: #8B5E3C; margin-bottom: 8px; font-size: clamp(20px,5vw,24px); }
@@ -18,17 +21,22 @@
     .nom-card input { width: 100%; padding: 14px; font-size: 18px; border: 3px solid #e0d5c8; border-radius: 12px; font-family: inherit; outline: none; text-align: center; margin-bottom: 16px; }
     .nom-card input:focus { border-color: #8B5E3C; }
  
+    /* ══════════════════════════════════════
+       ÉCRAN ATTENTE
+    ══════════════════════════════════════ */
     #ecran-admin-attente { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
     .code-display { background: rgba(255,255,255,0.15); border-radius: 20px; padding: clamp(20px,5vw,30px) clamp(24px,8vw,50px); text-align: center; color: white; margin: 16px 0; width: 100%; max-width: 360px; }
     .code-display .label { font-size: 15px; opacity: 0.8; margin-bottom: 8px; }
     .code-display .code { font-size: clamp(36px,12vw,56px); font-weight: bold; letter-spacing: 6px; }
     .code-display .info { font-size: 13px; opacity: 0.7; margin-top: 8px; }
     .nom-admin-badge { color: white; font-size: clamp(16px,4vw,20px); font-weight: bold; margin-bottom: 12px; }
- 
     .joueurs-admin { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; max-width: 400px; }
     .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 15px; font-weight: bold; }
  
-    .btn { padding: clamp(12px,3vw,14px) clamp(18px,5vw,28px); font-size: clamp(15px,4vw,17px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 5px 0 rgba(0,0,0,0.2); margin: 6px; font-family: inherit; min-height: 48px; }
+    /* ══════════════════════════════════════
+       BOUTONS GLOBAUX
+    ══════════════════════════════════════ */
+    .btn { padding: clamp(12px,3vw,14px) clamp(18px,5vw,28px); font-size: clamp(15px,4vw,17px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.2); margin: 6px; font-family: inherit; min-height: 48px; transition: transform 0.1s, box-shadow 0.1s; }
     .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
     .btn-vert { background: #6db88e; color: white; }
     .btn-rouge { background: #e05a5a; color: white; }
@@ -36,103 +44,211 @@
     .btn-gris { background: #aaa; color: white; }
     .btn-full { width: 100%; margin: 4px 0; }
  
-    #ecran-admin-jeu { background: #f5ede0; align-items: stretch; padding: 0; }
-    .admin-header { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; color: white; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 100; }
-    .admin-header h1 { font-size: clamp(14px,3.5vw,18px); }
-    .admin-code-small { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: clamp(15px,4vw,18px); font-weight: bold; letter-spacing: 3px; }
-    .joueurs-header { display: flex; flex-wrap: wrap; gap: 5px; }
-    .joueur-tag { background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 10px; font-size: 12px; }
+    /* ══════════════════════════════════════
+       ÉCRAN JEU — structure principale
+    ══════════════════════════════════════ */
+    #ecran-admin-jeu {
+      background: #f5ede0;
+      align-items: stretch;
+      padding: 0;
+      /* Sur mobile : hauteur fixe avec onglets en bas */
+      min-height: 100dvh;
+    }
  
-    .admin-timer-bar { background: #6d4a2e; padding: 8px 16px; display: flex; align-items: center; gap: 12px; color: white; }
-    .admin-timer-cercle { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; border: 3px solid white; flex-shrink: 0; transition: background 0.3s; }
+    /* Header sticky */
+    .admin-header {
+      background: linear-gradient(135deg, #8B5E3C, #6d4a2e);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      flex-wrap: wrap;
+      gap: 6px;
+      position: sticky; top: 0; z-index: 100;
+      flex-shrink: 0;
+    }
+    .admin-header h1 { font-size: clamp(13px,3.5vw,17px); }
+    .admin-code-small { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: clamp(14px,3.5vw,17px); font-weight: bold; letter-spacing: 3px; }
+    .joueurs-header { display: flex; flex-wrap: wrap; gap: 4px; }
+    .joueur-tag { background: rgba(255,255,255,0.2); padding: 2px 7px; border-radius: 10px; font-size: 11px; }
+ 
+    /* Timer bar sticky sous le header */
+    .admin-timer-bar {
+      background: #6d4a2e;
+      padding: 8px 14px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      position: sticky;
+      top: 44px; /* hauteur du header */
+      z-index: 99;
+      flex-shrink: 0;
+    }
+    .admin-timer-bar.visible { display: flex; }
+    .admin-timer-cercle { width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: bold; border: 3px solid white; flex-shrink: 0; transition: background 0.3s; }
     .admin-timer-cercle.urgent { background: #e05a5a; border-color: #ffaaaa; }
-    .admin-timer-label { font-size: 14px; opacity: 0.85; }
+    .admin-timer-question { font-size: 13px; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
  
-    .admin-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
-    @media (max-width: 700px) { .admin-body { grid-template-columns: 1fr; } }
+    /* ══════════════════════════════════════
+       ONGLETS MOBILE (navigation bas)
+    ══════════════════════════════════════ */
+    .admin-tabs {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-top: 2px solid #e0d5c8;
+      display: none; /* affiché seulement sur mobile via media query */
+      z-index: 200;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .admin-tabs-inner {
+      display: flex;
+      height: 58px;
+    }
+    .admin-tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 10px;
+      color: #aaa;
+      gap: 3px;
+      position: relative;
+      padding: 6px 0;
+      transition: color 0.2s;
+    }
+    .admin-tab-btn .tab-icon { font-size: 20px; line-height: 1; }
+    .admin-tab-btn.actif { color: #8B5E3C; }
+    .admin-tab-btn.actif::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 3px;
+      background: #8B5E3C;
+      border-radius: 0 0 3px 3px;
+    }
+    .tab-badge {
+      position: absolute;
+      top: 4px; right: calc(50% - 16px);
+      background: #e05a5a;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 1px 5px;
+      min-width: 16px;
+      text-align: center;
+      display: none;
+    }
+    .tab-badge.visible { display: block; }
  
+    /* ══════════════════════════════════════
+       BODY ADMIN — grille desktop / onglets mobile
+    ══════════════════════════════════════ */
+    .admin-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 12px;
+      flex: 1;
+    }
+ 
+    /* Sur mobile : un seul panel visible à la fois */
+    @media (max-width: 700px) {
+      .admin-body {
+        grid-template-columns: 1fr;
+        padding: 10px 10px 76px; /* place pour les onglets */
+      }
+      .admin-tabs { display: block; }
+      .panel { display: none; }
+      .panel.onglet-actif { display: block; }
+      /* La timer bar prend toute la hauteur dispo */
+      .admin-timer-bar { top: 50px; }
+    }
+ 
+    /* ══════════════════════════════════════
+       PANELS
+    ══════════════════════════════════════ */
     .panel { background: white; border-radius: 16px; padding: clamp(14px,4vw,20px); }
     .panel h3 { color: #8B5E3C; margin-bottom: 14px; font-size: clamp(15px,4vw,17px); border-bottom: 2px solid #f5ede0; padding-bottom: 8px; }
  
+    /* ── Panel Question ── */
     .question-form textarea { width: 100%; padding: 12px; border: 2px solid #e0d5c8; border-radius: 10px; font-size: clamp(14px,3.5vw,15px); font-family: inherit; resize: vertical; min-height: 80px; outline: none; }
     .question-form textarea:focus { border-color: #8B5E3C; }
- 
     .form-row { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
     .form-row label { font-size: 13px; color: #8B5E3C; font-weight: bold; }
     .form-row input[type="number"], .form-row input[type="range"] { flex: 1; padding: 8px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; outline: none; }
     .form-row input:focus { border-color: #8B5E3C; }
- 
     .preview-image { max-width: 100%; max-height: 130px; border-radius: 10px; margin: 8px 0; display: none; object-fit: contain; }
     .image-upload-label { display: block; padding: 10px; text-align: center; border: 2px dashed #e0d5c8; border-radius: 10px; cursor: pointer; color: #aaa; font-size: 14px; margin: 8px 0; transition: border-color 0.2s; }
     .image-upload-label:hover { border-color: #8B5E3C; color: #8B5E3C; }
     .temps-val { font-weight: bold; color: #8B5E3C; min-width: 30px; text-align: center; }
- 
     .notif-indice { background: #fff3cd; border: 2px solid #e8b86d; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: none; }
     .notif-indice p { color: #856404; font-weight: bold; font-size: 13px; }
     .indice-form { display: flex; gap: 8px; }
     .indice-form input { flex: 1; padding: 10px; border: 2px solid #e0d5c8; border-radius: 10px; font-family: inherit; outline: none; font-size: 14px; min-height: 44px; }
     .indice-form input:focus { border-color: #8B5E3C; }
+    .controles { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 10px 0; }
+    .controles .btn { flex: 1; min-width: 110px; }
  
-    /* ═══════════════════════════════════════
-       CARTES ACCORDÉON JOUEURS
-    ═══════════════════════════════════════ */
+    /* ── Panel Réponses ── */
     .joueur-cards { display: flex; flex-direction: column; gap: 8px; }
- 
     .joueur-card { background: #fdfaf7; border: 2px solid #e0d5c8; border-radius: 12px; overflow: hidden; }
     .joueur-card.has-reponse { border-color: #6db88e; }
- 
-    /* Ligne condensée — toujours visible */
-    .joueur-card-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 12px; cursor: pointer;
-      user-select: none; -webkit-user-select: none;
-    }
+    .joueur-card-header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; user-select: none; -webkit-user-select: none; }
     .joueur-card-nom { font-weight: bold; font-size: 14px; color: #3d2b1f; min-width: 70px; flex-shrink: 0; }
     .joueur-card-fleche { font-size: 12px; color: #aaa; flex-shrink: 0; transition: transform 0.2s; }
     .joueur-card.open .joueur-card-fleche { transform: rotate(90deg); }
     .joueur-card-derniere { flex: 1; font-size: 13px; color: #5a8a5a; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .joueur-card-derniere.vide { color: #bbb; font-weight: normal; font-style: italic; }
     .joueur-card-temps { font-size: 11px; background: #e8b86d; color: white; padding: 2px 7px; border-radius: 8px; font-weight: bold; flex-shrink: 0; }
- 
-    /* Corps déplié */
     .joueur-card-body { display: none; padding: 0 12px 12px; border-top: 1px solid #f0e8e0; }
     .joueur-card.open .joueur-card-body { display: block; }
- 
     .historique-liste { margin: 10px 0 8px; display: flex; flex-direction: column; gap: 4px; }
     .histo-item { font-size: 13px; color: #888; padding: 4px 8px; border-radius: 6px; background: #f5f5f5; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     .histo-item.derniere { color: #3d2b1f; font-weight: bold; background: #e8f5e9; }
     .temps-badge { background: #e8b86d; color: white; border-radius: 8px; padding: 2px 6px; font-size: 11px; font-weight: bold; flex-shrink: 0; }
- 
-    /* Ligne actions : emojis + points */
     .joueur-card-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
- 
-    /* Emojis réduits */
     .emoji-btns-admin { display: flex; gap: 3px; }
-    .emoji-btns-admin button {
-      font-size: 15px; background: none; border: 1.5px solid #e0d5c8;
-      border-radius: 6px; cursor: pointer; padding: 3px 5px;
-      min-width: 30px; min-height: 30px; line-height: 1;
-    }
+    .emoji-btns-admin button { font-size: 15px; background: none; border: 1.5px solid #e0d5c8; border-radius: 6px; cursor: pointer; padding: 3px 5px; min-width: 30px; min-height: 30px; line-height: 1; }
     .emoji-btns-admin button:active { transform: scale(1.3); }
     .reactions-admin { font-size: 12px; color: #666; }
- 
     .points-zone { display: flex; gap: 5px; align-items: center; margin-left: auto; }
     .points-zone input { width: 48px; padding: 5px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; text-align: center; font-size: 14px; min-height: 32px; }
     .btn-point { background: #6db88e; color: white; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 15px; font-family: inherit; min-height: 32px; min-width: 34px; }
     .btn-point:disabled { background: #ccc; opacity: 0.4; cursor: not-allowed; }
     .points-max-badge { font-size: 11px; color: #aaa; margin-top: 2px; text-align: right; }
-    /* ═══════════════════════════════════════ */
- 
     .verrou-banner { background: #e05a5a; color: white; text-align: center; padding: 8px; border-radius: 10px; font-weight: bold; font-size: 13px; margin-bottom: 10px; display: none; }
-    .alerte-triche { color: #e05a5a; font-weight: bold; font-size: 13px; }
  
-    .score-ligne { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; background: #f5ede0; font-size: clamp(14px,3.5vw,16px); }
+    /* ── Panel Scores ── */
+    .score-ligne { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; background: #f5ede0; font-size: clamp(14px,3.5vw,16px); gap: 8px; }
+    .score-nom { flex: 1; }
     .score-pts { font-weight: bold; color: #8B5E3C; background: white; padding: 4px 10px; border-radius: 10px; }
+    .btn-edit-score { background: none; border: 1.5px solid #e0d5c8; border-radius: 6px; cursor: pointer; font-size: 14px; padding: 3px 7px; min-height: 28px; color: #8B5E3C; flex-shrink: 0; transition: background 0.15s; }
+    .btn-edit-score:hover { background: #f5ede0; }
+    .score-edit-row { display: none; align-items: center; gap: 6px; margin-top: 6px; padding: 0 4px; }
+    .score-edit-row.visible { display: flex; }
+    .score-edit-row input { width: 60px; padding: 5px 8px; border: 2px solid #8B5E3C; border-radius: 8px; font-family: inherit; font-size: 14px; text-align: center; outline: none; }
+    .btn-edit-ok { background: #6db88e; color: white; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 13px; font-family: inherit; min-height: 30px; }
+    .btn-edit-annuler { background: #e0d5c8; color: #3d2b1f; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 13px; font-family: inherit; min-height: 30px; }
  
-    .chat-box { height: clamp(130px,25vw,180px); overflow-y: auto; border: 2px solid #e0d5c8; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fdfaf7; }
-    .chat-msg { margin-bottom: 8px; font-size: 14px; line-height: 1.4; cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; user-select: none; -webkit-user-select: none; }
+    /* ── Panel Chat ── */
+    .chat-box { height: clamp(130px,25vw,180px); overflow-y: auto; border: 2px solid #e0d5c8; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fdfaf7; display: flex; flex-direction: column; gap: 4px; }
+    /* Sur mobile le chat est en plein panel, donc plus grand */
+    @media (max-width: 700px) {
+      .chat-box { height: calc(100dvh - 300px); min-height: 150px; }
+    }
+    .chat-msg { margin-bottom: 4px; font-size: 14px; line-height: 1.4; cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; user-select: none; -webkit-user-select: none; word-break: break-word; }
     .chat-msg:hover { background: #f0e8e0; }
     .chat-msg.selected { background: #e8f5e9; }
+    .chat-msg.alerte-triche { color: #e05a5a; font-weight: bold; cursor: default; }
     .chat-nom { font-weight: bold; color: #8B5E3C; margin-right: 4px; }
     .chat-heure { font-size: 11px; color: #aaa; margin-right: 4px; }
     .chat-reply-preview { background: #f5ede0; border-left: 3px solid #8B5E3C; padding: 4px 8px; border-radius: 0 6px 6px 0; font-size: 12px; color: #888; margin-bottom: 4px; }
@@ -143,9 +259,9 @@
     .chat-form input { flex: 1; padding: 10px; border: 2px solid #e0d5c8; border-radius: 10px; font-family: inherit; outline: none; font-size: 14px; min-height: 44px; }
     .chat-form input:focus { border-color: #8B5E3C; }
  
-    .controles { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 10px 0; }
-    .controles .btn { flex: 1; min-width: 130px; }
- 
+    /* ══════════════════════════════════════
+       FIN
+    ══════════════════════════════════════ */
     #ecran-admin-fin { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
     .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
     .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
@@ -192,23 +308,28 @@
  
 <!-- ÉCRAN JEU -->
 <div id="ecran-admin-jeu" class="ecran">
+ 
+  <!-- Header sticky -->
   <div class="admin-header">
     <h1 id="admin-nom-header">👑 Admin</h1>
     <div class="admin-code-small" id="admin-code-small"></div>
     <div class="joueurs-header" id="joueurs-jeu"></div>
   </div>
  
-  <div class="admin-timer-bar" id="admin-timer-bar" style="display:none;">
+  <!-- Timer bar sticky sous le header -->
+  <div class="admin-timer-bar" id="admin-timer-bar">
     <div class="admin-timer-cercle" id="admin-timer-cercle">--</div>
-    <div>
-      <div class="admin-timer-label">⏱ Temps restant pour les joueurs</div>
-      <div id="admin-timer-question" style="font-size:13px;color:rgba(255,255,255,0.7);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13px;opacity:0.85;">⏱ Temps restant</div>
+      <div class="admin-timer-question" id="admin-timer-question"></div>
     </div>
   </div>
  
+  <!-- Corps avec 4 panels -->
   <div class="admin-body">
  
-    <div class="panel">
+    <!-- PANEL 1 : Question -->
+    <div class="panel onglet-actif" id="panel-question" data-panel="question">
       <h3>❓ Nouvelle question</h3>
       <div class="question-form">
         <textarea id="question-input" placeholder="Écris ta question... (optionnel si image)"></textarea>
@@ -234,10 +355,9 @@
         <div class="controles">
           <button class="btn btn-vert" onclick="envoyerQuestion()">📤 Envoyer</button>
           <button class="btn btn-rouge" onclick="couperTemps()">⏹ Couper</button>
-          <button class="btn btn-orange" onclick="personneNaTrouve()">🤷 Personne n'a trouvé</button>
+          <button class="btn btn-orange" onclick="personneNaTrouve()">🤷 Personne</button>
         </div>
       </div>
- 
       <div class="notif-indice" id="notif-indice">
         <p id="notif-indice-texte">Des joueurs demandent un indice !</p>
       </div>
@@ -246,26 +366,30 @@
           onkeydown="if(event.key==='Enter') envoyerIndice()">
         <button class="btn btn-orange" style="padding:10px 14px;font-size:14px;margin:0;min-height:44px;" onclick="envoyerIndice()">Envoyer</button>
       </div>
-    </div>
- 
-    <div class="panel">
-      <h3>📋 Réponses des joueurs</h3>
-      <div class="verrou-banner" id="verrou-banner">🔒 Point attribué — prochaine question pour déverrouiller</div>
-      <!-- Cartes accordéon : une par joueur -->
-      <div class="joueur-cards" id="joueur-cards">
-        <div style="text-align:center;color:#aaa;padding:20px;font-size:14px;">En attente de réponses...</div>
-      </div>
-    </div>
- 
-    <div class="panel">
-      <h3>🏆 Scores en direct</h3>
-      <div id="admin-scores"><div style="text-align:center;color:#aaa;font-size:14px;">Aucun point attribué</div></div>
       <div style="margin-top:14px;">
         <button class="btn btn-rouge btn-full" onclick="afficherFin()">🏁 Terminer la partie</button>
       </div>
     </div>
  
-    <div class="panel">
+    <!-- PANEL 2 : Réponses -->
+    <div class="panel" id="panel-reponses" data-panel="reponses">
+      <h3>📋 Réponses des joueurs</h3>
+      <div class="verrou-banner" id="verrou-banner">🔒 Point attribué — prochaine question pour déverrouiller</div>
+      <div class="joueur-cards" id="joueur-cards">
+        <div style="text-align:center;color:#aaa;padding:20px;font-size:14px;">En attente de réponses...</div>
+      </div>
+    </div>
+ 
+    <!-- PANEL 3 : Scores -->
+    <div class="panel" id="panel-scores" data-panel="scores">
+      <h3>🏆 Scores en direct</h3>
+      <div id="admin-scores">
+        <div style="text-align:center;color:#aaa;font-size:14px;">Aucun point attribué</div>
+      </div>
+    </div>
+ 
+    <!-- PANEL 4 : Chat -->
+    <div class="panel" id="panel-chat" data-panel="chat">
       <h3>💬 Chat</h3>
       <div class="chat-box" id="chat-admin"></div>
       <div class="reply-bar" id="reply-bar-admin">
@@ -279,8 +403,33 @@
       </div>
     </div>
  
+  </div><!-- fin admin-body -->
+ 
+  <!-- Onglets mobile (bas de page) -->
+  <div class="admin-tabs" id="admin-tabs">
+    <div class="admin-tabs-inner">
+      <button class="admin-tab-btn actif" id="tab-btn-question" onclick="changerOnglet('question')">
+        <span class="tab-icon">❓</span>
+        <span>Question</span>
+      </button>
+      <button class="admin-tab-btn" id="tab-btn-reponses" onclick="changerOnglet('reponses')">
+        <span class="tab-icon">📋</span>
+        <span>Réponses</span>
+        <span class="tab-badge" id="badge-reponses"></span>
+      </button>
+      <button class="admin-tab-btn" id="tab-btn-scores" onclick="changerOnglet('scores')">
+        <span class="tab-icon">🏆</span>
+        <span>Scores</span>
+      </button>
+      <button class="admin-tab-btn" id="tab-btn-chat" onclick="changerOnglet('chat')">
+        <span class="tab-icon">💬</span>
+        <span>Chat</span>
+        <span class="tab-badge" id="badge-chat"></span>
+      </button>
+    </div>
   </div>
-</div>
+ 
+</div><!-- fin ecran-admin-jeu -->
  
 <!-- FIN -->
 <div id="ecran-admin-fin" class="ecran">
@@ -300,9 +449,10 @@
   let pointVerrouille = false;
   let adminTimerInterval = null;
   let replyToAdmin = null;
- 
-  // Mémorise quelles cartes sont ouvertes entre les mises à jour
   const cardsOuvertes = {};
+  let ongletActif = 'question';
+  let badgeReponses = 0;
+  let badgeChat = 0;
  
   // ══════════════════════════════════════
   //  NAVIGATION
@@ -314,6 +464,49 @@
   }
  
   // ══════════════════════════════════════
+  //  ONGLETS MOBILE
+  // ══════════════════════════════════════
+  function changerOnglet(nom) {
+    ongletActif = nom;
+    // Panels
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('onglet-actif'));
+    document.getElementById('panel-' + nom).classList.add('onglet-actif');
+    // Boutons onglets
+    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('actif'));
+    document.getElementById('tab-btn-' + nom).classList.add('actif');
+    // Vider le badge correspondant
+    if (nom === 'reponses') {
+      badgeReponses = 0;
+      document.getElementById('badge-reponses').textContent = '';
+      document.getElementById('badge-reponses').classList.remove('visible');
+    }
+    if (nom === 'chat') {
+      badgeChat = 0;
+      document.getElementById('badge-chat').textContent = '';
+      document.getElementById('badge-chat').classList.remove('visible');
+    }
+    // Scroll en haut du panel
+    window.scrollTo(0, 0);
+  }
+ 
+  function incrementerBadge(type) {
+    if (type === 'reponses' && ongletActif !== 'reponses') {
+      badgeReponses++;
+      const el = document.getElementById('badge-reponses');
+      el.textContent = badgeReponses > 9 ? '9+' : badgeReponses;
+      el.classList.add('visible');
+      if (navigator.vibrate) navigator.vibrate(25);
+    }
+    if (type === 'chat' && ongletActif !== 'chat') {
+      badgeChat++;
+      const el = document.getElementById('badge-chat');
+      el.textContent = badgeChat > 9 ? '9+' : badgeChat;
+      el.classList.add('visible');
+      if (navigator.vibrate) navigator.vibrate(25);
+    }
+  }
+ 
+  // ══════════════════════════════════════
   //  CRÉER PARTIE
   // ══════════════════════════════════════
   function creerPartie() {
@@ -322,9 +515,6 @@
     socket.emit('admin_creer_partie', { nomAdmin: adminNom });
   }
  
-  // ══════════════════════════════════════
-  //  LANCER / ANNULER
-  // ══════════════════════════════════════
   function lancerJeu() {
     allerVers('ecran-admin-jeu');
     document.getElementById('admin-code-small').textContent = adminCode;
@@ -366,8 +556,7 @@
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = document.getElementById('image-preview');
-      img.src = e.target.result;
-      img.style.display = 'block';
+      img.src = e.target.result; img.style.display = 'block';
       document.getElementById('btn-suppr-image').style.display = 'inline-block';
     };
     reader.readAsDataURL(file);
@@ -394,16 +583,20 @@
     const pointsMax = parseInt(document.getElementById('points-max-input').value) || 3;
     pointsMaxActuel = pointsMax;
     deverrouiller();
- 
-    // Réinitialiser les cartes et l'état ouvert/fermé
     Object.keys(cardsOuvertes).forEach(k => delete cardsOuvertes[k]);
     document.getElementById('joueur-cards').innerHTML =
       '<div style="text-align:center;color:#aaa;padding:20px;font-size:14px;">En attente de réponses...</div>';
- 
+    // Reset badges
+    badgeReponses = 0;
+    document.getElementById('badge-reponses').classList.remove('visible');
     socket.emit('admin_question', { code: adminCode, question, image, temps, pointsMax });
     document.getElementById('question-input').value = '';
     supprimerImage();
     document.getElementById('notif-indice').style.display = 'none';
+    // Sur mobile, basculer sur l'onglet réponses automatiquement
+    if (window.innerWidth <= 700) {
+      setTimeout(() => changerOnglet('reponses'), 300);
+    }
   }
  
   function couperTemps() {
@@ -444,7 +637,7 @@
   }
  
   // ══════════════════════════════════════
-  //  CHRONO ADMIN
+  //  CHRONO
   // ══════════════════════════════════════
   function startAdminTimer(temps, question) {
     stopAdminTimer();
@@ -452,7 +645,7 @@
     const cercle = document.getElementById('admin-timer-cercle');
     const bar = document.getElementById('admin-timer-bar');
     const qLabel = document.getElementById('admin-timer-question');
-    bar.style.display = 'flex';
+    bar.classList.add('visible');
     qLabel.textContent = question || '';
     cercle.textContent = restant;
     cercle.classList.remove('urgent');
@@ -467,11 +660,11 @@
   function stopAdminTimer() {
     if (adminTimerInterval) clearInterval(adminTimerInterval);
     adminTimerInterval = null;
-    document.getElementById('admin-timer-bar').style.display = 'none';
+    document.getElementById('admin-timer-bar').classList.remove('visible');
   }
  
   // ══════════════════════════════════════
-  //  ACCORDÉON — toggle ouverture carte
+  //  ACCORDÉON RÉPONSES
   // ══════════════════════════════════════
   function toggleCard(nomEscape) {
     cardsOuvertes[nomEscape] = !cardsOuvertes[nomEscape];
@@ -480,9 +673,6 @@
     card.classList.toggle('open', cardsOuvertes[nomEscape]);
   }
  
-  // ══════════════════════════════════════
-  //  ACCORDÉON — donner points
-  // ══════════════════════════════════════
   function donnerPoints(nom, nomEscape) {
     if (pointVerrouille) return;
     const pts = parseInt(document.getElementById('points-input-' + nomEscape).value) || 0;
@@ -491,43 +681,31 @@
     stopAdminTimer();
   }
  
-  // ══════════════════════════════════════
-  //  ACCORDÉON — rendu complet des cartes
-  // ══════════════════════════════════════
   function rendreCartes(reponses) {
     const container = document.getElementById('joueur-cards');
     container.innerHTML = '';
- 
     reponses.forEach(r => {
       const aDerniere = r.historique && r.historique.length > 0;
       const derniere = aDerniere ? r.historique[r.historique.length - 1] : null;
- 
-      // ID safe : on remplace tout ce qui n'est pas alphanumérique par _
       const nomEscape = r.nom.replace(/[^a-zA-Z0-9]/g, '_');
       const estOuverte = cardsOuvertes[nomEscape] || false;
- 
-      // Historique
       const historiqueHtml = aDerniere
         ? r.historique.map((h, i) => `
             <div class="histo-item ${i === r.historique.length - 1 ? 'derniere' : ''}">
-              <span>${h.reponse}</span>
+              <span>${escapeHtml(h.reponse)}</span>
               <span class="temps-badge">⏱ ${h.tempsReponse}s</span>
             </div>`).join('')
         : '<div style="color:#bbb;font-size:13px;font-style:italic;padding:4px 0;">Pas encore de réponse</div>';
- 
-      // Nom echappé pour les inline onclick (apostrophes)
       const nomJs = r.nom.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
- 
       const card = document.createElement('div');
       card.className = `joueur-card${aDerniere ? ' has-reponse' : ''}${estOuverte ? ' open' : ''}`;
       card.id = 'card-' + nomEscape;
- 
       card.innerHTML = `
         <div class="joueur-card-header" onclick="toggleCard('${nomEscape}')">
-          <span class="joueur-card-nom">${r.nom}</span>
+          <span class="joueur-card-nom">${escapeHtml(r.nom)}</span>
           <span class="joueur-card-fleche">▶</span>
           <span class="joueur-card-derniere${aDerniere ? '' : ' vide'}">
-            ${aDerniere ? derniere.reponse : 'Pas encore répondu'}
+            ${aDerniere ? escapeHtml(derniere.reponse) : 'Pas encore répondu'}
           </span>
           ${aDerniere ? `<span class="joueur-card-temps">⏱ ${derniere.tempsReponse}s</span>` : ''}
         </div>
@@ -553,16 +731,65 @@
             </div>
           </div>
           <div class="points-max-badge">max : ${pointsMaxActuel} pts</div>
-        </div>
-      `;
- 
+        </div>`;
       container.appendChild(card);
     });
   }
  
   // ══════════════════════════════════════
-  //  CHAT AVEC REPLY
+  //  SCORES AVEC CRAYON
   // ══════════════════════════════════════
+  function afficherScores(joueurs) {
+    joueurs.sort((a, b) => b.points - a.points);
+    const container = document.getElementById('admin-scores');
+    container.innerHTML = '';
+    joueurs.forEach((j, i) => {
+      const nomEscape = j.nom.replace(/[^a-zA-Z0-9]/g, '_');
+      const nomJs = j.nom.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const medaille = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▪️';
+      const div = document.createElement('div');
+      div.style.marginBottom = '8px';
+      div.innerHTML = `
+        <div class="score-ligne">
+          <span class="score-nom">${medaille} ${escapeHtml(j.nom)}</span>
+          <span class="score-pts" id="score-pts-${nomEscape}">${j.points} pts</span>
+          <button class="btn-edit-score" onclick="toggleEditScore('${nomEscape}')" title="Modifier le score">✏️</button>
+        </div>
+        <div class="score-edit-row" id="score-edit-${nomEscape}">
+          <input type="number" id="score-input-${nomEscape}" value="${j.points}" min="0"
+            onkeydown="if(event.key==='Enter') confirmerEditScore('${nomJs}','${nomEscape}')">
+          <button class="btn-edit-ok" onclick="confirmerEditScore('${nomJs}','${nomEscape}')">✅</button>
+          <button class="btn-edit-annuler" onclick="toggleEditScore('${nomEscape}')">✕</button>
+        </div>`;
+      container.appendChild(div);
+    });
+  }
+ 
+  function toggleEditScore(nomEscape) {
+    const row = document.getElementById('score-edit-' + nomEscape);
+    if (!row) return;
+    const visible = row.classList.toggle('visible');
+    if (visible) {
+      const input = document.getElementById('score-input-' + nomEscape);
+      if (input) { input.focus(); input.select(); }
+    }
+  }
+ 
+  function confirmerEditScore(nom, nomEscape) {
+    const input = document.getElementById('score-input-' + nomEscape);
+    if (!input) return;
+    const nouveauScore = parseInt(input.value) || 0;
+    socket.emit('admin_modifier_score', { code: adminCode, nom, nouveauScore });
+    toggleEditScore(nomEscape);
+  }
+ 
+  // ══════════════════════════════════════
+  //  CHAT ADMIN
+  // ══════════════════════════════════════
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+ 
   function attacherEvenementsChatMsg(div, data) {
     function selectionnerMessage() {
       replyToAdmin = { id: data.id, nom: data.nom, message: data.message };
@@ -577,8 +804,7 @@
     let touchStartY = 0;
     div.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
     div.addEventListener('touchend', (e) => {
-      const touchEndY = e.changedTouches[0].clientY;
-      if (Math.abs(touchEndY - touchStartY) < 10) { e.preventDefault(); selectionnerMessage(); }
+      if (Math.abs(e.changedTouches[0].clientY - touchStartY) < 10) { e.preventDefault(); selectionnerMessage(); }
     });
   }
  
@@ -587,14 +813,14 @@
     const div = document.createElement('div');
     div.className = 'chat-msg';
     let html = '';
-    if (data.replyTo) {
-      html += `<div class="chat-reply-preview">↩ <b>${data.replyTo.nom}</b> : ${data.replyTo.message}</div>`;
-    }
-    html += `<span class="chat-nom">${data.nom}</span><span class="chat-heure">${data.heure}</span> : ${data.message}`;
+    if (data.replyTo) html += `<div class="chat-reply-preview">↩ <b>${escapeHtml(data.replyTo.nom)}</b> : ${escapeHtml(data.replyTo.message)}</div>`;
+    html += `<span class="chat-nom">${escapeHtml(data.nom)}</span><span class="chat-heure">${data.heure}</span> : ${escapeHtml(data.message)}`;
     div.innerHTML = html;
     attacherEvenementsChatMsg(div, data);
     el.appendChild(div);
     el.scrollTop = el.scrollHeight;
+    // Badge si pas sur l'onglet chat
+    incrementerBadge('chat');
   }
  
   function annulerReplyAdmin() {
@@ -629,11 +855,11 @@
     const listeAttente = document.getElementById('joueurs-admin-attente');
     if (listeAttente) {
       listeAttente.innerHTML = joueurs.length
-        ? joueurs.map(j => `<div class="joueur-chip">${j.nom}</div>`).join('')
+        ? joueurs.map(j => `<div class="joueur-chip">${escapeHtml(j.nom)}</div>`).join('')
         : '<span style="color:rgba(255,255,255,0.5)">En attente...</span>';
     }
     const listeJeu = document.getElementById('joueurs-jeu');
-    if (listeJeu) listeJeu.innerHTML = joueurs.map(j => `<div class="joueur-tag">${j.nom}</div>`).join('');
+    if (listeJeu) listeJeu.innerHTML = joueurs.map(j => `<div class="joueur-tag">${escapeHtml(j.nom)}</div>`).join('');
   });
  
   socket.on('admin_chrono_start', ({ temps }) => {
@@ -653,17 +879,20 @@
     rendreCartes(reponses);
   });
  
-  socket.on('point_deja_donne', () => {
-    verrouiller();
-    stopAdminTimer();
+  // Nouveau : badge réponses depuis le serveur
+  socket.on('nouvelle_reponse_badge', () => {
+    incrementerBadge('reponses');
   });
  
+  socket.on('point_deja_donne', () => { verrouiller(); stopAdminTimer(); });
   socket.on('fin_question', () => stopAdminTimer());
  
   socket.on('demande_indice_update', ({ nbDemandes, nbJoueurs, majorite }) => {
     if (majorite) {
       document.getElementById('notif-indice').style.display = 'block';
       document.getElementById('notif-indice-texte').textContent = `${nbDemandes}/${nbJoueurs} joueurs demandent un indice !`;
+      // Vibration d'alerte
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
     }
   });
  
@@ -674,15 +903,7 @@
     el.innerHTML = Object.entries(reactions).map(([e, c]) => `${e} ${c}`).join('  ');
   });
  
-  socket.on('points_update', (joueurs) => {
-    joueurs.sort((a, b) => b.points - a.points);
-    document.getElementById('admin-scores').innerHTML = joueurs.map((j, i) => `
-      <div class="score-ligne">
-        <span>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'▪️'} ${j.nom}</span>
-        <span class="score-pts">${j.points} pts</span>
-      </div>
-    `).join('');
-  });
+  socket.on('points_update', (joueurs) => { afficherScores(joueurs); });
  
   socket.on('alerte_triche', ({ message }) => {
     const el = document.getElementById('chat-admin');
@@ -691,6 +912,8 @@
     div.textContent = message;
     el.appendChild(div);
     el.scrollTop = el.scrollHeight;
+    incrementerBadge('chat');
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
   });
  
   socket.on('chat_message', (data) => ajouterChatAdmin(data));
@@ -701,18 +924,15 @@
     const emojis = ['🥇', '🥈', '🥉'];
     document.getElementById('admin-podium-fin').innerHTML = scores.map((j, i) => `
       <div class="podium-ligne ${classes[i] || 'autre'}">
-        <span>${emojis[i] || (i+1)+'.'} ${j.nom}</span>
+        <span>${emojis[i] || (i+1)+'.'} ${escapeHtml(j.nom)}</span>
         <span class="podium-pts">${j.points} pts</span>
-      </div>
-    `).join('');
+      </div>`).join('');
     allerVers('ecran-admin-fin');
+    stopAdminTimer();
   });
  
   socket.on('partie_annulee', () => allerVers('ecran-admin-nom'));
  
-  // ══════════════════════════════════════
-  //  AUTO-RECONNECT ADMIN
-  // ══════════════════════════════════════
   window.addEventListener('load', () => {
     const savedCode = localStorage.getItem('adminCode');
     const savedNom = localStorage.getItem('adminNom');
