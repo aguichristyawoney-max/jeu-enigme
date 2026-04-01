@@ -5,7 +5,6 @@ const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
  
-// ✅ FIX : augmenter la limite pour accepter les images base64 (5 Mo)
 const io = socketIo(server, { maxHttpBufferSize: 5e6 });
  
 app.use(express.static('public'));
@@ -118,7 +117,6 @@ io.on('connection', (socket) => {
         question: partie.questionActuelle,
         image: partie.imageActuelle,
         temps: restant,
-        // ✅ FIX : envoyer aussi la durée totale pour recalibrer tempsDepart côté joueur
         tempsTotal: partie.tempsDuration,
         pointsMax: partie.pointsMax
       });
@@ -150,7 +148,7 @@ io.on('connection', (socket) => {
       question,
       image,
       temps,
-      tempsTotal: temps, // ✅ FIX : inclure tempsTotal
+      tempsTotal: temps,
       pointsMax
     });
     io.to(partie.adminId).emit('admin_chrono_start', { temps });
@@ -176,7 +174,6 @@ io.on('connection', (socket) => {
     io.to(code).emit('fin_question', { reponses });
   });
  
-  // ✅ FIX : écouter 'joueur_reponse' (nom correct, cohérent avec le client corrigé)
   socket.on('joueur_reponse', ({ code, nom, reponse, tempsReponse }) => {
     const partie = parties[code];
     if (!partie || partie.phase !== 'playing') return;
@@ -191,17 +188,37 @@ io.on('connection', (socket) => {
     if (!partie || partie.pointDonneCetteQuestion) return;
     partie.scores[nom] = (partie.scores[nom] || 0) + points;
     partie.pointDonneCetteQuestion = true;
+
+    // Arrêter le timer serveur si encore en cours
+    if (partie.timerInterval) clearInterval(partie.timerInterval);
+    partie.phase = 'recap';
+
+    // Scores mis à jour côté joueurs (s'actualise sur le récap si déjà dessus)
     const scores = Object.entries(partie.scores).map(([n, p]) => ({ nom: n, points: p }));
     io.to(code).emit('points_update', scores);
     io.to(partie.adminId).emit('point_deja_donne');
+
+    // fin_question pour basculer les joueurs encore sur l'écran question vers le récap
+    const reponses = _buildReponses(partie);
+    io.to(code).emit('fin_question', { reponses });
   });
  
   socket.on('admin_personne_a_trouve', ({ code }) => {
     const partie = parties[code];
     if (!partie) return;
     partie.pointDonneCetteQuestion = true;
+
+    // Arrêter le timer serveur
+    if (partie.timerInterval) clearInterval(partie.timerInterval);
+    partie.phase = 'recap';
+
+    // Bannière "personne n'a trouvé" côté joueurs
     io.to(code).emit('personne_a_trouve');
     io.to(partie.adminId).emit('point_deja_donne');
+
+    // Basculer tout le monde vers le récap
+    const reponses = _buildReponses(partie);
+    io.to(code).emit('fin_question', { reponses });
   });
  
   socket.on('joueur_reaction', ({ code, nomCible, emoji }) => {
