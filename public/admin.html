@@ -3,191 +3,290 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>👑 Admin - Jeu-Enigmes</title>
+  <title>👑 Admin — QUIZ entre amis</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; overscroll-behavior: none; }
+    :root {
+      --bleu:    #185FA5;
+      --bleu-dk: #0C447C;
+      --bleu-xdk:#042C53;
+      --ambre:   #EF9F27;
+      --ambre-dk:#BA7517;
+      --vert:    #639922;
+      --vert-dk: #3B6D11;
+      --rouge:   #E24B4A;
+      --rouge-dk:#A32D2D;
+      --bg:      #f0f4fa;
+      --bg2:     #ffffff;
+      --txt:     #0d1b2e;
+      --txt2:    #4a6080;
+      --border:  #c8d8ec;
+      --radius:  999px;
+      --radius-md:14px;
+      --shadow:  0 4px 20px rgba(4,44,83,0.10);
+    }
+    [data-theme="dark"] {
+      --bg:      #0d1b2e;
+      --bg2:     #142338;
+      --txt:     #e8f0fa;
+      --txt2:    #7a9abf;
+      --border:  #1e3a5a;
+      --shadow:  0 4px 20px rgba(0,0,0,0.4);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    body{font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--txt);overscroll-behavior:none;transition:background 0.3s,color 0.3s;}
 
-    .ecran { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px; }
-    .ecran.actif { display: flex; }
+    .theme-btn{position:fixed;top:12px;right:12px;z-index:9999;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:white;border-radius:var(--radius);padding:6px 14px;font-size:13px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:background 0.2s;}
+    .theme-btn:hover{background:rgba(255,255,255,0.25);}
+    [data-theme="dark"] .theme-btn{background:rgba(0,0,0,0.25);border-color:rgba(255,255,255,0.15);}
 
-    #ecran-admin-nom { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
-    .nom-card { background: white; border-radius: 20px; padding: 32px 28px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
-    .nom-card h2 { color: #8B5E3C; margin-bottom: 8px; font-size: clamp(20px,5vw,24px); }
-    .nom-card p { color: #888; font-size: 14px; margin-bottom: 20px; }
-    .nom-card input { width: 100%; padding: 14px; font-size: 18px; border: 3px solid #e0d5c8; border-radius: 12px; font-family: inherit; outline: none; text-align: center; margin-bottom: 16px; }
-    .nom-card input:focus { border-color: #8B5E3C; }
+    .ecran{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:20px;}
+    .ecran.actif{display:flex;}
 
-    #ecran-admin-attente { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
-    .code-display { background: rgba(255,255,255,0.15); border-radius: 20px; padding: clamp(20px,5vw,30px) clamp(24px,8vw,50px); text-align: center; color: white; margin: 16px 0; width: 100%; max-width: 360px; }
-    .code-display .label { font-size: 15px; opacity: 0.8; margin-bottom: 8px; }
-    .code-display .code { font-size: clamp(36px,12vw,56px); font-weight: bold; letter-spacing: 6px; }
-    .code-display .info { font-size: 13px; opacity: 0.7; margin-top: 8px; }
-    .nom-admin-badge { color: white; font-size: clamp(16px,4vw,20px); font-weight: bold; margin-bottom: 12px; }
-    .joueurs-admin { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; max-width: 400px; }
-    .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 15px; font-weight: bold; }
+    /* ACCUEIL ADMIN */
+    #ecran-admin-nom{background:linear-gradient(150deg,var(--bleu-xdk),var(--bleu));justify-content:center;}
+    .nom-card{background:var(--bg2);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow);border:0.5px solid var(--border);}
+    .nom-card h2{color:var(--bleu);margin-bottom:8px;font-size:clamp(20px,5vw,24px);}
+    .nom-card p{color:var(--txt2);font-size:14px;margin-bottom:20px;}
+    .nom-card input{width:100%;padding:14px;font-size:18px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;text-align:center;margin-bottom:16px;background:var(--bg);color:var(--txt);}
+    .nom-card input:focus{border-color:var(--bleu);}
 
-    .btn { padding: clamp(12px,3vw,14px) clamp(18px,5vw,28px); font-size: clamp(15px,4vw,17px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.2); margin: 6px; font-family: inherit; min-height: 48px; transition: transform 0.1s, box-shadow 0.1s; }
-    .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
-    .btn-vert { background: #6db88e; color: white; }
-    .btn-rouge { background: #e05a5a; color: white; }
-    .btn-orange { background: #e8b86d; color: #3d2b1f; }
-    .btn-gris { background: #aaa; color: white; }
-    .btn-full { width: 100%; margin: 4px 0; }
+    /* ATTENTE */
+    #ecran-admin-attente{background:linear-gradient(150deg,var(--bleu-xdk),var(--bleu));justify-content:center;}
+    .code-display{background:rgba(255,255,255,0.12);border-radius:20px;padding:clamp(20px,5vw,30px) clamp(24px,8vw,50px);text-align:center;color:white;margin:16px 0;width:100%;max-width:360px;border:1px solid rgba(255,255,255,0.2);}
+    .code-display .label{font-size:14px;opacity:.75;margin-bottom:8px;}
+    .code-display .code{font-size:clamp(36px,12vw,56px);font-weight:700;letter-spacing:6px;}
+    .code-display .info{font-size:13px;opacity:.6;margin-top:8px;}
+    .btn-copier-code{background:rgba(255,255,255,0.15);color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius);padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;transition:background 0.2s;}
+    .btn-copier-code:active{background:rgba(255,255,255,0.28);}
+    .nom-admin-badge{color:white;font-size:clamp(16px,4vw,20px);font-weight:700;margin-bottom:12px;}
+    .joueurs-admin{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0;max-width:400px;}
 
-    #ecran-admin-jeu { background: #f5ede0; align-items: stretch; padding: 0; min-height: 100dvh; }
+    /* CHIPS & AVATARS */
+    .joueur-chip{display:flex;align-items:center;gap:7px;padding:7px 14px 7px 8px;border-radius:var(--radius);font-size:15px;font-weight:700;}
+    .avatar-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+    .joueur-tag{display:flex;align-items:center;gap:4px;padding:2px 8px 2px 4px;border-radius:var(--radius);font-size:11px;}
+    .joueur-tag-av{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
 
-    .admin-header { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; color: white; flex-wrap: wrap; gap: 6px; position: sticky; top: 0; z-index: 100; flex-shrink: 0; }
-    .admin-header h1 { font-size: clamp(13px,3.5vw,17px); }
-    .admin-code-small { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: clamp(14px,3.5vw,17px); font-weight: bold; letter-spacing: 3px; }
-    .joueurs-header { display: flex; flex-wrap: wrap; gap: 4px; }
-    .joueur-tag { background: rgba(255,255,255,0.2); padding: 2px 7px; border-radius: 10px; font-size: 11px; }
+    .av0{background:#7F77DD;color:#EEEDFE;} .av1{background:#1D9E75;color:#E1F5EE;}
+    .av2{background:#D85A30;color:#FAECE7;} .av3{background:#185FA5;color:#E6F1FB;}
+    .av4{background:#BA7517;color:#FAEEDA;} .av5{background:#993556;color:#FBEAF0;}
+    .av6{background:#639922;color:#EAF3DE;} .av7{background:#A32D2D;color:#FCEBEB;}
+    .chip0{background:rgba(127,119,221,0.2);color:#3C3489;}
+    .chip1{background:rgba(29,158,117,0.2);color:#085041;}
+    .chip2{background:rgba(216,90,48,0.2);color:#4A1B0C;}
+    .chip3{background:rgba(24,95,165,0.2);color:#042C53;}
+    .chip4{background:rgba(186,117,23,0.2);color:#412402;}
+    .chip5{background:rgba(153,53,86,0.2);color:#4B1528;}
+    .chip6{background:rgba(99,153,34,0.2);color:#173404;}
+    .chip7{background:rgba(163,45,45,0.2);color:#501313;}
+    [data-theme="dark"] .chip0{color:#CECBF6;} [data-theme="dark"] .chip1{color:#9FE1CB;}
+    [data-theme="dark"] .chip2{color:#F5C4B3;} [data-theme="dark"] .chip3{color:#B5D4F4;}
+    [data-theme="dark"] .chip4{color:#FAC775;} [data-theme="dark"] .chip5{color:#F4C0D1;}
+    [data-theme="dark"] .chip6{color:#C0DD97;} [data-theme="dark"] .chip7{color:#F7C1C1;}
 
-    .admin-timer-bar { background: #6d4a2e; padding: 8px 14px; display: none; align-items: center; gap: 12px; color: white; position: sticky; top: 44px; z-index: 99; flex-shrink: 0; }
-    .admin-timer-bar.visible { display: flex; }
-    .admin-timer-cercle { width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: bold; border: 3px solid white; flex-shrink: 0; transition: background 0.3s; }
-    .admin-timer-cercle.urgent { background: #e05a5a; border-color: #ffaaaa; }
-    .admin-timer-question { font-size: 13px; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+    /* BOUTONS */
+    .btn{padding:clamp(12px,3vw,14px) clamp(18px,5vw,28px);font-size:clamp(15px,4vw,17px);font-weight:700;border:none;border-radius:var(--radius);cursor:pointer;margin:6px;font-family:inherit;min-height:48px;transition:transform 0.1s,box-shadow 0.12s;}
+    .btn:active{transform:translateY(3px);}
+    .btn-bleu{background:var(--bleu);color:white;box-shadow:0 5px 0 var(--bleu-dk);}
+    .btn-rouge{background:var(--rouge);color:white;box-shadow:0 4px 0 var(--rouge-dk);}
+    .btn-ambre{background:var(--ambre);color:var(--bleu-xdk);box-shadow:0 5px 0 var(--ambre-dk);}
+    .btn-vert{background:var(--vert);color:white;box-shadow:0 4px 0 var(--vert-dk);}
+    .btn-gris{background:#aaa;color:white;box-shadow:0 4px 0 #888;}
+    .btn-ghost{background:transparent;color:var(--txt2);border:2px solid var(--border);box-shadow:none;}
+    .btn-bleu:active{box-shadow:0 2px 0 var(--bleu-dk);}
+    .btn-rouge:active{box-shadow:0 2px 0 var(--rouge-dk);}
+    .btn-ambre:active{box-shadow:0 2px 0 var(--ambre-dk);}
+    .btn-vert:active{box-shadow:0 2px 0 var(--vert-dk);}
+    .btn-full{width:100%;margin:4px 0;}
 
-    .admin-tabs { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 2px solid #e0d5c8; display: none; z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
-    .admin-tabs-inner { display: flex; height: 58px; }
-    .admin-tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 10px; color: #aaa; gap: 3px; position: relative; padding: 6px 0; transition: color 0.2s; }
-    .admin-tab-btn .tab-icon { font-size: 20px; line-height: 1; }
-    .admin-tab-btn.actif { color: #8B5E3C; }
-    .admin-tab-btn.actif::after { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 3px; background: #8B5E3C; border-radius: 0 0 3px 3px; }
-    .tab-badge { position: absolute; top: 4px; right: calc(50% - 16px); background: #e05a5a; color: white; font-size: 10px; font-weight: bold; border-radius: 8px; padding: 1px 5px; min-width: 16px; text-align: center; display: none; }
-    .tab-badge.visible { display: block; }
+    /* JEU */
+    #ecran-admin-jeu{background:var(--bg);align-items:stretch;padding:0;min-height:100dvh;}
+    .admin-header{background:linear-gradient(135deg,var(--bleu-dk),var(--bleu-xdk));padding:10px 14px;display:flex;justify-content:space-between;align-items:center;color:white;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:100;flex-shrink:0;}
+    .admin-header h1{font-size:clamp(13px,3.5vw,17px);}
+    .admin-code-small{background:rgba(255,255,255,0.18);padding:4px 12px;border-radius:var(--radius);font-size:clamp(14px,3.5vw,17px);font-weight:700;letter-spacing:3px;}
+    .joueurs-header{display:flex;flex-wrap:wrap;gap:4px;}
 
-    .admin-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; flex: 1; }
-    @media (max-width: 700px) {
-      .admin-body { grid-template-columns: 1fr; padding: 10px 10px 76px; }
-      .admin-tabs { display: block; }
-      .panel { display: none; }
-      .panel.onglet-actif { display: block; }
-      .admin-timer-bar { top: 50px; }
+    /* TIMER BAR ADMIN */
+    .admin-timer-bar{background:var(--bleu-xdk);padding:8px 14px;display:none;align-items:center;gap:12px;color:white;position:sticky;top:44px;z-index:99;flex-shrink:0;}
+    .admin-timer-bar.visible{display:flex;}
+    .admin-timer-cercle{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:700;border:3px solid white;flex-shrink:0;transition:background 0.3s;}
+    .admin-timer-cercle.urgent{background:var(--rouge);border-color:#ffaaaa;}
+    .admin-timer-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+    .admin-timer-barre-wrap{width:100%;height:5px;background:rgba(255,255,255,0.2);border-radius:3px;overflow:hidden;}
+    .admin-timer-barre{height:100%;background:white;border-radius:3px;transition:width 1s linear,background 0.3s;}
+    .admin-timer-barre.urgent{background:#ffaaaa;}
+    .admin-timer-question{font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* TABS MOBILE */
+    .admin-tabs{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:none;z-index:200;padding-bottom:env(safe-area-inset-bottom,0);}
+    .admin-tabs-inner{display:flex;height:58px;}
+    .admin-tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;font-family:inherit;font-size:10px;color:var(--txt2);gap:3px;position:relative;padding:6px 0;transition:color 0.2s;}
+    .admin-tab-btn .tab-icon{font-size:20px;line-height:1;}
+    .admin-tab-btn.actif{color:var(--bleu);}
+    .admin-tab-btn.actif::after{content:'';position:absolute;top:0;left:20%;right:20%;height:3px;background:var(--bleu);border-radius:0 0 3px 3px;}
+    .tab-badge{position:absolute;top:4px;right:calc(50% - 16px);background:var(--rouge);color:white;font-size:10px;font-weight:700;border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;display:none;}
+    .tab-badge.visible{display:block;}
+
+    /* GRID */
+    .admin-body{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;flex:1;}
+    @media(max-width:700px){
+      .admin-body{grid-template-columns:1fr;padding:10px 10px 76px;}
+      .admin-tabs{display:block;}
+      .panel{display:none;}
+      .panel.onglet-actif{display:block;}
+      .admin-timer-bar{top:50px;}
     }
 
-    .panel { background: white; border-radius: 16px; padding: clamp(14px,4vw,20px); }
-    .panel h3 { color: #8B5E3C; margin-bottom: 14px; font-size: clamp(15px,4vw,17px); border-bottom: 2px solid #f5ede0; padding-bottom: 8px; }
+    /* PANELS */
+    .panel{background:var(--bg2);border-radius:var(--radius-md);padding:clamp(14px,4vw,20px);border:0.5px solid var(--border);}
+    .panel h3{color:var(--bleu);margin-bottom:14px;font-size:clamp(15px,4vw,17px);border-bottom:1px solid var(--border);padding-bottom:8px;}
 
-    .question-form textarea { width: 100%; padding: 12px; border: 2px solid #e0d5c8; border-radius: 10px; font-size: clamp(14px,3.5vw,15px); font-family: inherit; resize: vertical; min-height: 80px; outline: none; }
-    .question-form textarea:focus { border-color: #8B5E3C; }
-    .form-row { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
-    .form-row label { font-size: 13px; color: #8B5E3C; font-weight: bold; }
-    .form-row input[type="number"], .form-row input[type="range"] { flex: 1; padding: 8px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; outline: none; }
-    .form-row input:focus { border-color: #8B5E3C; }
-    .preview-image { max-width: 100%; max-height: 130px; border-radius: 10px; margin: 8px 0; display: none; object-fit: contain; }
-    .image-upload-label { display: block; padding: 10px; text-align: center; border: 2px dashed #e0d5c8; border-radius: 10px; cursor: pointer; color: #aaa; font-size: 14px; margin: 8px 0; transition: border-color 0.2s; }
-    .image-upload-label:hover { border-color: #8B5E3C; color: #8B5E3C; }
-    .temps-val { font-weight: bold; color: #8B5E3C; min-width: 30px; text-align: center; }
-    .notif-indice { background: #fff3cd; border: 2px solid #e8b86d; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: none; }
-    .notif-indice p { color: #856404; font-weight: bold; font-size: 13px; }
-    .indice-form { display: flex; gap: 8px; }
-    .indice-form input { flex: 1; padding: 10px; border: 2px solid #e0d5c8; border-radius: 10px; font-family: inherit; outline: none; font-size: 14px; min-height: 44px; }
-    .indice-form input:focus { border-color: #8B5E3C; }
-    .controles { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 10px 0; }
-    .controles .btn { flex: 1; min-width: 110px; }
+    /* FORM QUESTION */
+    .question-form textarea{width:100%;padding:12px;border:2px solid var(--border);border-radius:var(--radius-md);font-size:clamp(14px,3.5vw,15px);font-family:inherit;resize:vertical;min-height:80px;outline:none;background:var(--bg);color:var(--txt);}
+    .question-form textarea:focus{border-color:var(--bleu);}
+    .form-row{display:flex;gap:10px;margin:10px 0;flex-wrap:wrap;}
+    .form-row label{font-size:13px;color:var(--bleu);font-weight:700;}
+    .form-row input[type="number"],.form-row input[type="range"]{flex:1;padding:8px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;outline:none;background:var(--bg);color:var(--txt);}
+    .form-row input:focus{border-color:var(--bleu);}
+    .preview-image{max-width:100%;max-height:130px;border-radius:var(--radius-md);margin:8px 0;display:none;object-fit:contain;}
+    .image-upload-label{display:block;padding:10px;text-align:center;border:2px dashed var(--border);border-radius:var(--radius-md);cursor:pointer;color:var(--txt2);font-size:14px;margin:8px 0;transition:border-color 0.2s;}
+    .image-upload-label:hover{border-color:var(--bleu);color:var(--bleu);}
+    .temps-val{font-weight:700;color:var(--bleu);min-width:30px;text-align:center;}
 
-    .question-envoyee-recap { background: #fdf6ee; border: 2px solid #e8b86d; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; display: none; }
-    .question-envoyee-recap .qr-label { font-size: 11px; color: #8B5E3C; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .question-envoyee-recap .qr-texte { font-size: 14px; color: #3d2b1f; font-weight: bold; line-height: 1.4; }
-    .question-envoyee-recap .qr-image { max-width: 100%; max-height: 180px; width: auto; height: auto; border-radius: 8px; margin-top: 8px; display: none; object-fit: contain; }
+    .controles{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0;}
+    .controles .btn{flex:1;min-width:100px;}
 
-    /* ── Panel Réponses ── */
-    .joueur-cards { display: flex; flex-direction: column; gap: 8px; }
-    .joueur-card { background: #fdfaf7; border: 2px solid #e0d5c8; border-radius: 12px; overflow: hidden; }
-    .joueur-card.has-reponse { border-color: #6db88e; }
-    .joueur-card-header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; user-select: none; -webkit-user-select: none; }
-    .joueur-card-nom { font-weight: bold; font-size: 14px; color: #3d2b1f; min-width: 70px; flex-shrink: 0; }
-    .joueur-card-fleche { font-size: 12px; color: #aaa; flex-shrink: 0; transition: transform 0.2s; }
-    .joueur-card.open .joueur-card-fleche { transform: rotate(90deg); }
-    .joueur-card-derniere { flex: 1; font-size: 13px; color: #5a8a5a; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .joueur-card-derniere.vide { color: #bbb; font-weight: normal; font-style: italic; }
-    .joueur-card-temps { font-size: 11px; background: #e8b86d; color: white; padding: 2px 7px; border-radius: 8px; font-weight: bold; flex-shrink: 0; }
-    .joueur-card-body { display: none; padding: 0 12px 12px; border-top: 1px solid #f0e8e0; }
-    .joueur-card.open .joueur-card-body { display: block; }
-    .historique-liste { margin: 10px 0 8px; display: flex; flex-direction: column; gap: 4px; }
-    .histo-item { font-size: 13px; color: #888; padding: 4px 8px; border-radius: 6px; background: #f5f5f5; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-    .histo-item.derniere { color: #3d2b1f; font-weight: bold; background: #e8f5e9; }
-    .temps-badge { background: #e8b86d; color: white; border-radius: 8px; padding: 2px 6px; font-size: 11px; font-weight: bold; flex-shrink: 0; }
-    .joueur-card-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-    .reactions-admin { font-size: 12px; color: #666; display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
-    .reaction-pill { background: #f5ede0; border: 1.5px solid #e0d5c8; border-radius: 20px; padding: 2px 8px; font-size: 12px; }
-    .points-zone { display: flex; gap: 5px; align-items: center; margin-left: auto; }
-    .points-zone input { width: 48px; padding: 5px; border: 2px solid #e0d5c8; border-radius: 8px; font-family: inherit; text-align: center; font-size: 14px; min-height: 32px; }
-    .btn-point { background: #6db88e; color: white; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 15px; font-family: inherit; min-height: 32px; min-width: 34px; }
-    .btn-point:disabled { background: #ccc; opacity: 0.4; cursor: not-allowed; }
-    .points-max-badge { font-size: 11px; color: #aaa; margin-top: 2px; text-align: right; }
-    .verrou-banner { background: #e05a5a; color: white; text-align: center; padding: 8px; border-radius: 10px; font-weight: bold; font-size: 13px; margin-bottom: 10px; display: none; }
+    /* INDICE */
+    .notif-indice{background:#fef3cd;border:2px solid var(--ambre);border-radius:var(--radius-md);padding:10px;margin-bottom:10px;display:none;}
+    [data-theme="dark"] .notif-indice{background:#1e2d10;}
+    .notif-indice p{color:#856404;font-weight:700;font-size:13px;}
+    [data-theme="dark"] .notif-indice p{color:#c8a04a;}
+    .indice-form{display:flex;gap:8px;margin-bottom:12px;}
+    .indice-form input{flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:14px;min-height:44px;background:var(--bg);color:var(--txt);}
+    .indice-form input:focus{border-color:var(--ambre);}
 
-    /* Hint long-press sur les cartes joueur */
-    .longpress-hint { font-size: 11px; color: #bbb; text-align: center; margin-top: 6px; font-style: italic; }
+    /* BONNE REPONSE FORM */
+    .bonne-rep-section{background:var(--bg);border:2px solid var(--vert);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:12px;}
+    .bonne-rep-section-label{font-size:12px;color:var(--vert-dk);font-weight:700;margin-bottom:6px;}
+    [data-theme="dark"] .bonne-rep-section-label{color:#9FE1CB;}
+    .bonne-rep-form{display:flex;gap:8px;}
+    .bonne-rep-form input{flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:14px;min-height:44px;background:var(--bg2);color:var(--txt);}
+    .bonne-rep-form input:focus{border-color:var(--vert);}
 
-    /* ── Panel Scores ── */
-    .score-ligne { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; background: #f5ede0; font-size: clamp(14px,3.5vw,16px); gap: 8px; }
-    .score-nom { flex: 1; }
-    .score-pts { font-weight: bold; color: #8B5E3C; background: white; padding: 4px 10px; border-radius: 10px; }
-    .btn-edit-score { background: none; border: 1.5px solid #e0d5c8; border-radius: 6px; cursor: pointer; font-size: 14px; padding: 3px 7px; min-height: 28px; color: #8B5E3C; flex-shrink: 0; transition: background 0.15s; }
-    .btn-edit-score:hover { background: #f5ede0; }
-    .score-edit-row { display: none; align-items: center; gap: 6px; margin-top: 6px; padding: 0 4px; }
-    .score-edit-row.visible { display: flex; }
-    .score-edit-row input { width: 60px; padding: 5px 8px; border: 2px solid #8B5E3C; border-radius: 8px; font-family: inherit; font-size: 14px; text-align: center; outline: none; }
-    .btn-edit-ok { background: #6db88e; color: white; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 13px; font-family: inherit; min-height: 30px; }
-    .btn-edit-annuler { background: #e0d5c8; color: #3d2b1f; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 13px; font-family: inherit; min-height: 30px; }
+    /* QUESTION ENVOYEE RECAP */
+    .question-envoyee-recap{background:var(--bg);border:2px solid var(--ambre);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:12px;display:none;}
+    .question-envoyee-recap .qr-label{font-size:11px;color:var(--ambre-dk);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+    [data-theme="dark"] .question-envoyee-recap .qr-label{color:var(--ambre);}
+    .question-envoyee-recap .qr-texte{font-size:14px;color:var(--txt);font-weight:700;line-height:1.4;}
+    .question-envoyee-recap .qr-image{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px;display:none;object-fit:contain;}
 
-    /* ── Panel Chat ── */
-    .chat-box { height: clamp(130px,25vw,180px); overflow-y: auto; border: 2px solid #e0d5c8; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fdfaf7; display: flex; flex-direction: column; gap: 4px; }
-    @media (max-width: 700px) { .chat-box { height: calc(100dvh - 300px); min-height: 150px; } }
-    .chat-msg { margin-bottom: 4px; font-size: 14px; line-height: 1.4; cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; user-select: none; -webkit-user-select: none; word-break: break-word; }
-    .chat-msg:hover { background: #f0e8e0; }
-    .chat-msg.selected { background: #e8f5e9; }
-    .chat-msg.alerte-triche { color: #e05a5a; font-weight: bold; cursor: default; }
-    .chat-nom { font-weight: bold; color: #8B5E3C; margin-right: 4px; }
-    .chat-heure { font-size: 11px; color: #aaa; margin-right: 4px; }
-    .chat-reply-preview { background: #f5ede0; border-left: 3px solid #8B5E3C; padding: 4px 8px; border-radius: 0 6px 6px 0; font-size: 12px; color: #888; margin-bottom: 4px; }
-    .reply-bar { background: #fff3cd; border: 1px solid #e8b86d; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; font-size: 13px; color: #856404; display: none; align-items: center; justify-content: space-between; }
-    .reply-bar.visible { display: flex; }
-    .reply-bar-close { cursor: pointer; font-size: 16px; color: #e05a5a; font-weight: bold; padding: 0 4px; }
-    .chat-form { display: flex; gap: 6px; }
-    .chat-form input { flex: 1; padding: 10px; border: 2px solid #e0d5c8; border-radius: 10px; font-family: inherit; outline: none; font-size: 14px; min-height: 44px; }
-    .chat-form input:focus { border-color: #8B5E3C; }
+    /* JOUEUR CARDS */
+    .joueur-cards{display:flex;flex-direction:column;gap:8px;}
+    .joueur-card{background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-md);overflow:hidden;}
+    .joueur-card.has-reponse{border-color:var(--vert);}
+    .joueur-card-header{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;-webkit-user-select:none;}
+    .joueur-card-nom{font-weight:700;font-size:14px;color:var(--txt);min-width:70px;flex-shrink:0;}
+    .joueur-card-fleche{font-size:12px;color:var(--txt2);flex-shrink:0;transition:transform 0.2s;}
+    .joueur-card.open .joueur-card-fleche{transform:rotate(90deg);}
+    .joueur-card-derniere{flex:1;font-size:13px;color:var(--vert-dk);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    [data-theme="dark"] .joueur-card-derniere{color:#9FE1CB;}
+    .joueur-card-derniere.vide{color:var(--txt2);font-weight:normal;font-style:italic;}
+    .joueur-card-temps{font-size:11px;background:var(--ambre);color:var(--bleu-xdk);padding:2px 7px;border-radius:var(--radius);font-weight:700;flex-shrink:0;}
+    .joueur-card-body{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
+    .joueur-card.open .joueur-card-body{display:block;}
+    .historique-liste{margin:10px 0 8px;display:flex;flex-direction:column;gap:4px;}
+    .histo-item{font-size:13px;color:var(--txt2);padding:4px 8px;border-radius:6px;background:var(--bg2);display:flex;justify-content:space-between;align-items:center;gap:6px;}
+    .histo-item.derniere{color:var(--txt);font-weight:700;background:#e6f1fb;}
+    [data-theme="dark"] .histo-item.derniere{background:#1a2f48;}
+    .temps-badge{background:var(--ambre);color:var(--bleu-xdk);border-radius:var(--radius);padding:2px 6px;font-size:11px;font-weight:700;flex-shrink:0;}
+    .joueur-card-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;}
+    .reactions-admin{font-size:12px;color:var(--txt2);display:flex;flex-wrap:wrap;gap:4px;flex:1;}
+    .reaction-pill{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:2px 8px;font-size:12px;}
+    .points-zone{display:flex;gap:5px;align-items:center;margin-left:auto;}
+    .points-zone input{width:48px;padding:5px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;text-align:center;font-size:14px;min-height:32px;background:var(--bg);color:var(--txt);}
+    .btn-point{background:var(--vert);color:white;border:none;border-radius:var(--radius-md);padding:5px 10px;cursor:pointer;font-weight:700;font-size:15px;font-family:inherit;min-height:32px;min-width:34px;}
+    .btn-point:disabled{background:#ccc;opacity:.4;cursor:not-allowed;}
+    .points-max-badge{font-size:11px;color:var(--txt2);margin-top:2px;text-align:right;}
+    .verrou-banner{background:var(--rouge);color:white;text-align:center;padding:8px;border-radius:var(--radius-md);font-weight:700;font-size:13px;margin-bottom:10px;display:none;}
+    .longpress-hint{font-size:11px;color:var(--txt2);text-align:center;margin-top:6px;font-style:italic;}
 
-    /* ── Picker emoji style WhatsApp ── */
-    .emoji-picker-overlay { display: none; position: fixed; inset: 0; z-index: 800; }
-    .emoji-picker-overlay.visible { display: block; }
-    .emoji-picker { position: fixed; background: white; border-radius: 40px; padding: 10px 14px; display: flex; gap: 6px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); z-index: 900; transform: scale(0.7); opacity: 0; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s; }
-    .emoji-picker.visible { transform: scale(1); opacity: 1; }
-    .emoji-picker-btn { font-size: 26px; background: none; border: none; cursor: pointer; padding: 4px; border-radius: 50%; transition: transform 0.15s, background 0.1s; line-height: 1; }
-    .emoji-picker-btn:hover { background: #f5ede0; transform: scale(1.25); }
-    .emoji-picker-btn:active { transform: scale(1.4); }
+    /* SCORES */
+    .score-ligne{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--radius-md);margin-bottom:8px;background:var(--bg);gap:8px;}
+    .score-nom-flex{flex:1;display:flex;align-items:center;gap:8px;min-width:0;}
+    .score-nom{font-size:clamp(13px,3.5vw,15px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .score-bar-wrap{width:60px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0;}
+    .score-bar{height:100%;border-radius:3px;transition:width 0.6s ease;}
+    .score-pts{font-weight:700;color:var(--ambre-dk);background:var(--bg2);padding:4px 10px;border-radius:var(--radius);flex-shrink:0;font-size:13px;}
+    [data-theme="dark"] .score-pts{color:var(--ambre);}
+    .btn-edit-score{background:none;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:14px;padding:3px 7px;min-height:28px;color:var(--bleu);flex-shrink:0;}
+    .btn-edit-score:hover{background:var(--bg);}
+    .score-edit-row{display:none;align-items:center;gap:6px;margin-top:6px;padding:0 4px;}
+    .score-edit-row.visible{display:flex;}
+    .score-edit-row input{width:60px;padding:5px 8px;border:2px solid var(--bleu);border-radius:var(--radius-md);font-family:inherit;font-size:14px;text-align:center;outline:none;background:var(--bg);color:var(--txt);}
+    .btn-edit-ok{background:var(--vert);color:white;border:none;border-radius:var(--radius-md);padding:5px 10px;cursor:pointer;font-weight:700;font-size:13px;font-family:inherit;min-height:30px;}
+    .btn-edit-annuler{background:var(--border);color:var(--txt);border:none;border-radius:var(--radius-md);padding:5px 10px;cursor:pointer;font-size:13px;font-family:inherit;min-height:30px;}
 
-    #ecran-admin-fin { background: linear-gradient(135deg, #8B5E3C, #6d4a2e); justify-content: center; }
-    .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
-    .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
-    .podium-ligne { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; }
-    .podium-ligne.or { background: #fff8e1; border: 2px solid #ffd700; }
-    .podium-ligne.argent { background: #f5f5f5; border: 2px solid #c0c0c0; }
-    .podium-ligne.bronze { background: #fff3e0; border: 2px solid #cd7f32; }
-    .podium-ligne.autre { background: #f5ede0; border: 2px solid #e0d5c8; }
-    .podium-pts { font-weight: bold; color: #8B5E3C; }
+    /* CHAT */
+    .chat-box{height:clamp(130px,25vw,180px);overflow-y:auto;border:2px solid var(--border);border-radius:var(--radius-md);padding:10px;margin-bottom:10px;background:var(--bg);display:flex;flex-direction:column;gap:4px;}
+    @media(max-width:700px){.chat-box{height:calc(100dvh - 300px);min-height:150px;}}
+    .chat-msg{margin-bottom:4px;font-size:14px;line-height:1.4;cursor:pointer;padding:4px 6px;border-radius:8px;transition:background 0.15s;user-select:none;-webkit-user-select:none;word-break:break-word;}
+    .chat-msg:hover{background:var(--bg2);}
+    .chat-msg.selected{background:#e6f1fb;}
+    [data-theme="dark"] .chat-msg.selected{background:#1a2f48;}
+    .chat-msg.alerte-triche{color:var(--rouge);font-weight:700;cursor:default;}
+    .chat-nom{font-weight:700;color:var(--ambre-dk);margin-right:4px;}
+    [data-theme="dark"] .chat-nom{color:var(--ambre);}
+    .chat-heure{font-size:11px;color:var(--txt2);margin-right:4px;}
+    .chat-reply-preview{background:var(--bg2);border-left:3px solid var(--ambre);padding:4px 8px;border-radius:0 6px 6px 0;font-size:12px;color:var(--txt2);margin-bottom:4px;}
+    .reply-bar{background:#fef3cd;border:1px solid var(--ambre);border-radius:8px;padding:6px 10px;margin-bottom:6px;font-size:13px;color:#856404;display:none;align-items:center;justify-content:space-between;}
+    [data-theme="dark"] .reply-bar{background:#1e2d10;color:#c8a04a;}
+    .reply-bar.visible{display:flex;}
+    .reply-bar-close{cursor:pointer;font-size:16px;color:var(--rouge);font-weight:700;padding:0 4px;}
+    .chat-form{display:flex;gap:6px;}
+    .chat-form input{flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:14px;min-height:44px;background:var(--bg);color:var(--txt);}
+    .chat-form input:focus{border-color:var(--bleu);}
+
+    /* EMOJI */
+    .emoji-picker-overlay{display:none;position:fixed;inset:0;z-index:800;}
+    .emoji-picker-overlay.visible{display:block;}
+    .emoji-picker{position:fixed;background:var(--bg2);border-radius:var(--radius);padding:10px 14px;display:flex;gap:6px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:900;transform:scale(0.7);opacity:0;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),opacity 0.15s;border:0.5px solid var(--border);}
+    .emoji-picker.visible{transform:scale(1);opacity:1;}
+    .emoji-picker-btn{font-size:26px;background:none;border:none;cursor:pointer;padding:4px;border-radius:50%;transition:transform 0.15s;line-height:1;}
+    .emoji-picker-btn:hover{background:var(--bg);transform:scale(1.25);}
+    .emoji-picker-btn:active{transform:scale(1.4);}
+
+    /* FIN */
+    #ecran-admin-fin{background:linear-gradient(150deg,var(--bleu-xdk),var(--bleu),#1D9E75);justify-content:center;}
+    .fin-card{background:var(--bg2);border-radius:20px;padding:clamp(20px,6vw,30px);max-width:500px;width:100%;text-align:center;box-shadow:var(--shadow);}
+    .fin-card h2{color:var(--bleu);margin-bottom:16px;font-size:clamp(20px,5vw,24px);}
+    .podium-ligne{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:var(--radius-md);margin-bottom:8px;}
+    .podium-ligne.or{background:#fff8e1;border:2px solid #ffd700;}
+    .podium-ligne.argent{background:#f5f5f5;border:2px solid #c0c0c0;}
+    .podium-ligne.bronze{background:#fff3e0;border:2px solid #cd7f32;}
+    .podium-ligne.autre{background:var(--bg);border:2px solid var(--border);}
+    .podium-pts{font-weight:700;color:var(--bleu);}
+    [data-theme="dark"] .podium-ligne.or{background:#2a2410;}
+    [data-theme="dark"] .podium-ligne.argent{background:#1e1e1e;}
+    [data-theme="dark"] .podium-ligne.bronze{background:#251a0e;}
   </style>
 </head>
 <body>
 
-<!-- ÉCRAN NOM ADMIN -->
+<button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Sombre</button>
+
+<!-- ECRAN NOM -->
 <div id="ecran-admin-nom" class="ecran actif">
   <div class="nom-card">
     <div style="font-size:48px;margin-bottom:12px;">👑</div>
     <h2>Panel Admin</h2>
     <p>Entrez votre nom pour créer la partie</p>
-    <input type="text" id="input-nom-admin" placeholder="Votre nom..." maxlength="20"
-      onkeydown="if(event.key==='Enter') creerPartie()">
-    <button class="btn btn-vert btn-full" onclick="creerPartie()">🚀 Créer la partie</button>
-    <button class="btn btn-gris btn-full" onclick="history.back()">← Retour</button>
+    <input type="text" id="input-nom-admin" placeholder="Votre nom..." maxlength="20" onkeydown="if(event.key==='Enter') creerPartie()">
+    <button class="btn btn-bleu btn-full" onclick="creerPartie()">🚀 Créer la partie</button>
+    <button class="btn btn-ghost btn-full" onclick="history.back()">← Retour</button>
   </div>
 </div>
 
-<!-- ÉCRAN ATTENTE -->
+<!-- ECRAN ATTENTE -->
 <div id="ecran-admin-attente" class="ecran">
   <div class="nom-admin-badge" id="nom-admin-badge">👑</div>
   <div class="code-display">
@@ -195,36 +294,34 @@
     <div class="code" id="admin-code">...</div>
     <div class="info">Partagez ce code avec les joueurs</div>
   </div>
-  <div style="color:white;font-size:15px;margin-bottom:8px;">Joueurs connectés :</div>
-  <div class="joueurs-admin" id="joueurs-admin-attente">
-    <span style="color:rgba(255,255,255,0.5)">En attente...</span>
-  </div>
+  <button class="btn-copier-code" id="btn-copier-code" onclick="copierCode()">📋 Copier le code</button>
+  <div style="color:white;font-size:15px;margin:12px 0 8px;">Joueurs connectés :</div>
+  <div class="joueurs-admin" id="joueurs-admin-attente"><span style="color:rgba(255,255,255,0.5)">En attente...</span></div>
   <div style="display:flex;flex-direction:column;gap:6px;width:100%;max-width:360px;margin-top:10px;">
-    <button class="btn btn-vert btn-full" onclick="lancerJeu()">🚀 Lancer la partie</button>
+    <button class="btn btn-ambre btn-full" onclick="lancerJeu()">🚀 Lancer la partie</button>
     <button class="btn btn-rouge btn-full" onclick="annulerPartie()">❌ Annuler la partie</button>
   </div>
 </div>
 
-<!-- ÉCRAN JEU -->
+<!-- ECRAN JEU -->
 <div id="ecran-admin-jeu" class="ecran">
-
   <div class="admin-header">
     <h1 id="admin-nom-header">👑 Admin</h1>
     <div class="admin-code-small" id="admin-code-small"></div>
     <div class="joueurs-header" id="joueurs-jeu"></div>
   </div>
-
   <div class="admin-timer-bar" id="admin-timer-bar">
     <div class="admin-timer-cercle" id="admin-timer-cercle">--</div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:13px;opacity:0.85;">⏱ Temps restant</div>
+    <div class="admin-timer-right">
+      <div style="font-size:12px;opacity:.8;">⏱ Temps restant</div>
+      <div class="admin-timer-barre-wrap"><div class="admin-timer-barre" id="admin-timer-barre" style="width:100%"></div></div>
       <div class="admin-timer-question" id="admin-timer-question"></div>
     </div>
   </div>
 
   <div class="admin-body">
 
-    <!-- PANEL Question -->
+    <!-- PANEL QUESTION -->
     <div class="panel onglet-actif" id="panel-question" data-panel="question">
       <h3>❓ Nouvelle question</h3>
       <div class="question-form">
@@ -232,7 +329,7 @@
         <label class="image-upload-label" for="image-input">📷 Ajouter une image (optionnel)</label>
         <input type="file" id="image-input" accept="image/*" style="display:none" onchange="previewImage(this)">
         <img id="image-preview" class="preview-image" alt="Aperçu">
-        <button style="display:none;background:#e05a5a;color:white;border:none;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;margin-bottom:8px;min-height:36px;" id="btn-suppr-image" onclick="supprimerImage()">🗑 Supprimer</button>
+        <button style="display:none;background:var(--rouge);color:white;border:none;border-radius:var(--radius);padding:5px 12px;cursor:pointer;font-size:12px;margin-bottom:8px;min-height:36px;" id="btn-suppr-image" onclick="supprimerImage()">🗑 Supprimer</button>
         <div class="form-row">
           <div style="flex:1;">
             <label>⏱ Temps (s)</label><br>
@@ -245,29 +342,38 @@
           <div style="flex:1;">
             <label>🏆 Points max</label><br>
             <input type="number" id="points-max-input" value="3" min="1" max="10"
-              style="margin-top:6px;padding:8px;border:2px solid #e0d5c8;border-radius:8px;font-family:inherit;width:70px;outline:none;min-height:40px;font-size:16px;">
+              style="margin-top:6px;padding:8px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;width:70px;outline:none;min-height:40px;font-size:16px;background:var(--bg);color:var(--txt);">
           </div>
         </div>
         <div class="controles">
-          <button class="btn btn-vert" onclick="envoyerQuestion()">📤 Envoyer</button>
+          <button class="btn btn-bleu" onclick="envoyerQuestion()">📤 Envoyer</button>
           <button class="btn btn-rouge" onclick="couperTemps()">⏹ Couper</button>
-          <button class="btn btn-orange" onclick="personneNaTrouve()">🤷 Personne</button>
+          <button class="btn btn-ambre" onclick="personneNaTrouve()">🤷 Personne</button>
         </div>
       </div>
-      <div class="notif-indice" id="notif-indice">
-        <p id="notif-indice-texte">Des joueurs demandent un indice !</p>
-      </div>
+
+      <!-- INDICE -->
+      <div class="notif-indice" id="notif-indice"><p id="notif-indice-texte">Des joueurs demandent un indice !</p></div>
       <div class="indice-form">
-        <input type="text" id="indice-input" placeholder="💡 Indice..."
-          onkeydown="if(event.key==='Enter') envoyerIndice()">
-        <button class="btn btn-orange" style="padding:10px 14px;font-size:14px;margin:0;min-height:44px;" onclick="envoyerIndice()">Envoyer</button>
+        <input type="text" id="indice-input" placeholder="💡 Indice..." onkeydown="if(event.key==='Enter') envoyerIndice()">
+        <button class="btn btn-ambre" style="padding:10px 14px;font-size:14px;margin:0;min-height:44px;" onclick="envoyerIndice()">Envoyer</button>
       </div>
-      <div style="margin-top:14px;">
+
+      <!-- BONNE REPONSE -->
+      <div class="bonne-rep-section">
+        <div class="bonne-rep-section-label">✅ Révéler la bonne réponse aux joueurs</div>
+        <div class="bonne-rep-form">
+          <input type="text" id="bonne-rep-input" placeholder="La bonne réponse..." onkeydown="if(event.key==='Enter') envoyerBonneReponse()">
+          <button class="btn btn-vert" style="padding:10px 14px;font-size:14px;margin:0;min-height:44px;" onclick="envoyerBonneReponse()">Révéler</button>
+        </div>
+      </div>
+
+      <div style="margin-top:8px;">
         <button class="btn btn-rouge btn-full" onclick="afficherFin()">🏁 Terminer la partie</button>
       </div>
     </div>
 
-    <!-- PANEL Réponses -->
+    <!-- PANEL REPONSES -->
     <div class="panel" id="panel-reponses" data-panel="reponses">
       <h3>📋 Réponses des joueurs</h3>
       <div class="question-envoyee-recap" id="question-envoyee-recap">
@@ -277,19 +383,17 @@
       </div>
       <div class="verrou-banner" id="verrou-banner">🔒 Point attribué — prochaine question pour déverrouiller</div>
       <div class="joueur-cards" id="joueur-cards">
-        <div style="text-align:center;color:#aaa;padding:20px;font-size:14px;">En attente de réponses...</div>
+        <div style="text-align:center;color:var(--txt2);padding:20px;font-size:14px;">En attente de réponses...</div>
       </div>
     </div>
 
-    <!-- PANEL Scores -->
+    <!-- PANEL SCORES -->
     <div class="panel" id="panel-scores" data-panel="scores">
       <h3>🏆 Scores en direct</h3>
-      <div id="admin-scores">
-        <div style="text-align:center;color:#aaa;font-size:14px;">Aucun point attribué</div>
-      </div>
+      <div id="admin-scores"><div style="text-align:center;color:var(--txt2);font-size:14px;">Aucun point attribué</div></div>
     </div>
 
-    <!-- PANEL Chat -->
+    <!-- PANEL CHAT -->
     <div class="panel" id="panel-chat" data-panel="chat">
       <h3>💬 Chat</h3>
       <div class="chat-box" id="chat-admin"></div>
@@ -298,15 +402,12 @@
         <span class="reply-bar-close" onclick="annulerReplyAdmin()">✕</span>
       </div>
       <div class="chat-form">
-        <input type="text" id="chat-input-admin" placeholder="Ton message..."
-          onkeydown="if(event.key==='Enter') envoyerChatAdmin()">
-        <button class="btn btn-vert" style="margin:0;padding:10px 14px;" onclick="envoyerChatAdmin()">➤</button>
+        <input type="text" id="chat-input-admin" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChatAdmin()">
+        <button class="btn btn-bleu" style="margin:0;padding:10px 14px;" onclick="envoyerChatAdmin()">➤</button>
       </div>
     </div>
-
   </div>
 
-  <!-- Onglets mobile -->
   <div class="admin-tabs" id="admin-tabs">
     <div class="admin-tabs-inner">
       <button class="admin-tab-btn actif" id="tab-btn-question" onclick="changerOnglet('question')">
@@ -325,10 +426,8 @@
       </button>
     </div>
   </div>
-
 </div>
 
-<!-- Picker emoji -->
 <div class="emoji-picker-overlay" id="emoji-picker-overlay" onclick="fermerEmojiPicker()"></div>
 <div class="emoji-picker" id="emoji-picker">
   <button class="emoji-picker-btn" onclick="choisirEmoji('👍')">👍</button>
@@ -339,249 +438,196 @@
   <button class="emoji-picker-btn" onclick="choisirEmoji('👏')">👏</button>
 </div>
 
-<!-- FIN -->
+<!-- ECRAN FIN -->
 <div id="ecran-admin-fin" class="ecran">
   <div class="fin-card">
     <h2>🏁 Partie terminée !</h2>
     <div id="admin-podium-fin"></div>
-    <button class="btn btn-vert btn-full" onclick="nouvellePartie()" style="margin-top:16px;">🔄 Nouvelle partie</button>
+    <button class="btn btn-bleu btn-full" onclick="nouvellePartie()" style="margin-top:16px;">🔄 Nouvelle partie</button>
   </div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
   const socket = io();
-  let adminCode = '';
-  let adminNom = '';
-  let pointsMaxActuel = 3;
-  let pointVerrouille = false;
-  let adminTimerInterval = null;
+  let adminCode = '', adminNom = '';
+  let pointsMaxActuel = 3, pointVerrouille = false;
+  let adminTimerInterval = null, adminTempsTotal = 30;
   let replyToAdmin = null;
   const cardsOuvertes = {};
-  let ongletActif = 'question';
-  let badgeReponses = 0;
-  let badgeChat = 0;
+  let ongletActif = 'question', badgeReponses = 0, badgeChat = 0;
   let questionEnCours = { texte: '', image: null };
-
-  // Cible courante pour le picker emoji
   let emojiPickerCible = null;
 
-  // ── EXPIRATION LOCALSTORAGE (4h) ──
+  // ── THEME ──
+  function toggleTheme() {
+    const dk = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', dk ? '' : 'dark');
+    document.getElementById('theme-btn').textContent = dk ? '🌙 Sombre' : '☀️ Clair';
+    localStorage.setItem('theme', dk ? 'light' : 'dark');
+  }
+  (function () {
+    const t = localStorage.getItem('theme');
+    if (t === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); document.getElementById('theme-btn').textContent = '☀️ Clair'; }
+  })();
+
+  // ── AVATARS ──
+  const avatarColors = ['av0','av1','av2','av3','av4','av5','av6','av7'];
+  const chipColors   = ['chip0','chip1','chip2','chip3','chip4','chip5','chip6','chip7'];
+  const avatarMap = {};
+  function getAvatar(nom) { if (avatarMap[nom] === undefined) avatarMap[nom] = Object.keys(avatarMap).length % 8; return avatarMap[nom]; }
+  function initiales(nom) { return nom.substring(0, 2).toUpperCase(); }
+
+  // ── SESSION ──
   const LS_TTL = 4 * 60 * 60 * 1000;
-  function sauvegarderSessionAdmin(code, nom) {
-    localStorage.setItem('adminCode', code);
-    localStorage.setItem('adminNom', nom);
-    localStorage.setItem('adminTs', Date.now().toString());
-  }
+  function sauvegarderSessionAdmin(c, n) { localStorage.setItem('adminCode', c); localStorage.setItem('adminNom', n); localStorage.setItem('adminTs', Date.now().toString()); }
   function chargerSessionAdmin() {
-    const code = localStorage.getItem('adminCode');
-    const nom  = localStorage.getItem('adminNom');
-    const ts   = parseInt(localStorage.getItem('adminTs') || '0');
-    if (!code || !nom || Date.now() - ts > LS_TTL) {
-      localStorage.removeItem('adminCode');
-      localStorage.removeItem('adminNom');
-      localStorage.removeItem('adminTs');
-      return null;
-    }
-    return { code, nom };
+    const c = localStorage.getItem('adminCode'), n = localStorage.getItem('adminNom'), ts = parseInt(localStorage.getItem('adminTs') || '0');
+    if (!c || !n || Date.now() - ts > LS_TTL) { viderSessionAdmin(); return null; }
+    return { code: c, nom: n };
   }
+  function viderSessionAdmin() { localStorage.removeItem('adminCode'); localStorage.removeItem('adminNom'); localStorage.removeItem('adminTs'); }
 
-  function escapeHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  // ── NAVIGATION ──
   function allerVers(id) {
     document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
     document.getElementById(id).classList.add('actif');
-    window.scrollTo(0, 0);
-    fermerEmojiPicker();
+    window.scrollTo(0, 0); fermerEmojiPicker();
   }
 
-  // ── ONGLETS MOBILE ──
+  // ── COPIER CODE ──
+  function copierCode() {
+    if (!adminCode) return;
+    const btn = document.getElementById('btn-copier-code');
+    const fallback = () => {
+      const el = document.createElement('textarea'); el.value = adminCode;
+      document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+      btn.textContent = '✅ Copié !'; setTimeout(() => { btn.textContent = '📋 Copier le code'; }, 2000);
+    };
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(adminCode).then(() => { btn.textContent = '✅ Copié !'; setTimeout(() => { btn.textContent = '📋 Copier le code'; }, 2000); }).catch(fallback);
+    } else fallback();
+  }
+
+  // ── ONGLETS ──
   function changerOnglet(nom) {
     ongletActif = nom;
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('onglet-actif'));
     document.getElementById('panel-' + nom).classList.add('onglet-actif');
     document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('actif'));
     document.getElementById('tab-btn-' + nom).classList.add('actif');
-    if (nom === 'reponses') {
-      badgeReponses = 0;
-      document.getElementById('badge-reponses').textContent = '';
-      document.getElementById('badge-reponses').classList.remove('visible');
-    }
-    if (nom === 'chat') {
-      badgeChat = 0;
-      document.getElementById('badge-chat').textContent = '';
-      document.getElementById('badge-chat').classList.remove('visible');
-    }
+    if (nom === 'reponses') { badgeReponses = 0; const el = document.getElementById('badge-reponses'); el.textContent = ''; el.classList.remove('visible'); }
+    if (nom === 'chat')     { badgeChat = 0;     const el = document.getElementById('badge-chat');     el.textContent = ''; el.classList.remove('visible'); }
     window.scrollTo(0, 0);
   }
 
   function incrementerBadge(type) {
-    if (type === 'reponses' && ongletActif !== 'reponses') {
-      badgeReponses++;
-      const el = document.getElementById('badge-reponses');
-      el.textContent = badgeReponses > 9 ? '9+' : badgeReponses;
-      el.classList.add('visible');
-      if (navigator.vibrate) navigator.vibrate(25);
-    }
-    if (type === 'chat' && ongletActif !== 'chat') {
-      badgeChat++;
-      const el = document.getElementById('badge-chat');
-      el.textContent = badgeChat > 9 ? '9+' : badgeChat;
-      el.classList.add('visible');
-      if (navigator.vibrate) navigator.vibrate(25);
-    }
+    if (type === 'reponses' && ongletActif !== 'reponses') { badgeReponses++; const el = document.getElementById('badge-reponses'); el.textContent = badgeReponses > 9 ? '9+' : badgeReponses; el.classList.add('visible'); if (navigator.vibrate) navigator.vibrate(25); }
+    if (type === 'chat' && ongletActif !== 'chat')         { badgeChat++;     const el = document.getElementById('badge-chat');     el.textContent = badgeChat > 9 ? '9+' : badgeChat;         el.classList.add('visible'); if (navigator.vibrate) navigator.vibrate(25); }
   }
 
-  // ── CRÉER PARTIE ──
-  function creerPartie() {
-    const nomInput = document.getElementById('input-nom-admin').value.trim();
-    adminNom = nomInput || 'Admin';
-    socket.emit('admin_creer_partie', { nomAdmin: adminNom });
-  }
+  // ── ACTIONS ──
+  function creerPartie() { const n = document.getElementById('input-nom-admin').value.trim(); adminNom = n || 'Admin'; socket.emit('admin_creer_partie', { nomAdmin: adminNom }); }
+  function lancerJeu() { allerVers('ecran-admin-jeu'); document.getElementById('admin-code-small').textContent = adminCode; document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`; }
+  function annulerPartie() { if (!confirm('Annuler la partie ? Tous les joueurs seront déconnectés.')) return; socket.emit('admin_annuler_partie', { code: adminCode }); adminCode = ''; viderSessionAdmin(); allerVers('ecran-admin-nom'); }
 
-  function lancerJeu() {
-    allerVers('ecran-admin-jeu');
-    document.getElementById('admin-code-small').textContent = adminCode;
-    document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
-  }
-
-  function annulerPartie() {
-    if (!confirm('Annuler la partie ? Tous les joueurs seront déconnectés.')) return;
-    socket.emit('admin_annuler_partie', { code: adminCode });
-    adminCode = '';
-    localStorage.removeItem('adminCode');
-    localStorage.removeItem('adminNom');
-    localStorage.removeItem('adminTs');
-    allerVers('ecran-admin-nom');
-  }
-
-  // ── VERROU ──
   function verrouiller() {
-    pointVerrouille = true;
-    document.getElementById('verrou-banner').style.display = 'block';
-    document.querySelectorAll('.btn-point').forEach(btn => { btn.disabled = true; btn.textContent = '🔒'; });
-    document.querySelectorAll('.points-zone input').forEach(inp => { inp.disabled = true; });
+    pointVerrouille = true; document.getElementById('verrou-banner').style.display = 'block';
+    document.querySelectorAll('.btn-point').forEach(b => { b.disabled = true; b.textContent = '🔒'; });
+    document.querySelectorAll('.points-zone input').forEach(i => { i.disabled = true; });
   }
   function deverrouiller() {
-    pointVerrouille = false;
-    document.getElementById('verrou-banner').style.display = 'none';
-    document.querySelectorAll('.btn-point').forEach(btn => { btn.disabled = false; btn.textContent = '✅'; });
-    document.querySelectorAll('.points-zone input').forEach(inp => { inp.disabled = false; });
+    pointVerrouille = false; document.getElementById('verrou-banner').style.display = 'none';
+    document.querySelectorAll('.btn-point').forEach(b => { b.disabled = false; b.textContent = '✅'; });
+    document.querySelectorAll('.points-zone input').forEach(i => { i.disabled = false; });
   }
 
-  // ── IMAGE ──
   function previewImage(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = document.getElementById('image-preview');
-      img.src = e.target.result; img.style.display = 'block';
-      document.getElementById('btn-suppr-image').style.display = 'inline-block';
-    };
-    reader.readAsDataURL(file);
+    const f = input.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = e => { const img = document.getElementById('image-preview'); img.src = e.target.result; img.style.display = 'block'; document.getElementById('btn-suppr-image').style.display = 'inline-block'; };
+    r.readAsDataURL(f);
   }
   function supprimerImage() {
     document.getElementById('image-input').value = '';
-    document.getElementById('image-preview').src = '';
-    document.getElementById('image-preview').style.display = 'none';
+    document.getElementById('image-preview').src = ''; document.getElementById('image-preview').style.display = 'none';
     document.getElementById('btn-suppr-image').style.display = 'none';
   }
 
-  // ── QUESTION ──
   function envoyerQuestion() {
     if (!adminCode) return;
     const question = document.getElementById('question-input').value.trim();
     const imgEl = document.getElementById('image-preview');
-    const imgSrc = imgEl.src || '';
-    const image = imgSrc.startsWith('data:image') ? imgSrc : null;
+    const image = imgEl.src && imgEl.src.startsWith('data:image') ? imgEl.src : null;
     if (!question && !image) { alert('Veuillez entrer une question ou ajouter une image.'); return; }
-
     const temps = parseInt(document.getElementById('temps-slider').value);
     const pointsMax = parseInt(document.getElementById('points-max-input').value) || 3;
-    pointsMaxActuel = pointsMax;
+    pointsMaxActuel = pointsMax; adminTempsTotal = temps;
     deverrouiller();
     Object.keys(cardsOuvertes).forEach(k => delete cardsOuvertes[k]);
-    document.getElementById('joueur-cards').innerHTML =
-      '<div style="text-align:center;color:#aaa;padding:20px;font-size:14px;">En attente de réponses...</div>';
-    badgeReponses = 0;
-    document.getElementById('badge-reponses').classList.remove('visible');
-
-    // FIX timer label : mémoriser AVANT de vider la textarea
-    questionEnCours = { texte: question, image: image };
+    document.getElementById('joueur-cards').innerHTML = '<div style="text-align:center;color:var(--txt2);padding:20px;font-size:14px;">En attente de réponses...</div>';
+    badgeReponses = 0; document.getElementById('badge-reponses').classList.remove('visible');
+    questionEnCours = { texte: question, image };
     afficherQuestionEnCours();
-
     socket.emit('admin_question', { code: adminCode, question, image, temps, pointsMax });
-
-    // Vider après l'envoi
-    document.getElementById('question-input').value = '';
-    supprimerImage();
+    document.getElementById('question-input').value = ''; supprimerImage();
     document.getElementById('notif-indice').style.display = 'none';
+    document.getElementById('bonne-rep-input').value = '';
     if (window.innerWidth <= 700) setTimeout(() => changerOnglet('reponses'), 300);
   }
 
   function afficherQuestionEnCours() {
-    const recap  = document.getElementById('question-envoyee-recap');
-    const qrTexte = document.getElementById('qr-texte');
-    const qrImage = document.getElementById('qr-image');
+    const recap = document.getElementById('question-envoyee-recap');
     if (!questionEnCours.texte && !questionEnCours.image) { recap.style.display = 'none'; return; }
     recap.style.display = 'block';
-    if (questionEnCours.texte) { qrTexte.textContent = questionEnCours.texte; qrTexte.style.display = 'block'; }
-    else { qrTexte.textContent = ''; qrTexte.style.display = 'none'; }
-    if (questionEnCours.image) { qrImage.src = questionEnCours.image; qrImage.style.display = 'block'; }
-    else { qrImage.src = ''; qrImage.style.display = 'none'; }
+    const qt = document.getElementById('qr-texte');
+    qt.textContent = questionEnCours.texte || ''; qt.style.display = questionEnCours.texte ? 'block' : 'none';
+    const qi = document.getElementById('qr-image');
+    if (questionEnCours.image) { qi.src = questionEnCours.image; qi.style.display = 'block'; }
+    else { qi.src = ''; qi.style.display = 'none'; }
   }
 
-  function couperTemps() {
-    if (!adminCode) return;
-    socket.emit('admin_couper_temps', { code: adminCode });
-    stopAdminTimer();
-  }
-  function personneNaTrouve() {
-    if (!adminCode || pointVerrouille) return;
-    socket.emit('admin_personne_a_trouve', { code: adminCode });
-    stopAdminTimer();
-  }
+  function couperTemps()     { if (!adminCode) return; socket.emit('admin_couper_temps', { code: adminCode }); stopAdminTimer(); }
+  function personneNaTrouve(){ if (!adminCode || pointVerrouille) return; socket.emit('admin_personne_a_trouve', { code: adminCode }); stopAdminTimer(); }
+
   function envoyerIndice() {
-    const indice = document.getElementById('indice-input').value.trim();
-    if (!indice) return;
-    socket.emit('admin_envoyer_indice', { code: adminCode, indice });
-    document.getElementById('indice-input').value = '';
-    document.getElementById('notif-indice').style.display = 'none';
-  }
-  function afficherFin() {
-    if (!confirm('Terminer la partie ?')) return;
-    socket.emit('admin_fin_partie', { code: adminCode });
-    stopAdminTimer();
-  }
-  function nouvellePartie() {
-    adminCode = '';
-    localStorage.removeItem('adminCode');
-    localStorage.removeItem('adminNom');
-    localStorage.removeItem('adminTs');
-    allerVers('ecran-admin-nom');
+    const i = document.getElementById('indice-input').value.trim(); if (!i) return;
+    socket.emit('admin_envoyer_indice', { code: adminCode, indice: i });
+    document.getElementById('indice-input').value = ''; document.getElementById('notif-indice').style.display = 'none';
   }
 
-  // ── CHRONO ──
-  // FIX : utilise questionEnCours.texte au lieu de lire la textarea (déjà vidée)
-  function startAdminTimer(temps, question) {
+  // ── BONNE REPONSE ──
+  function envoyerBonneReponse() {
+    const r = document.getElementById('bonne-rep-input').value.trim(); if (!r || !adminCode) return;
+    socket.emit('admin_bonne_reponse', { code: adminCode, reponse: r });
+    // Feedback visuel immédiat sur le bouton
+    const btn = document.querySelector('.bonne-rep-form button');
+    const inputEl = document.getElementById('bonne-rep-input');
+    btn.textContent = '✅ Révélé !'; btn.disabled = true;
+    setTimeout(() => { btn.textContent = 'Révéler'; btn.disabled = false; inputEl.value = ''; }, 2500);
+  }
+
+  function afficherFin() { if (!confirm('Terminer la partie ?')) return; socket.emit('admin_fin_partie', { code: adminCode }); stopAdminTimer(); }
+  function nouvellePartie() { adminCode = ''; viderSessionAdmin(); allerVers('ecran-admin-nom'); }
+
+  // ── TIMER ──
+  function startAdminTimer(temps) {
     stopAdminTimer();
     let restant = temps;
     const cercle = document.getElementById('admin-timer-cercle');
+    const barre  = document.getElementById('admin-timer-barre');
     const bar    = document.getElementById('admin-timer-bar');
-    const qLabel = document.getElementById('admin-timer-question');
     bar.classList.add('visible');
-    qLabel.textContent = question || questionEnCours.texte || '';
-    cercle.textContent = restant;
-    cercle.classList.remove('urgent');
+    document.getElementById('admin-timer-question').textContent = questionEnCours.texte || '';
+    cercle.textContent = restant; cercle.classList.remove('urgent');
+    barre.classList.remove('urgent'); barre.style.width = '100%';
     adminTimerInterval = setInterval(() => {
       restant--;
       cercle.textContent = restant;
-      if (restant <= 10) cercle.classList.add('urgent');
-      if (restant <= 0) { stopAdminTimer(); cercle.textContent = '⏹'; }
+      barre.style.width = Math.max(0, Math.round(restant / adminTempsTotal * 100)) + '%';
+      if (restant <= 10) { cercle.classList.add('urgent'); barre.classList.add('urgent'); }
+      if (restant <= 0)  { stopAdminTimer(); cercle.textContent = '⏹'; }
     }, 1000);
   }
   function stopAdminTimer() {
@@ -590,21 +636,15 @@
     document.getElementById('admin-timer-bar').classList.remove('visible');
   }
 
-  // ── EMOJI PICKER STYLE WHATSAPP ──
-  function ouvrirEmojiPicker(nomCible, ancreEl) {
+  // ── EMOJI ──
+  function ouvrirEmojiPicker(nomCible, ancre) {
     emojiPickerCible = nomCible;
-    const picker  = document.getElementById('emoji-picker');
-    const overlay = document.getElementById('emoji-picker-overlay');
-    const pickerW = 290;
-    const rect = ancreEl.getBoundingClientRect();
-    let left = rect.left + rect.width / 2 - pickerW / 2;
-    left = Math.max(8, Math.min(left, window.innerWidth - pickerW - 8));
-    let top = rect.top - 64;
-    if (top < 60) top = rect.bottom + 10;
-    picker.style.left = left + 'px';
-    picker.style.top  = top + 'px';
-    overlay.classList.add('visible');
-    requestAnimationFrame(() => picker.classList.add('visible'));
+    const p = document.getElementById('emoji-picker'), o = document.getElementById('emoji-picker-overlay');
+    const W = 290, r = ancre.getBoundingClientRect();
+    let l = r.left + r.width / 2 - W / 2; l = Math.max(8, Math.min(l, window.innerWidth - W - 8));
+    let top = r.top - 64; if (top < 60) top = r.bottom + 10;
+    p.style.left = l + 'px'; p.style.top = top + 'px';
+    o.classList.add('visible'); requestAnimationFrame(() => p.classList.add('visible'));
     if (navigator.vibrate) navigator.vibrate(30);
   }
   function fermerEmojiPicker() {
@@ -612,222 +652,154 @@
     document.getElementById('emoji-picker-overlay').classList.remove('visible');
     emojiPickerCible = null;
   }
-  function choisirEmoji(emoji) {
+  function choisirEmoji(e) {
     if (!emojiPickerCible || !adminCode) { fermerEmojiPicker(); return; }
-    socket.emit('joueur_reaction', { code: adminCode, nomCible: emojiPickerCible, emoji });
+    socket.emit('joueur_reaction', { code: adminCode, nomCible: emojiPickerCible, emoji: e });
     fermerEmojiPicker();
   }
-
-  // Long press sur un élément pour déclencher le picker
   function attacherLongPress(el, nomCible) {
-    let timer = null;
-    const LONG = 450;
-    function start() { timer = setTimeout(() => { timer = null; ouvrirEmojiPicker(nomCible, el); }, LONG); }
-    function cancel() { if (timer) { clearTimeout(timer); timer = null; } }
-    el.addEventListener('mousedown', start);
-    el.addEventListener('touchstart', start, { passive: true });
-    el.addEventListener('mouseup', cancel);
-    el.addEventListener('mouseleave', cancel);
-    el.addEventListener('touchend', cancel);
-    el.addEventListener('touchcancel', cancel);
-    el.addEventListener('contextmenu', (e) => e.preventDefault());
+    let t = null;
+    function s() { t = setTimeout(() => { t = null; ouvrirEmojiPicker(nomCible, el); }, 450); }
+    function c() { if (t) { clearTimeout(t); t = null; } }
+    el.addEventListener('mousedown', s); el.addEventListener('touchstart', s, { passive: true });
+    el.addEventListener('mouseup', c); el.addEventListener('mouseleave', c);
+    el.addEventListener('touchend', c); el.addEventListener('touchcancel', c);
+    el.addEventListener('contextmenu', e => e.preventDefault());
   }
 
-  // ── ACCORDÉON RÉPONSES ──
-  function toggleCard(nomEscape) {
-    cardsOuvertes[nomEscape] = !cardsOuvertes[nomEscape];
-    const card = document.getElementById('card-' + nomEscape);
-    if (!card) return;
-    card.classList.toggle('open', cardsOuvertes[nomEscape]);
+  // ── CARTES REPONSES ──
+  function toggleCard(ne) {
+    cardsOuvertes[ne] = !cardsOuvertes[ne];
+    const c = document.getElementById('card-' + ne); if (!c) return;
+    c.classList.toggle('open', cardsOuvertes[ne]);
   }
-
-  // FIX XSS : donnerPoints utilise data-nom via le bouton, plus d'interpolation JS inline
   function donnerPoints(btn) {
     if (pointVerrouille) return;
-    const nomEscape = btn.dataset.escape;
-    const nom = btn.dataset.nom;
-    const pts = parseInt(document.getElementById('points-input-' + nomEscape).value) || 0;
+    const ne = btn.dataset.escape, nom = btn.dataset.nom;
+    const pts = parseInt(document.getElementById('points-input-' + ne).value) || 0;
     if (pts < 0) return;
-    socket.emit('admin_donner_points', { code: adminCode, nom, points: pts });
-    stopAdminTimer();
+    socket.emit('admin_donner_points', { code: adminCode, nom, points: pts }); stopAdminTimer();
   }
 
   function rendreCartes(reponses) {
-    const container = document.getElementById('joueur-cards');
-    container.innerHTML = '';
+    const container = document.getElementById('joueur-cards'); container.innerHTML = '';
     reponses.forEach(r => {
-      const aDerniere = r.historique && r.historique.length > 0;
-      const derniere  = aDerniere ? r.historique[r.historique.length - 1] : null;
-      const nomEscape = r.nom.replace(/[^a-zA-Z0-9]/g, '_');
-      const estOuverte = cardsOuvertes[nomEscape] || false;
-
-      const historiqueHtml = aDerniere
-        ? r.historique.map((h, i) => `
-            <div class="histo-item ${i === r.historique.length - 1 ? 'derniere' : ''}">
-              <span>${escapeHtml(h.reponse)}</span>
-              <span class="temps-badge">⏱ ${h.tempsReponse}s</span>
-            </div>`).join('')
-        : '<div style="color:#bbb;font-size:13px;font-style:italic;padding:4px 0;">Pas encore de réponse</div>';
-
+      const aD = r.historique && r.historique.length > 0;
+      const der = aD ? r.historique[r.historique.length - 1] : null;
+      const ne = r.nom.replace(/[^a-zA-Z0-9]/g, '_');
+      const est = cardsOuvertes[ne] || false;
+      const histHtml = aD
+        ? r.historique.map((h, i) => `<div class="histo-item ${i === r.historique.length - 1 ? 'derniere' : ''}"><span>${escapeHtml(h.reponse)}</span><span class="temps-badge">⏱ ${h.tempsReponse}s</span></div>`).join('')
+        : '<div style="color:var(--txt2);font-size:13px;font-style:italic;padding:4px 0;">Pas encore de réponse</div>';
       const card = document.createElement('div');
-      card.className = `joueur-card${aDerniere ? ' has-reponse' : ''}${estOuverte ? ' open' : ''}`;
-      card.id = 'card-' + nomEscape;
-
-      // FIX XSS : tout passe par escapeHtml, plus d'interpolation de nom dans onclick
+      card.className = `joueur-card${aD ? ' has-reponse' : ''}${est ? ' open' : ''}`;
+      card.id = 'card-' + ne;
       card.innerHTML = `
-        <div class="joueur-card-header" data-escape="${escapeHtml(nomEscape)}">
+        <div class="joueur-card-header">
           <span class="joueur-card-nom">${escapeHtml(r.nom)}</span>
           <span class="joueur-card-fleche">▶</span>
-          <span class="joueur-card-derniere${aDerniere ? '' : ' vide'}">
-            ${aDerniere ? escapeHtml(derniere.reponse) : 'Pas encore répondu'}
-          </span>
-          ${aDerniere ? `<span class="joueur-card-temps">⏱ ${derniere.tempsReponse}s</span>` : ''}
+          <span class="joueur-card-derniere${aD ? '' : ' vide'}">${aD ? escapeHtml(der.reponse) : 'Pas encore répondu'}</span>
+          ${aD ? `<span class="joueur-card-temps">⏱ ${der.tempsReponse}s</span>` : ''}
         </div>
         <div class="joueur-card-body">
-          <div class="historique-liste">${historiqueHtml}</div>
+          <div class="historique-liste">${histHtml}</div>
           <div class="joueur-card-actions">
-            <div class="reactions-admin" id="admin-reactions-${escapeHtml(nomEscape)}"></div>
+            <div class="reactions-admin" id="admin-reactions-${escapeHtml(ne)}"></div>
             <div class="points-zone">
-              <input type="number" id="points-input-${escapeHtml(nomEscape)}"
-                value="${pointsMaxActuel}" min="0" max="${pointsMaxActuel}"
-                ${pointVerrouille ? 'disabled' : ''}>
-              <button class="btn-point"
-                data-nom="${escapeHtml(r.nom)}"
-                data-escape="${escapeHtml(nomEscape)}"
-                ${pointVerrouille ? 'disabled' : ''}>
-                ${pointVerrouille ? '🔒' : '✅'}
-              </button>
+              <input type="number" id="points-input-${escapeHtml(ne)}" value="${pointsMaxActuel}" min="0" max="${pointsMaxActuel}" ${pointVerrouille ? 'disabled' : ''}>
+              <button class="btn-point" data-nom="${escapeHtml(r.nom)}" data-escape="${escapeHtml(ne)}" ${pointVerrouille ? 'disabled' : ''}>${pointVerrouille ? '🔒' : '✅'}</button>
             </div>
           </div>
           <div class="longpress-hint">Maintenir appuyé pour réagir 👆</div>
           <div class="points-max-badge">max : ${pointsMaxActuel} pts</div>
         </div>`;
-
       container.appendChild(card);
-
-      // FIX XSS : addEventListener au lieu de onclick inline
-      const header = card.querySelector('.joueur-card-header');
-      header.addEventListener('click', () => toggleCard(nomEscape));
-
-      const btnPoint = card.querySelector('.btn-point');
-      btnPoint.addEventListener('click', () => donnerPoints(btnPoint));
-
-      // Long press sur le header pour réagir
-      attacherLongPress(header, r.nom);
+      card.querySelector('.joueur-card-header').addEventListener('click', () => toggleCard(ne));
+      const bp = card.querySelector('.btn-point'); bp.addEventListener('click', () => donnerPoints(bp));
+      attacherLongPress(card.querySelector('.joueur-card-header'), r.nom);
     });
   }
 
   // ── SCORES ──
   function afficherScores(joueurs) {
     joueurs.sort((a, b) => b.points - a.points);
-    const container = document.getElementById('admin-scores');
-    container.innerHTML = '';
+    const max = joueurs.length > 0 ? Math.max(...joueurs.map(j => j.points), 1) : 1;
+    const container = document.getElementById('admin-scores'); container.innerHTML = '';
+    const bc = ['#7F77DD','#1D9E75','#D85A30','#185FA5','#BA7517','#993556','#639922','#A32D2D'];
     joueurs.forEach((j, i) => {
-      const nomEscape = j.nom.replace(/[^a-zA-Z0-9]/g, '_');
-      const medaille  = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▪️';
-      const div = document.createElement('div');
-      div.style.marginBottom = '8px';
-
-      // FIX XSS : nomJs retiré, tout passe par data-* et escapeHtml
+      const ne = j.nom.replace(/[^a-zA-Z0-9]/g, '_');
+      const med = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▪️';
+      const div = document.createElement('div'); div.style.marginBottom = '8px';
       div.innerHTML = `
         <div class="score-ligne">
-          <span class="score-nom">${medaille} ${escapeHtml(j.nom)}</span>
-          <span class="score-pts" id="score-pts-${escapeHtml(nomEscape)}">${j.points} pts</span>
-          <button class="btn-edit-score" data-escape="${escapeHtml(nomEscape)}" title="Modifier le score">✏️</button>
+          <span style="font-size:16px;flex-shrink:0;">${med}</span>
+          <div class="score-nom-flex"><span class="score-nom">${escapeHtml(j.nom)}</span></div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:${Math.round(j.points / max * 100)}%;background:${bc[i % bc.length]};"></div></div>
+          <span class="score-pts" id="score-pts-${escapeHtml(ne)}">${j.points} pts</span>
+          <button class="btn-edit-score" data-escape="${escapeHtml(ne)}" title="Modifier">✏️</button>
         </div>
-        <div class="score-edit-row" id="score-edit-${escapeHtml(nomEscape)}">
-          <input type="number" id="score-input-${escapeHtml(nomEscape)}" value="${j.points}" min="0">
-          <button class="btn-edit-ok" data-nom="${escapeHtml(j.nom)}" data-escape="${escapeHtml(nomEscape)}">✅</button>
-          <button class="btn-edit-annuler" data-escape="${escapeHtml(nomEscape)}">✕</button>
+        <div class="score-edit-row" id="score-edit-${escapeHtml(ne)}">
+          <input type="number" id="score-input-${escapeHtml(ne)}" value="${j.points}" min="0">
+          <button class="btn-edit-ok" data-nom="${escapeHtml(j.nom)}" data-escape="${escapeHtml(ne)}">✅</button>
+          <button class="btn-edit-annuler" data-escape="${escapeHtml(ne)}">✕</button>
         </div>`;
-
       container.appendChild(div);
-
-      // FIX XSS : addEventListener pour tous les boutons du score
-      div.querySelector('.btn-edit-score').addEventListener('click', (e) => {
-        toggleEditScore(e.currentTarget.dataset.escape);
-      });
-      div.querySelector('.btn-edit-ok').addEventListener('click', (e) => {
-        confirmerEditScore(e.currentTarget.dataset.nom, e.currentTarget.dataset.escape);
-      });
-      div.querySelector('.btn-edit-annuler').addEventListener('click', (e) => {
-        toggleEditScore(e.currentTarget.dataset.escape);
-      });
-      div.querySelector(`#score-input-${nomEscape}`).addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') confirmerEditScore(j.nom, nomEscape);
-      });
+      div.querySelector('.btn-edit-score').addEventListener('click', e => toggleEditScore(e.currentTarget.dataset.escape));
+      div.querySelector('.btn-edit-ok').addEventListener('click', e => confirmerEditScore(e.currentTarget.dataset.nom, e.currentTarget.dataset.escape));
+      div.querySelector('.btn-edit-annuler').addEventListener('click', e => toggleEditScore(e.currentTarget.dataset.escape));
+      div.querySelector(`#score-input-${ne}`).addEventListener('keydown', e => { if (e.key === 'Enter') confirmerEditScore(j.nom, ne); });
     });
   }
 
-  function toggleEditScore(nomEscape) {
-    const row = document.getElementById('score-edit-' + nomEscape);
-    if (!row) return;
-    const visible = row.classList.toggle('visible');
-    if (visible) {
-      const input = document.getElementById('score-input-' + nomEscape);
-      if (input) { input.focus(); input.select(); }
-    }
+  function toggleEditScore(ne) {
+    const row = document.getElementById('score-edit-' + ne); if (!row) return;
+    const v = row.classList.toggle('visible');
+    if (v) { const inp = document.getElementById('score-input-' + ne); if (inp) { inp.focus(); inp.select(); } }
   }
-  function confirmerEditScore(nom, nomEscape) {
-    const input = document.getElementById('score-input-' + nomEscape);
-    if (!input) return;
-    const nouveauScore = parseInt(input.value) || 0;
-    socket.emit('admin_modifier_score', { code: adminCode, nom, nouveauScore });
-    toggleEditScore(nomEscape);
+  function confirmerEditScore(nom, ne) {
+    const inp = document.getElementById('score-input-' + ne); if (!inp) return;
+    socket.emit('admin_modifier_score', { code: adminCode, nom, nouveauScore: parseInt(inp.value) || 0 });
+    toggleEditScore(ne);
   }
 
-  // ── CHAT ADMIN ──
+  // ── CHAT ──
   function attacherEvenementsChatMsg(div, data) {
-    function selectionnerMessage() {
+    function sel() {
       replyToAdmin = { id: data.id, nom: data.nom, message: data.message };
-      const apercu = data.message.substring(0, 40) + (data.message.length > 40 ? '...' : '');
-      document.getElementById('reply-bar-texte-admin').textContent = `↩ ${data.nom} : ${apercu}`;
+      document.getElementById('reply-bar-texte-admin').textContent = `↩ ${data.nom} : ${data.message.substring(0, 40)}${data.message.length > 40 ? '...' : ''}`;
       document.getElementById('reply-bar-admin').classList.add('visible');
       document.getElementById('chat-input-admin').focus();
       document.querySelectorAll('#chat-admin .chat-msg').forEach(m => m.classList.remove('selected'));
       div.classList.add('selected');
     }
-    div.addEventListener('click', selectionnerMessage);
-    let touchStartY = 0;
-    div.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
-    div.addEventListener('touchend', (e) => {
-      if (Math.abs(e.changedTouches[0].clientY - touchStartY) < 10) { e.preventDefault(); selectionnerMessage(); }
-    });
+    div.addEventListener('click', sel);
+    let ty = 0;
+    div.addEventListener('touchstart', e => { ty = e.touches[0].clientY; }, { passive: true });
+    div.addEventListener('touchend', e => { if (Math.abs(e.changedTouches[0].clientY - ty) < 10) { e.preventDefault(); sel(); } });
   }
-
   function ajouterChatAdmin(data) {
-    const el  = document.getElementById('chat-admin');
-    const div = document.createElement('div');
-    div.className = 'chat-msg';
-    let html = '';
-    if (data.replyTo) html += `<div class="chat-reply-preview">↩ <b>${escapeHtml(data.replyTo.nom)}</b> : ${escapeHtml(data.replyTo.message)}</div>`;
-    html += `<span class="chat-nom">${escapeHtml(data.nom)}</span><span class="chat-heure">${data.heure}</span> : ${escapeHtml(data.message)}`;
-    div.innerHTML = html;
-    attacherEvenementsChatMsg(div, data);
-    el.appendChild(div);
-    el.scrollTop = el.scrollHeight;
+    const el = document.getElementById('chat-admin');
+    const div = document.createElement('div'); div.className = 'chat-msg';
+    let h = '';
+    if (data.replyTo) h += `<div class="chat-reply-preview">↩ <b>${escapeHtml(data.replyTo.nom)}</b> : ${escapeHtml(data.replyTo.message)}</div>`;
+    h += `<span class="chat-nom">${escapeHtml(data.nom)}</span><span class="chat-heure">${data.heure}</span> : ${escapeHtml(data.message)}`;
+    div.innerHTML = h; attacherEvenementsChatMsg(div, data); el.appendChild(div); el.scrollTop = el.scrollHeight;
     incrementerBadge('chat');
   }
-
   function annulerReplyAdmin() {
-    replyToAdmin = null;
-    document.getElementById('reply-bar-admin').classList.remove('visible');
+    replyToAdmin = null; document.getElementById('reply-bar-admin').classList.remove('visible');
     document.querySelectorAll('#chat-admin .chat-msg').forEach(m => m.classList.remove('selected'));
   }
-
   function envoyerChatAdmin() {
-    const msg = document.getElementById('chat-input-admin').value.trim();
-    if (!msg) return;
-    const nomAdmin = adminNom ? `${adminNom} 👑` : '👑 Admin';
-    socket.emit('chat_message', { code: adminCode, nom: nomAdmin, message: msg, replyTo: replyToAdmin });
-    document.getElementById('chat-input-admin').value = '';
-    annulerReplyAdmin();
+    const msg = document.getElementById('chat-input-admin').value.trim(); if (!msg) return;
+    const n = adminNom ? `${adminNom} 👑` : '👑 Admin';
+    socket.emit('chat_message', { code: adminCode, nom: n, message: msg, replyTo: replyToAdmin });
+    document.getElementById('chat-input-admin').value = ''; annulerReplyAdmin();
   }
 
   // ── SOCKETS ──
   socket.on('partie_creee', ({ code, nomAdmin }) => {
-    adminCode = code;
-    adminNom  = nomAdmin.replace(' 👑', '').trim();
+    adminCode = code; adminNom = nomAdmin.replace(' 👑', '').trim();
     sauvegarderSessionAdmin(code, adminNom);
     document.getElementById('admin-code').textContent = code;
     document.getElementById('admin-code-small').textContent = code;
@@ -835,42 +807,32 @@
     allerVers('ecran-admin-attente');
   });
 
-  socket.on('joueurs_update', (joueurs) => {
-    const listeAttente = document.getElementById('joueurs-admin-attente');
-    if (listeAttente) {
-      listeAttente.innerHTML = joueurs.length
-        ? joueurs.map(j => `<div class="joueur-chip">${escapeHtml(j.nom)}</div>`).join('')
+  socket.on('joueurs_update', joueurs => {
+    const la = document.getElementById('joueurs-admin-attente');
+    if (la) {
+      la.innerHTML = joueurs.length
+        ? joueurs.map(j => { const i = getAvatar(j.nom); return `<div class="joueur-chip ${chipColors[i]}"><div class="avatar-circle ${avatarColors[i]}">${initiales(j.nom)}</div>${escapeHtml(j.nom)}</div>`; }).join('')
         : '<span style="color:rgba(255,255,255,0.5)">En attente...</span>';
     }
-    const listeJeu = document.getElementById('joueurs-jeu');
-    if (listeJeu) listeJeu.innerHTML = joueurs.map(j => `<div class="joueur-tag">${escapeHtml(j.nom)}</div>`).join('');
+    const lj = document.getElementById('joueurs-jeu');
+    if (lj) lj.innerHTML = joueurs.map(j => { const i = getAvatar(j.nom); return `<div class="joueur-tag ${chipColors[i]}"><div class="joueur-tag-av ${avatarColors[i]}">${initiales(j.nom)}</div>${escapeHtml(j.nom)}</div>`; }).join('');
   });
 
-  // FIX timer label : utilise questionEnCours.texte (mémorisé avant vidage textarea)
-  socket.on('admin_chrono_start', ({ temps }) => {
-    startAdminTimer(temps, questionEnCours.texte);
-  });
+  socket.on('admin_chrono_start', ({ temps }) => { adminTempsTotal = temps; startAdminTimer(temps); });
 
   socket.on('admin_question_encours', ({ question, image, temps, pointsMax }) => {
-    pointsMaxActuel = pointsMax;
-    questionEnCours = { texte: question || '', image: image || null };
-    afficherQuestionEnCours();
-    startAdminTimer(temps, question);
+    pointsMaxActuel = pointsMax; questionEnCours = { texte: question || '', image: image || null };
+    afficherQuestionEnCours(); adminTempsTotal = temps; startAdminTimer(temps);
     allerVers('ecran-admin-jeu');
     document.getElementById('admin-code-small').textContent = adminCode;
     document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
   });
 
-  socket.on('reponse_joueur', (reponses) => { rendreCartes(reponses); });
-
-  // FIX badge réponses : correctement branché
-  socket.on('nouvelle_reponse_badge', () => { incrementerBadge('reponses'); });
-
-  // FIX badge chat : correctement branché (manquait dans l'original)
-  socket.on('nouveau_chat_badge', () => { incrementerBadge('chat'); });
-
-  socket.on('point_deja_donne', () => { verrouiller(); stopAdminTimer(); });
-  socket.on('fin_question', () => stopAdminTimer());
+  socket.on('reponse_joueur',        reponses => { rendreCartes(reponses); });
+  socket.on('nouvelle_reponse_badge', ()       => { incrementerBadge('reponses'); });
+  socket.on('nouveau_chat_badge',     ()       => { incrementerBadge('chat'); });
+  socket.on('point_deja_donne',       ()       => { verrouiller(); stopAdminTimer(); });
+  socket.on('fin_question',           ()       => stopAdminTimer());
 
   socket.on('demande_indice_update', ({ nbDemandes, nbJoueurs, majorite }) => {
     if (majorite) {
@@ -881,52 +843,34 @@
   });
 
   socket.on('reaction_update', ({ nomCible, reactions }) => {
-    const nomEscape = nomCible.replace(/[^a-zA-Z0-9]/g, '_');
-    const el = document.getElementById('admin-reactions-' + nomEscape);
-    if (!el) return;
-    el.innerHTML = Object.entries(reactions)
-      .map(([e, c]) => `<span class="reaction-pill">${e} ${c}</span>`)
-      .join('');
+    const ne = nomCible.replace(/[^a-zA-Z0-9]/g, '_');
+    const el = document.getElementById('admin-reactions-' + ne); if (!el) return;
+    el.innerHTML = Object.entries(reactions).map(([e, c]) => `<span class="reaction-pill">${e} ${c}</span>`).join('');
   });
 
-  socket.on('points_update', (joueurs) => { afficherScores(joueurs); });
+  socket.on('points_update', joueurs => { afficherScores(joueurs); });
 
   socket.on('alerte_triche', ({ message }) => {
-    const el  = document.getElementById('chat-admin');
-    const div = document.createElement('div');
-    div.className = 'chat-msg alerte-triche';
-    div.textContent = message;
-    el.appendChild(div);
-    el.scrollTop = el.scrollHeight;
-    incrementerBadge('chat');
+    const el = document.getElementById('chat-admin');
+    const div = document.createElement('div'); div.className = 'chat-msg alerte-triche'; div.textContent = message;
+    el.appendChild(div); el.scrollTop = el.scrollHeight; incrementerBadge('chat');
     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
   });
 
-  socket.on('chat_message', (data) => ajouterChatAdmin(data));
+  socket.on('chat_message', ajouterChatAdmin);
 
-  socket.on('scores_finaux', (scores) => {
+  socket.on('scores_finaux', scores => {
     scores.sort((a, b) => b.points - a.points);
-    const classes = ['or', 'argent', 'bronze'];
-    const emojis  = ['🥇', '🥈', '🥉'];
-    document.getElementById('admin-podium-fin').innerHTML = scores.map((j, i) => `
-      <div class="podium-ligne ${classes[i] || 'autre'}">
-        <span>${emojis[i] || (i+1)+'.'} ${escapeHtml(j.nom)}</span>
-        <span class="podium-pts">${j.points} pts</span>
-      </div>`).join('');
-    allerVers('ecran-admin-fin');
-    stopAdminTimer();
+    const cl = ['or','argent','bronze'], em = ['🥇','🥈','🥉'];
+    document.getElementById('admin-podium-fin').innerHTML = scores.map((j, i) => `<div class="podium-ligne ${cl[i] || 'autre'}"><span>${em[i] || (i + 1) + '.'} ${escapeHtml(j.nom)}</span><span class="podium-pts">${j.points} pts</span></div>`).join('');
+    allerVers('ecran-admin-fin'); stopAdminTimer();
   });
 
   socket.on('partie_annulee', () => allerVers('ecran-admin-nom'));
 
   window.addEventListener('load', () => {
-    const session = chargerSessionAdmin();
-    if (session) {
-      adminCode = session.code;
-      adminNom  = session.nom;
-      document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
-      socket.emit('admin_rejoindre', { code: adminCode });
-    }
+    const s = chargerSessionAdmin();
+    if (s) { adminCode = s.code; adminNom = s.nom; document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`; socket.emit('admin_rejoindre', { code: adminCode }); }
   });
 </script>
 </body>

@@ -3,218 +3,256 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🎮 Jeu-Enigmes</title>
+  <title>QUIZ entre amis</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; background: #f5ede0; color: #3d2b1f; min-height: 100vh; overscroll-behavior: none; }
- 
-    .ecran { display: none; min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
-    .ecran.actif { display: flex; }
- 
-    #ecran-accueil { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
-    .logo { font-size: clamp(36px,10vw,56px); font-weight: bold; color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.2); margin-bottom: 8px; text-align: center; }
-    .sous-titre { color: rgba(255,255,255,0.85); font-size: clamp(15px,4vw,20px); margin-bottom: 40px; text-align: center; }
-    .choix-profil { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 400px; }
-    .btn-profil { flex: 1; min-width: 130px; padding: clamp(18px,5vw,28px) 20px; font-size: clamp(18px,5vw,24px); font-weight: bold; border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
-    .btn-profil:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.2); }
-    .btn-admin { background: #e8b86d; color: #3d2b1f; }
-    .btn-joueur { background: #6db88e; color: white; }
- 
-    .card { background: white; border-radius: 20px; padding: clamp(24px,6vw,40px); max-width: 480px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; }
-    .card h2 { font-size: clamp(22px,6vw,28px); margin-bottom: 20px; color: #5a8a5a; }
- 
-    input[type="text"] { width: 100%; padding: 14px 16px; font-size: clamp(16px,4vw,18px); border: 3px solid #e0d5c8; border-radius: 12px; margin: 6px 0 14px; outline: none; color: #3d2b1f; font-family: inherit; }
-    input:focus { border-color: #6db88e; }
- 
-    .btn { width: 100%; padding: clamp(12px,3.5vw,16px); font-size: clamp(16px,4vw,18px); font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.15); margin: 6px 0; font-family: inherit; }
-    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
-    .btn-vert { background: #6db88e; color: white; }
-    .btn-orange { background: #e8b86d; color: #3d2b1f; }
-    .btn-rouge { background: #e05a5a; color: white; }
-    .btn-petit { width: auto; padding: 12px 18px; font-size: clamp(14px,3.5vw,16px); border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
- 
-    .erreur { color: #e05a5a; font-size: 14px; margin: 6px 0; min-height: 20px; }
- 
-    /* ── ATTENTE ── */
-    #ecran-attente { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); justify-content: flex-start; padding-top: 40px; }
-    .attente-info { color: white; text-align: center; width: 100%; }
-    .attente-info h2 { font-size: clamp(22px,6vw,30px); margin-bottom: 8px; }
-    .attente-info p { font-size: clamp(14px,3.5vw,17px); opacity: 0.85; margin-bottom: 20px; }
-    .joueurs-liste { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 16px 0; }
-    .joueur-chip { background: rgba(255,255,255,0.2); color: white; padding: 8px 14px; border-radius: 20px; font-size: clamp(13px,3.5vw,16px); font-weight: bold; }
-    .btn-quitter-attente { background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.4); border-radius: 12px; padding: 10px 22px; font-size: clamp(13px,3.5vw,15px); font-weight: bold; cursor: pointer; font-family: inherit; margin-top: 10px; transition: background 0.2s; }
-    .btn-quitter-attente:active { background: rgba(255,255,255,0.25); transform: translateY(2px); }
- 
-    /* ── ÉCRAN QUESTION ── */
-    #ecran-question { background: #f5ede0; justify-content: flex-start; padding: 0; align-items: stretch; height: 100dvh; overflow: hidden; }
-    .question-header { width: 100%; background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; color: white; flex-shrink: 0; z-index: 10; }
-    .question-header-left { flex: 1; min-width: 0; }
-    .question-header h2 { font-size: clamp(13px,3.5vw,18px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .timer-cercle { width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: clamp(16px,4.5vw,22px); font-weight: bold; border: 3px solid white; flex-shrink: 0; transition: border-color 0.3s, background 0.3s; }
-    .timer-cercle.urgent { border-color: #ffaaaa; background: rgba(224,90,90,0.5); }
- 
-    /* Bouton quitter flottant */
-    .btn-quitter-partie { position: fixed; top: 14px; left: 14px; background: rgba(224,90,90,0.85); color: white; border: none; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: inherit; z-index: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: none; }
-    .btn-quitter-partie.visible { display: block; }
-    .btn-quitter-partie:active { transform: scale(0.95); }
- 
-    .question-main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
-    .question-texte { font-size: clamp(16px,4.5vw,22px); font-weight: bold; color: #3d2b1f; background: white; padding: 14px 16px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); line-height: 1.4; }
-    .question-image { max-width: 100%; max-height: 220px; width: auto; height: auto; border-radius: 12px; display: none; object-fit: contain; background: transparent; align-self: flex-start; }
-    .pts-badge { display: inline-block; background: #e8b86d; color: #3d2b1f; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
- 
-    .reponse-sticky { width: 100%; background: white; border-top: 2px solid #e0d5c8; padding: 10px 12px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
-    .reponse-zone { display: flex; gap: 8px; }
-    .reponse-zone input { flex: 1; margin: 0; font-size: clamp(15px,4vw,17px); padding: 12px 14px; min-width: 0; border: 3px solid #e0d5c8; border-radius: 12px; outline: none; color: #3d2b1f; font-family: inherit; }
-    .reponse-zone input:focus { border-color: #6db88e; }
-    .reponse-confirmee { font-size: 12px; color: #5a8a5a; font-weight: bold; text-align: center; min-height: 16px; transition: opacity 0.3s; }
- 
-    .mes-reponses { background: #f5ede0; border-radius: 10px; padding: 10px 12px; }
-    .mes-reponses h4 { color: #5a8a5a; margin-bottom: 8px; font-size: clamp(12px,3vw,14px); }
-    .ma-reponse-item { display: flex; justify-content: space-between; align-items: center; font-size: clamp(12px,3vw,14px); padding: 6px 8px; border-radius: 8px; background: white; gap: 8px; margin-bottom: 4px; }
-    .ma-reponse-item.derniere { background: #d4edda; font-weight: bold; }
-    .temps-mini { font-size: 11px; background: #e8b86d; padding: 2px 7px; border-radius: 10px; white-space: nowrap; color: white; font-weight: bold; flex-shrink: 0; }
- 
-    #indice-bulle { display: none; background: #fffbe6; border: 3px solid #e8b86d; border-radius: 14px; padding: 10px 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .indice-label { font-size: 12px; color: #8B5E3C; font-weight: bold; margin-bottom: 4px; }
-    .btn-indice { background: #fffbe6; border: 2px solid #e8b86d; color: #8B5E3C; font-weight: bold; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-size: clamp(13px,3.5vw,15px); width: 100%; font-family: inherit; }
-    .btn-indice:active { transform: translateY(2px); }
-    .btn-indice.demande { background: #e8b86d; color: white; }
- 
-    /* ── CHAT DRAWER ── */
-    .chat-fab { position: fixed; bottom: 80px; right: 16px; width: 52px; height: 52px; background: #5a8a5a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); cursor: pointer; z-index: 200; border: none; transition: transform 0.2s; }
-    .chat-fab:active { transform: scale(0.92); }
-    .chat-fab-badge { position: absolute; top: -4px; right: -4px; background: #e05a5a; color: white; font-size: 11px; font-weight: bold; border-radius: 10px; padding: 2px 5px; min-width: 18px; text-align: center; display: none; font-family: Arial, sans-serif; }
-    .chat-fab-badge.visible { display: block; }
-    .chat-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 300; }
-    .chat-overlay.visible { display: block; }
-    .chat-drawer { position: fixed; bottom: 0; left: 0; right: 0; max-height: 75vh; background: white; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; z-index: 400; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 -4px 30px rgba(0,0,0,0.15); }
-    .chat-drawer.ouvert { transform: translateY(0); }
-    .chat-drawer-handle { width: 40px; height: 4px; background: #e0d5c8; border-radius: 2px; margin: 10px auto 0; flex-shrink: 0; }
-    .chat-drawer-header { padding: 8px 16px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0e8e0; flex-shrink: 0; }
-    .chat-drawer-header h4 { color: #5a8a5a; font-size: 16px; }
-    .chat-drawer-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #8B5E3C; padding: 4px; }
-    .chat-messages-drawer { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
-    .chat-input-drawer { padding: 10px 12px; border-top: 1px solid #f0e8e0; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom, 10px); }
-    .chat-input-row-inline { display: flex; gap: 8px; }
-    .chat-input-row-inline input { flex: 1; padding: 10px 12px; font-size: clamp(14px,3.5vw,16px); border-radius: 10px; border: 2px solid #e0d5c8; outline: none; color: #3d2b1f; font-family: inherit; }
-    .chat-input-row-inline input:focus { border-color: #6db88e; }
- 
-    .chat-msg { font-size: clamp(13px,3.5vw,15px); line-height: 1.4; word-break: break-word; padding: 6px 8px; border-radius: 8px; transition: background 0.15s; user-select: none; -webkit-user-select: none; position: relative; }
-    .chat-msg.selected { background: #d4edda; }
-    .chat-nom { font-weight: bold; color: #8B5E3C; }
-    .chat-heure { font-size: 11px; color: #aaa; margin-left: 4px; }
-    .chat-reply-preview { background: rgba(139,94,60,0.1); border-left: 3px solid #8B5E3C; padding: 4px 8px; border-radius: 0 6px 6px 0; font-size: 12px; color: #888; margin-bottom: 4px; }
-    .reply-bar { background: #fff3cd; border: 1px solid #e8b86d; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: #856404; display: none; align-items: center; justify-content: space-between; }
-    .reply-bar.visible { display: flex; }
-    .reply-bar-close { cursor: pointer; font-size: 16px; color: #e05a5a; font-weight: bold; padding: 0 4px; }
- 
-    .chat-panel-inline { background: white; border-radius: 14px; padding: 14px; margin-top: 14px; width: 100%; max-width: 500px; }
-    .chat-panel-inline h4 { color: #5a8a5a; margin-bottom: 10px; font-size: clamp(14px,4vw,17px); }
-    .chat-messages-inline { height: 130px; overflow-y: auto; background: #f5ede0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .chat-input-inline { display: flex; gap: 8px; }
-    .chat-input-inline input { flex: 1; padding: 10px 12px; font-size: clamp(14px,3.5vw,16px); border-radius: 10px; border: 2px solid #e0d5c8; outline: none; color: #3d2b1f; font-family: inherit; }
-    .chat-input-inline input:focus { border-color: #6db88e; }
- 
-    /* ── RÉCAP ── */
-    #ecran-recap { background: #f5ede0; justify-content: flex-start; padding: 0; align-items: stretch; }
-    .recap-header { background: linear-gradient(135deg, #5a8a5a, #3d6e3d); padding: 20px; text-align: center; color: white; }
-    .recap-header h2 { font-size: clamp(20px,5vw,26px); }
-    .recap-body { padding: 16px; overflow-y: auto; }
-    .recap-table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-    .recap-table th { background: #8B5E3C; color: white; padding: 12px; text-align: left; font-size: 13px; }
-    .recap-table td { padding: 12px; border-bottom: 1px solid #f0e8e0; font-size: 14px; vertical-align: top; }
-    .recap-table tr:last-child td { border-bottom: none; }
-    .temps-badge { background: #e8b86d; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
-    .personne-banner { background: #e05a5a; color: white; text-align: center; padding: 12px 16px; font-size: 16px; font-weight: bold; border-radius: 12px; margin: 10px 16px; display: none; }
-    .scores-section { background: white; border-radius: 14px; padding: 16px; margin-top: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-    .scores-section h3 { color: #5a8a5a; margin-bottom: 12px; }
-    .score-ligne { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0e8e0; font-size: 15px; }
-    .score-ligne:last-child { border-bottom: none; }
-    .score-pts { font-weight: bold; color: #8B5E3C; }
- 
-    /* ── RÉACTIONS STYLE WHATSAPP ── */
-    /* Zone réactions affichées sous chaque ligne du recap */
-    .reactions-recap {
-      font-size: 13px; color: #8B5E3C; margin-top: 4px;
-      display: flex; flex-wrap: wrap; gap: 4px;
+    :root {
+      --bleu:    #185FA5;
+      --bleu-dk: #0C447C;
+      --bleu-xdk:#042C53;
+      --ambre:   #EF9F27;
+      --ambre-dk:#BA7517;
+      --vert:    #639922;
+      --vert-dk: #3B6D11;
+      --rouge:   #E24B4A;
+      --rouge-dk:#A32D2D;
+      --bg:      #f0f4fa;
+      --bg2:     #ffffff;
+      --txt:     #0d1b2e;
+      --txt2:    #4a6080;
+      --border:  #c8d8ec;
+      --radius:  999px;
+      --radius-md:14px;
+      --shadow:  0 4px 20px rgba(4,44,83,0.10);
     }
-    .reaction-pill {
-      background: #f5ede0; border: 1.5px solid #e0d5c8;
-      border-radius: 20px; padding: 2px 8px;
-      font-size: 13px; cursor: pointer;
-      transition: transform 0.15s;
-      user-select: none;
+    [data-theme="dark"] {
+      --bg:      #0d1b2e;
+      --bg2:     #142338;
+      --txt:     #e8f0fa;
+      --txt2:    #7a9abf;
+      --border:  #1e3a5a;
+      --shadow:  0 4px 20px rgba(0,0,0,0.4);
     }
-    .reaction-pill:active { transform: scale(1.2); }
- 
-    /* Picker emoji (popup long-press) */
-    .emoji-picker-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      z-index: 800;
-    }
-    .emoji-picker-overlay.visible { display: block; }
-    .emoji-picker {
-      position: fixed;
-      background: white;
-      border-radius: 40px;
-      padding: 10px 14px;
-      display: flex; gap: 6px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-      z-index: 900;
-      transform: scale(0.7);
-      opacity: 0;
-      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s;
-    }
-    .emoji-picker.visible { transform: scale(1); opacity: 1; }
-    .emoji-picker-btn {
-      font-size: 26px; background: none; border: none;
-      cursor: pointer; padding: 4px; border-radius: 50%;
-      transition: transform 0.15s, background 0.1s;
-      line-height: 1;
-    }
-    .emoji-picker-btn:hover { background: #f5ede0; transform: scale(1.25); }
-    .emoji-picker-btn:active { transform: scale(1.4); }
- 
-    /* ── FIN ── */
-    #ecran-fin { background: linear-gradient(135deg, #8B5E3C, #5a8a5a); }
-    .fin-card { background: white; border-radius: 20px; padding: clamp(20px,6vw,30px); max-width: 500px; width: 100%; text-align: center; }
-    .fin-card h2 { color: #8B5E3C; margin-bottom: 16px; font-size: clamp(20px,5vw,24px); }
-    .podium-ligne { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; }
-    .podium-ligne.or { background: #fff8e1; border: 2px solid #ffd700; }
-    .podium-ligne.argent { background: #f5f5f5; border: 2px solid #c0c0c0; }
-    .podium-ligne.bronze { background: #fff3e0; border: 2px solid #cd7f32; }
-    .podium-ligne.autre { background: #f5ede0; border: 2px solid #e0d5c8; }
-    .podium-pts { font-weight: bold; color: #8B5E3C; }
- 
-    /* ── TOAST & RECONNECT ── */
-    #toast-trouve { position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-120px); background: linear-gradient(135deg, #5a8a5a, #3d6e3d); color: white; font-size: clamp(14px,3.5vw,17px); font-weight: bold; padding: 12px 22px; border-radius: 50px; box-shadow: 0 6px 24px rgba(0,0,0,0.25); z-index: 10000; white-space: nowrap; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s; opacity: 0; pointer-events: none; }
-    #toast-trouve.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-    .reconnect-banner { display: none; position: fixed; top: 0; left: 0; right: 0; background: #e05a5a; color: white; text-align: center; padding: 10px; font-size: 14px; font-weight: bold; z-index: 9999; }
-    .reconnect-banner.visible { display: block; }
-    .reconnect-ok { background: #5a8a5a !important; }
- 
-    /* Modale quitter */
-    .modale-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9000; align-items: center; justify-content: center; }
-    .modale-overlay.visible { display: flex; }
-    .modale-box { background: white; border-radius: 20px; padding: 28px 24px; max-width: 320px; width: 90%; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
-    .modale-box h3 { color: #3d2b1f; font-size: 20px; margin-bottom: 10px; }
-    .modale-box p { color: #888; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
-    .modale-btns { display: flex; gap: 10px; }
-    .modale-btns .btn { margin: 0; }
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    body{font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overscroll-behavior:none;transition:background 0.3s,color 0.3s;}
+
+    .theme-btn{position:fixed;top:12px;right:12px;z-index:9999;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:white;border-radius:var(--radius);padding:6px 14px;font-size:13px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:background 0.2s;}
+    .theme-btn:hover{background:rgba(255,255,255,0.25);}
+    [data-theme="dark"] .theme-btn{background:rgba(0,0,0,0.25);border-color:rgba(255,255,255,0.15);}
+
+    .ecran{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+    .ecran.actif{display:flex;}
+
+    #ecran-accueil{background:linear-gradient(150deg,var(--bleu-xdk) 0%,var(--bleu) 60%,#1D9E75 100%);position:relative;overflow:hidden;}
+    #ecran-accueil::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(239,159,39,0.15) 0%,transparent 60%);pointer-events:none;}
+    .logo-wrap{text-align:center;margin-bottom:40px;}
+    .logo-label{font-size:clamp(11px,3vw,13px);letter-spacing:6px;color:rgba(255,255,255,0.55);text-transform:uppercase;margin-bottom:6px;}
+    .logo{font-size:clamp(38px,11vw,58px);font-weight:700;color:white;letter-spacing:-1px;line-height:1;}
+    .logo span{color:var(--ambre);}
+    .sous-titre{color:rgba(255,255,255,0.65);font-size:clamp(13px,3.5vw,16px);margin-top:10px;}
+    .choix-profil{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;width:100%;max-width:380px;}
+    .btn-profil{flex:1;min-width:130px;padding:clamp(16px,4.5vw,24px) 20px;font-size:clamp(16px,4.5vw,20px);font-weight:700;border:none;border-radius:var(--radius);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;font-family:inherit;}
+    .btn-profil:active{transform:translateY(3px);}
+    .btn-admin{background:var(--ambre);color:var(--bleu-xdk);box-shadow:0 6px 0 var(--ambre-dk);}
+    .btn-joueur{background:white;color:var(--bleu-dk);box-shadow:0 6px 0 rgba(0,0,0,0.15);}
+    .btn-admin:active{box-shadow:0 3px 0 var(--ambre-dk);}
+    .btn-joueur:active{box-shadow:0 3px 0 rgba(0,0,0,0.15);}
+
+    .card{background:var(--bg2);border-radius:20px;padding:clamp(24px,6vw,40px);max-width:480px;width:100%;box-shadow:var(--shadow);text-align:center;border:0.5px solid var(--border);}
+    .card h2{font-size:clamp(20px,5.5vw,26px);margin-bottom:20px;color:var(--bleu);}
+    input[type="text"]{width:100%;padding:14px 16px;font-size:clamp(15px,4vw,17px);border:2px solid var(--border);border-radius:var(--radius);margin:6px 0 14px;outline:none;color:var(--txt);font-family:inherit;background:var(--bg);transition:border-color 0.2s;}
+    input:focus{border-color:var(--bleu);}
+    .btn{width:100%;padding:clamp(13px,3.5vw,16px);font-size:clamp(15px,4vw,17px);font-weight:700;border:none;border-radius:var(--radius);cursor:pointer;margin:6px 0;font-family:inherit;transition:transform 0.12s,box-shadow 0.12s;}
+    .btn:active{transform:translateY(2px);}
+    .btn-bleu{background:var(--bleu);color:white;box-shadow:0 5px 0 var(--bleu-dk);}
+    .btn-ambre{background:var(--ambre);color:var(--bleu-xdk);box-shadow:0 5px 0 var(--ambre-dk);}
+    .btn-rouge{background:var(--rouge);color:white;box-shadow:0 4px 0 var(--rouge-dk);}
+    .btn-ghost{background:transparent;color:var(--txt2);border:2px solid var(--border);box-shadow:none;}
+    .btn-bleu:active{box-shadow:0 2px 0 var(--bleu-dk);}
+    .btn-ambre:active{box-shadow:0 2px 0 var(--ambre-dk);}
+    .btn-rouge:active{box-shadow:0 2px 0 var(--rouge-dk);}
+    .btn-petit{width:auto;padding:11px 18px;font-size:clamp(13px,3.5vw,15px);border-radius:var(--radius);white-space:nowrap;flex-shrink:0;}
+    .erreur{color:var(--rouge);font-size:13px;margin:4px 0;min-height:18px;}
+
+    #ecran-attente{background:linear-gradient(150deg,var(--bleu-xdk),var(--bleu));justify-content:flex-start;padding-top:40px;}
+    .attente-info{color:white;text-align:center;width:100%;}
+    .attente-info h2{font-size:clamp(20px,5.5vw,28px);margin-bottom:6px;}
+    .attente-info p{font-size:clamp(13px,3.5vw,16px);opacity:.8;margin-bottom:20px;}
+    .joueurs-liste{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0;}
+    .joueur-chip{display:flex;align-items:center;gap:7px;padding:7px 14px 7px 8px;border-radius:var(--radius);font-size:clamp(12px,3.5vw,15px);font-weight:700;}
+    .avatar-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+    .btn-quitter-attente{background:rgba(255,255,255,0.12);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:var(--radius);padding:10px 22px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;}
+    .btn-quitter-attente:active{background:rgba(255,255,255,0.22);transform:translateY(2px);}
+
+    #ecran-question{background:var(--bg);justify-content:flex-start;padding:0;align-items:stretch;height:100dvh;overflow:hidden;}
+    .question-header{width:100%;background:linear-gradient(135deg,var(--bleu-dk),var(--bleu-xdk));padding:10px 16px;display:flex;justify-content:space-between;align-items:center;color:white;flex-shrink:0;z-index:10;}
+    .question-header-left{flex:1;min-width:0;}
+    .question-header h2{font-size:clamp(12px,3.5vw,17px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .pts-badge{display:inline-block;background:var(--ambre);color:var(--bleu-xdk);padding:3px 11px;border-radius:var(--radius);font-size:12px;font-weight:700;margin-top:3px;}
+    .timer-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;}
+    .timer-cercle{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:clamp(15px,4.5vw,20px);font-weight:700;border:3px solid white;transition:border-color 0.3s,background 0.3s;}
+    .timer-cercle.urgent{border-color:#ffaaaa;background:rgba(226,75,74,0.5);}
+    .timer-barre-wrap{width:46px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;overflow:hidden;}
+    .timer-barre{height:100%;background:white;border-radius:2px;transition:width 1s linear,background 0.3s;}
+    .timer-barre.urgent{background:#ffaaaa;}
+
+    .btn-quitter-partie{position:fixed;top:14px;left:14px;background:rgba(226,75,74,0.85);color:white;border:none;border-radius:var(--radius);padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;z-index:500;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:none;}
+    .btn-quitter-partie.visible{display:block;}
+    .btn-quitter-partie:active{transform:scale(0.95);}
+
+    .question-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px;display:flex;flex-direction:column;gap:10px;}
+    .question-texte{font-size:clamp(15px,4.5vw,21px);font-weight:700;color:var(--txt);background:var(--bg2);padding:14px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow);line-height:1.4;border:0.5px solid var(--border);}
+    .question-image{max-width:100%;max-height:220px;width:auto;height:auto;border-radius:var(--radius-md);display:none;object-fit:contain;align-self:flex-start;}
+
+    .reponse-sticky{width:100%;background:var(--bg2);border-top:2px solid var(--border);padding:10px 12px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
+    .reponse-zone{display:flex;gap:8px;}
+    .reponse-zone input{flex:1;margin:0;font-size:clamp(14px,4vw,16px);padding:12px 14px;min-width:0;border:2px solid var(--border);border-radius:var(--radius);outline:none;color:var(--txt);font-family:inherit;background:var(--bg);transition:border-color 0.2s;}
+    .reponse-zone input:focus{border-color:var(--bleu);}
+    .reponse-confirmee{font-size:12px;color:var(--vert);font-weight:700;text-align:center;min-height:16px;}
+
+    .mes-reponses{background:var(--bg);border-radius:var(--radius-md);padding:10px 12px;border:0.5px solid var(--border);}
+    .mes-reponses h4{color:var(--bleu);margin-bottom:8px;font-size:clamp(11px,3vw,13px);}
+    .ma-reponse-item{display:flex;justify-content:space-between;align-items:center;font-size:clamp(11px,3vw,13px);padding:6px 8px;border-radius:8px;background:var(--bg2);gap:8px;margin-bottom:4px;border:0.5px solid var(--border);}
+    .ma-reponse-item.derniere{background:#e6f1fb;font-weight:700;border-color:var(--bleu);}
+    [data-theme="dark"] .ma-reponse-item.derniere{background:#142338;}
+    .temps-mini{font-size:11px;background:var(--ambre);padding:2px 7px;border-radius:var(--radius);white-space:nowrap;color:var(--bleu-xdk);font-weight:700;flex-shrink:0;}
+
+    #indice-bulle{display:none;background:var(--bg2);border:2px solid var(--ambre);border-radius:var(--radius-md);padding:10px 14px;}
+    .indice-label{font-size:12px;color:var(--ambre-dk);font-weight:700;margin-bottom:4px;}
+    [data-theme="dark"] .indice-label{color:var(--ambre);}
+    .btn-indice{background:var(--bg);border:2px solid var(--ambre);color:var(--ambre-dk);font-weight:700;border-radius:var(--radius);padding:10px 16px;cursor:pointer;font-size:clamp(12px,3.5vw,14px);width:100%;font-family:inherit;transition:background 0.2s;}
+    [data-theme="dark"] .btn-indice{color:var(--ambre);}
+    .btn-indice:active{transform:translateY(2px);}
+    .btn-indice.demande{background:var(--ambre);color:var(--bleu-xdk);}
+
+    .bonne-rep-bulle{display:none;background:linear-gradient(135deg,var(--vert-dk),var(--vert));border-radius:var(--radius-md);padding:10px 14px;}
+    .bonne-rep-label{font-size:12px;color:rgba(255,255,255,0.8);font-weight:700;margin-bottom:2px;}
+    .bonne-rep-texte{font-size:15px;color:white;font-weight:700;}
+
+    .chat-fab{position:fixed;bottom:80px;right:16px;width:52px;height:52px;background:var(--bleu);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(4,44,83,0.3);cursor:pointer;z-index:200;border:none;transition:transform 0.2s;}
+    .chat-fab:active{transform:scale(0.92);}
+    .chat-fab-badge{position:absolute;top:-4px;right:-4px;background:var(--rouge);color:white;font-size:11px;font-weight:700;border-radius:var(--radius);padding:2px 5px;min-width:18px;text-align:center;display:none;font-family:Arial,sans-serif;}
+    .chat-fab-badge.visible{display:block;}
+    .chat-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;}
+    .chat-overlay.visible{display:block;}
+    .chat-drawer{position:fixed;bottom:0;left:0;right:0;max-height:75vh;background:var(--bg2);border-radius:20px 20px 0 0;display:flex;flex-direction:column;z-index:400;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);box-shadow:0 -4px 30px rgba(0,0,0,0.15);}
+    .chat-drawer.ouvert{transform:translateY(0);}
+    .chat-drawer-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0;flex-shrink:0;}
+    .chat-drawer-header{padding:8px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .chat-drawer-header h4{color:var(--bleu);font-size:15px;}
+    .chat-drawer-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--txt2);padding:4px;}
+    .chat-messages-drawer{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px;display:flex;flex-direction:column;gap:6px;}
+    .chat-input-drawer{padding:10px 12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,10px);}
+    .chat-input-row-inline{display:flex;gap:8px;}
+    .chat-input-row-inline input{flex:1;padding:10px 12px;font-size:clamp(13px,3.5vw,15px);border-radius:var(--radius);border:2px solid var(--border);outline:none;color:var(--txt);font-family:inherit;background:var(--bg);}
+    .chat-input-row-inline input:focus{border-color:var(--bleu);}
+    .chat-msg{font-size:clamp(12px,3.5vw,14px);line-height:1.4;word-break:break-word;padding:6px 8px;border-radius:8px;transition:background 0.15s;user-select:none;-webkit-user-select:none;}
+    .chat-msg.selected{background:#e6f1fb;}
+    [data-theme="dark"] .chat-msg.selected{background:#1a2f48;}
+    .chat-nom{font-weight:700;color:var(--ambre-dk);}
+    [data-theme="dark"] .chat-nom{color:var(--ambre);}
+    .chat-heure{font-size:11px;color:var(--txt2);margin-left:4px;}
+    .chat-reply-preview{background:var(--bg);border-left:3px solid var(--ambre);padding:4px 8px;border-radius:0 6px 6px 0;font-size:12px;color:var(--txt2);margin-bottom:4px;}
+    .reply-bar{background:#fef3cd;border:1px solid var(--ambre);border-radius:8px;padding:6px 10px;font-size:13px;color:#856404;display:none;align-items:center;justify-content:space-between;}
+    [data-theme="dark"] .reply-bar{background:#1e2d10;color:#c8a04a;}
+    .reply-bar.visible{display:flex;}
+    .reply-bar-close{cursor:pointer;font-size:16px;color:var(--rouge);font-weight:700;padding:0 4px;}
+    .chat-panel-inline{background:var(--bg2);border-radius:var(--radius-md);padding:14px;margin-top:14px;width:100%;max-width:500px;border:0.5px solid var(--border);}
+    .chat-panel-inline h4{color:var(--bleu);margin-bottom:10px;font-size:clamp(13px,4vw,16px);}
+    .chat-messages-inline{height:130px;overflow-y:auto;background:var(--bg);border-radius:10px;padding:10px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;}
+    .chat-input-inline{display:flex;gap:8px;}
+    .chat-input-inline input{flex:1;padding:10px 12px;font-size:clamp(13px,3.5vw,15px);border-radius:var(--radius);border:2px solid var(--border);outline:none;color:var(--txt);font-family:inherit;background:var(--bg);}
+    .chat-input-inline input:focus{border-color:var(--bleu);}
+
+    #ecran-recap{background:var(--bg);justify-content:flex-start;padding:0;align-items:stretch;}
+    .recap-header{background:linear-gradient(135deg,var(--bleu-dk),var(--bleu-xdk));padding:18px;text-align:center;color:white;}
+    .recap-header h2{font-size:clamp(18px,5vw,24px);}
+    .recap-body{padding:16px;overflow-y:auto;}
+    .recap-table{width:100%;border-collapse:collapse;background:var(--bg2);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow);border:0.5px solid var(--border);}
+    .recap-table th{background:var(--bleu-dk);color:white;padding:11px;text-align:left;font-size:13px;}
+    .recap-table td{padding:11px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top;color:var(--txt);}
+    .recap-table tr:last-child td{border-bottom:none;}
+    .temps-badge{background:var(--ambre);color:var(--bleu-xdk);padding:2px 8px;border-radius:var(--radius);font-size:12px;font-weight:700;}
+    .personne-banner{background:var(--rouge);color:white;text-align:center;padding:12px 16px;font-size:15px;font-weight:700;border-radius:var(--radius-md);margin:10px 16px;display:none;}
+    .bonne-rep-section{background:linear-gradient(135deg,var(--vert-dk),var(--vert));border-radius:var(--radius-md);padding:12px 16px;margin:10px 16px;display:none;}
+    .bonne-rep-section .br-label{font-size:12px;color:rgba(255,255,255,0.75);font-weight:700;}
+    .bonne-rep-section .br-texte{font-size:16px;color:white;font-weight:700;margin-top:2px;}
+
+    .scores-section{background:var(--bg2);border-radius:var(--radius-md);padding:16px;margin-top:14px;box-shadow:var(--shadow);border:0.5px solid var(--border);}
+    .scores-section h3{color:var(--bleu);margin-bottom:12px;font-size:clamp(14px,4vw,17px);}
+    .score-ligne{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+    .score-ligne:last-child{border-bottom:none;}
+    .score-nom-wrap{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
+    .score-nom{font-size:14px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .score-bar-wrap{width:70px;height:7px;background:var(--border);border-radius:4px;overflow:hidden;flex-shrink:0;}
+    .score-bar{height:100%;border-radius:4px;transition:width 0.6s ease;}
+    .score-pts{font-weight:700;color:var(--ambre-dk);font-size:13px;white-space:nowrap;flex-shrink:0;}
+    [data-theme="dark"] .score-pts{color:var(--ambre);}
+
+    .reactions-recap{font-size:13px;margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;}
+    .reaction-pill{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:2px 8px;font-size:13px;cursor:pointer;transition:transform 0.15s;user-select:none;}
+    .reaction-pill:active{transform:scale(1.2);}
+
+    .emoji-picker-overlay{display:none;position:fixed;inset:0;z-index:800;}
+    .emoji-picker-overlay.visible{display:block;}
+    .emoji-picker{position:fixed;background:var(--bg2);border-radius:var(--radius);padding:10px 14px;display:flex;gap:6px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:900;transform:scale(0.7);opacity:0;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),opacity 0.15s;border:0.5px solid var(--border);}
+    .emoji-picker.visible{transform:scale(1);opacity:1;}
+    .emoji-picker-btn{font-size:26px;background:none;border:none;cursor:pointer;padding:4px;border-radius:50%;transition:transform 0.15s;line-height:1;}
+    .emoji-picker-btn:hover{background:var(--bg);transform:scale(1.25);}
+    .emoji-picker-btn:active{transform:scale(1.4);}
+
+    #ecran-fin{background:linear-gradient(150deg,var(--bleu-xdk),var(--bleu),#1D9E75);}
+    .fin-card{background:var(--bg2);border-radius:20px;padding:clamp(20px,6vw,30px);max-width:500px;width:100%;text-align:center;box-shadow:var(--shadow);}
+    .fin-card h2{color:var(--bleu);margin-bottom:16px;font-size:clamp(18px,5vw,22px);}
+    .podium-ligne{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:var(--radius-md);margin-bottom:8px;}
+    .podium-ligne.or{background:#fff8e1;border:2px solid #ffd700;}
+    .podium-ligne.argent{background:#f5f5f5;border:2px solid #c0c0c0;}
+    .podium-ligne.bronze{background:#fff3e0;border:2px solid #cd7f32;}
+    .podium-ligne.autre{background:var(--bg);border:2px solid var(--border);}
+    .podium-pts{font-weight:700;color:var(--bleu);}
+    [data-theme="dark"] .podium-ligne.or{background:#2a2410;}
+    [data-theme="dark"] .podium-ligne.argent{background:#1e1e1e;}
+    [data-theme="dark"] .podium-ligne.bronze{background:#251a0e;}
+
+    #toast-trouve{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-120px);background:linear-gradient(135deg,var(--vert-dk),var(--vert));color:white;font-size:clamp(13px,3.5vw,16px);font-weight:700;padding:12px 22px;border-radius:var(--radius);box-shadow:0 6px 24px rgba(0,0,0,0.25);z-index:10000;white-space:nowrap;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s;opacity:0;pointer-events:none;}
+    #toast-trouve.visible{transform:translateX(-50%) translateY(0);opacity:1;}
+    .reconnect-banner{display:none;position:fixed;top:0;left:0;right:0;background:var(--rouge);color:white;text-align:center;padding:10px;font-size:14px;font-weight:700;z-index:9999;}
+    .reconnect-banner.visible{display:block;}
+    .reconnect-ok{background:var(--vert)!important;}
+
+    .modale-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;align-items:center;justify-content:center;}
+    .modale-overlay.visible{display:flex;}
+    .modale-box{background:var(--bg2);border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:var(--shadow);border:0.5px solid var(--border);}
+    .modale-box h3{color:var(--txt);font-size:19px;margin-bottom:10px;}
+    .modale-box p{color:var(--txt2);font-size:13px;margin-bottom:20px;line-height:1.5;}
+    .modale-btns{display:flex;gap:10px;}
+    .modale-btns .btn{margin:0;}
+
+    .av0{background:#7F77DD;color:#EEEDFE;} .av1{background:#1D9E75;color:#E1F5EE;}
+    .av2{background:#D85A30;color:#FAECE7;} .av3{background:#185FA5;color:#E6F1FB;}
+    .av4{background:#BA7517;color:#FAEEDA;} .av5{background:#993556;color:#FBEAF0;}
+    .av6{background:#639922;color:#EAF3DE;} .av7{background:#A32D2D;color:#FCEBEB;}
+    .chip0{background:rgba(127,119,221,0.2);color:#3C3489;}
+    .chip1{background:rgba(29,158,117,0.2);color:#085041;}
+    .chip2{background:rgba(216,90,48,0.2);color:#4A1B0C;}
+    .chip3{background:rgba(24,95,165,0.2);color:#042C53;}
+    .chip4{background:rgba(186,117,23,0.2);color:#412402;}
+    .chip5{background:rgba(153,53,86,0.2);color:#4B1528;}
+    .chip6{background:rgba(99,153,34,0.2);color:#173404;}
+    .chip7{background:rgba(163,45,45,0.2);color:#501313;}
+    [data-theme="dark"] .chip0{color:#CECBF6;} [data-theme="dark"] .chip1{color:#9FE1CB;}
+    [data-theme="dark"] .chip2{color:#F5C4B3;} [data-theme="dark"] .chip3{color:#B5D4F4;}
+    [data-theme="dark"] .chip4{color:#FAC775;} [data-theme="dark"] .chip5{color:#F4C0D1;}
+    [data-theme="dark"] .chip6{color:#C0DD97;} [data-theme="dark"] .chip7{color:#F7C1C1;}
   </style>
 </head>
 <body>
- 
+
+<button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Sombre</button>
 <div class="reconnect-banner" id="reconnect-banner">⚠️ Connexion perdue... Reconnexion en cours</div>
 <div id="toast-trouve"></div>
 <button class="btn-quitter-partie" id="btn-quitter-partie" onclick="demanderQuitter()">🚪 Quitter</button>
- 
-<!-- Overlay chat -->
 <div class="chat-overlay" id="chat-overlay" onclick="fermerChatDrawer()"></div>
- 
-<!-- Drawer chat -->
+
 <div class="chat-drawer" id="chat-drawer">
   <div class="chat-drawer-handle"></div>
   <div class="chat-drawer-header">
@@ -228,19 +266,16 @@
       <span class="reply-bar-close" onclick="annulerReplyDrawer()">✕</span>
     </div>
     <div class="chat-input-row-inline">
-      <input type="text" id="chat-input-drawer" placeholder="Ton message..."
-        onkeydown="if(event.key==='Enter') envoyerChatDrawer()" />
-      <button class="btn btn-vert btn-petit" onclick="envoyerChatDrawer()">➤</button>
+      <input type="text" id="chat-input-drawer" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChatDrawer()" />
+      <button class="btn btn-bleu btn-petit" onclick="envoyerChatDrawer()">➤</button>
     </div>
   </div>
 </div>
- 
+
 <button class="chat-fab" id="chat-fab" style="display:none" onclick="ouvrirChatDrawer()">
-  💬
-  <span class="chat-fab-badge" id="chat-fab-badge">0</span>
+  💬<span class="chat-fab-badge" id="chat-fab-badge">0</span>
 </button>
- 
-<!-- Picker emoji style WhatsApp -->
+
 <div class="emoji-picker-overlay" id="emoji-picker-overlay" onclick="fermerEmojiPicker()"></div>
 <div class="emoji-picker" id="emoji-picker">
   <button class="emoji-picker-btn" onclick="choisirEmoji('👍')">👍</button>
@@ -250,31 +285,31 @@
   <button class="emoji-picker-btn" onclick="choisirEmoji('❤️')">❤️</button>
   <button class="emoji-picker-btn" onclick="choisirEmoji('👏')">👏</button>
 </div>
- 
-<!-- Modale quitter -->
+
 <div class="modale-overlay" id="modale-quitter">
   <div class="modale-box">
     <h3>🚪 Quitter la partie ?</h3>
-    <p>Tu vas quitter la partie en cours. Tu ne pourras pas revenir avec le même nom.</p>
+    <p>Tu vas quitter la partie en cours. Tu seras supprimé des scores.</p>
     <div class="modale-btns">
       <button class="btn btn-rouge" onclick="confirmerQuitter()">Quitter</button>
-      <button class="btn btn-vert" onclick="annulerQuitter()">Rester</button>
+      <button class="btn btn-bleu" onclick="annulerQuitter()">Rester</button>
     </div>
   </div>
 </div>
- 
-<!-- ACCUEIL -->
+
 <div id="ecran-accueil" class="ecran actif">
-  <div class="logo">🎮 Jeu-Enigmes</div>
-  <div class="sous-titre">Le quiz en temps réel !</div>
+  <div class="logo-wrap">
+    <div class="logo-label">quiz</div>
+    <div class="logo">entre <span>amis</span></div>
+    <div class="sous-titre">Le quiz en temps réel !</div>
+  </div>
   <div class="choix-profil">
     <button class="btn-profil btn-admin" onclick="window.location.href='admin.html'">👑 Admin</button>
     <button class="btn-profil btn-joueur" onclick="allerVers('ecran-rejoindre')">🎯 Joueur</button>
   </div>
 </div>
- 
-<!-- REJOINDRE -->
-<div id="ecran-rejoindre" class="ecran" style="background:linear-gradient(135deg,#6db88e,#3d6e3d);">
+
+<div id="ecran-rejoindre" class="ecran" style="background:linear-gradient(150deg,var(--bleu-xdk),var(--bleu));">
   <div class="card">
     <h2>🎯 Rejoindre une partie</h2>
     <input type="text" id="input-code" placeholder="Code de la partie" maxlength="6"
@@ -282,12 +317,11 @@
       inputmode="text" autocapitalize="characters" />
     <input type="text" id="input-nom" placeholder="Ton prénom" maxlength="20" autocomplete="nickname" />
     <div id="erreur-rejoindre" class="erreur"></div>
-    <button class="btn btn-vert" onclick="rejoindrePartie()">Rejoindre !</button>
-    <button class="btn btn-orange" onclick="allerVers('ecran-accueil')">← Retour</button>
+    <button class="btn btn-bleu" onclick="rejoindrePartie()">Rejoindre !</button>
+    <button class="btn btn-ghost" onclick="allerVers('ecran-accueil')">← Retour</button>
   </div>
 </div>
- 
-<!-- ATTENTE -->
+
 <div id="ecran-attente" class="ecran">
   <div class="attente-info">
     <h2 id="attente-nom">Bonjour !</h2>
@@ -303,26 +337,31 @@
       <span class="reply-bar-close" onclick="annulerReply('attente')">✕</span>
     </div>
     <div class="chat-input-inline">
-      <input type="text" id="chat-input-attente" placeholder="Ton message..."
-        onkeydown="if(event.key==='Enter') envoyerChat('attente')" />
-      <button class="btn btn-vert btn-petit" onclick="envoyerChat('attente')">➤</button>
+      <input type="text" id="chat-input-attente" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChat('attente')" />
+      <button class="btn btn-bleu btn-petit" onclick="envoyerChat('attente')">➤</button>
     </div>
   </div>
 </div>
- 
-<!-- QUESTION -->
+
 <div id="ecran-question" class="ecran">
   <div class="question-header">
     <div class="question-header-left">
       <h2>❓ Question</h2>
-      <div class="pts-badge" id="pts-badge-joueur" style="margin-top:3px;"></div>
+      <div class="pts-badge" id="pts-badge-joueur"></div>
     </div>
-    <div class="timer-cercle" id="timer-joueur">--</div>
+    <div class="timer-wrap">
+      <div class="timer-cercle" id="timer-joueur">--</div>
+      <div class="timer-barre-wrap"><div class="timer-barre" id="timer-barre" style="width:100%"></div></div>
+    </div>
   </div>
   <div class="question-main" id="question-main">
     <div id="indice-bulle">
       <div class="indice-label">💡 Indice de l'admin :</div>
       <span id="indice-texte"></span>
+    </div>
+    <div class="bonne-rep-bulle" id="bonne-rep-bulle">
+      <div class="bonne-rep-label">✅ Bonne réponse :</div>
+      <div class="bonne-rep-texte" id="bonne-rep-texte"></div>
     </div>
     <img id="question-image" class="question-image" alt="Image question" />
     <div class="question-texte" id="question-texte-joueur"></div>
@@ -337,15 +376,18 @@
       <input type="text" id="input-reponse" placeholder="Ta réponse..."
         onkeydown="if(event.key==='Enter') envoyerReponse()"
         autocomplete="off" autocorrect="off" spellcheck="false" />
-      <button class="btn btn-vert btn-petit" onclick="envoyerReponse()">➤</button>
+      <button class="btn btn-bleu btn-petit" onclick="envoyerReponse()">➤</button>
     </div>
     <div class="reponse-confirmee" id="reponse-confirmee"></div>
   </div>
 </div>
- 
-<!-- RÉCAP -->
+
 <div id="ecran-recap" class="ecran">
   <div class="recap-header"><h2>📊 Résultats</h2></div>
+  <div class="bonne-rep-section" id="bonne-rep-section">
+    <div class="br-label">✅ Bonne réponse :</div>
+    <div class="br-texte" id="bonne-rep-recap-texte"></div>
+  </div>
   <div class="personne-banner" id="personne-banner">🤷 Personne n'a trouvé ce tour !</div>
   <div class="recap-body">
     <table class="recap-table">
@@ -358,570 +400,369 @@
     </div>
   </div>
 </div>
- 
-<!-- FIN -->
+
 <div id="ecran-fin" class="ecran">
   <div class="fin-card">
     <h2>🏁 Partie terminée !</h2>
     <div id="podium-fin"></div>
   </div>
 </div>
- 
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  const socket = io();
-  let monNom = '';
-  let monCode = '';
-  let timerInterval = null;
-  let demandeIndiceEnvoye = false;
-  let tempsDepart = null;
-  let scoresAvant = {};
-  let nomGagnantCeRound = null;
-  let toastTimeout = null;
-  let chatNonLus = 0;
-  let chatDrawerOuvert = false;
-  let ecranActif = 'ecran-accueil';
-  const replyTo = { attente: null, drawer: null };
-  let replyToDrawer = null;
- 
-  // Cible courante pour le picker emoji
-  let emojiPickerCible = null;
- 
-  // ── EXPIRATION LOCALSTORAGE (4h) ──
-  const LS_TTL = 4 * 60 * 60 * 1000;
-  function sauvegarderSession(code, nom) {
-    localStorage.setItem('jeu_code', code);
-    localStorage.setItem('jeu_nom', nom);
-    localStorage.setItem('jeu_ts', Date.now().toString());
+  const socket=io();
+  let monNom='',monCode='';
+  let timerInterval=null,demandeIndiceEnvoye=false;
+  let tempsDepart=null,tempsTotal=30;
+  let scoresAvant={},nomGagnantCeRound=null;
+  let toastTimeout=null,chatNonLus=0,chatDrawerOuvert=false;
+  let ecranActif='ecran-accueil';
+  const replyTo={attente:null,drawer:null};
+  let replyToDrawer=null,emojiPickerCible=null;
+
+  function toggleTheme(){
+    const dk=document.documentElement.getAttribute('data-theme')==='dark';
+    document.documentElement.setAttribute('data-theme',dk?'':'dark');
+    document.getElementById('theme-btn').textContent=dk?'🌙 Sombre':'☀️ Clair';
+    localStorage.setItem('theme',dk?'light':'dark');
   }
-  function chargerSession() {
-    const code = localStorage.getItem('jeu_code');
-    const nom  = localStorage.getItem('jeu_nom');
-    const ts   = parseInt(localStorage.getItem('jeu_ts') || '0');
-    if (!code || !nom || Date.now() - ts > LS_TTL) {
-      localStorage.removeItem('jeu_code');
-      localStorage.removeItem('jeu_nom');
-      localStorage.removeItem('jeu_ts');
-      return null;
-    }
-    return { code, nom };
+  (function(){
+    const t=localStorage.getItem('theme');
+    if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('theme-btn').textContent='☀️ Clair';}
+  })();
+
+  const avatarColors=['av0','av1','av2','av3','av4','av5','av6','av7'];
+  const chipColors=['chip0','chip1','chip2','chip3','chip4','chip5','chip6','chip7'];
+  const avatarMap={};
+  function getAvatar(nom){
+    if(avatarMap[nom]===undefined){avatarMap[nom]=Object.keys(avatarMap).length%avatarColors.length;}
+    return avatarMap[nom];
   }
- 
-  // ── NAVIGATION ──
-  function allerVers(id) {
-    document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
+  function initiales(nom){return nom.substring(0,2).toUpperCase();}
+  function creerChip(nom){
+    const i=getAvatar(nom);
+    return `<div class="joueur-chip ${chipColors[i]}"><div class="avatar-circle ${avatarColors[i]}">${initiales(nom)}</div>${escapeHtml(nom)}</div>`;
+  }
+
+  const LS_TTL=4*60*60*1000;
+  function sauvegarderSession(c,n){localStorage.setItem('jeu_code',c);localStorage.setItem('jeu_nom',n);localStorage.setItem('jeu_ts',Date.now().toString());}
+  function chargerSession(){
+    const c=localStorage.getItem('jeu_code'),n=localStorage.getItem('jeu_nom'),ts=parseInt(localStorage.getItem('jeu_ts')||'0');
+    if(!c||!n||Date.now()-ts>LS_TTL){viderSession();return null;}
+    return{code:c,nom:n};
+  }
+  function viderSession(){localStorage.removeItem('jeu_code');localStorage.removeItem('jeu_nom');localStorage.removeItem('jeu_ts');}
+
+  function allerVers(id){
+    document.querySelectorAll('.ecran').forEach(e=>e.classList.remove('actif'));
     document.getElementById(id).classList.add('actif');
-    ecranActif = id;
-    window.scrollTo(0, 0);
- 
-    const fabEcrans = ['ecran-question', 'ecran-recap'];
-    document.getElementById('chat-fab').style.display = fabEcrans.includes(id) ? 'flex' : 'none';
- 
-    // FIX : masquer le bouton quitter sur fin et accueil
-    const btnQuitter = document.getElementById('btn-quitter-partie');
-    btnQuitter.classList.toggle('visible', fabEcrans.includes(id));
- 
-    fermerChatDrawer();
-    fermerEmojiPicker();
+    ecranActif=id; window.scrollTo(0,0);
+    const fab=['ecran-question','ecran-recap'];
+    document.getElementById('chat-fab').style.display=fab.includes(id)?'flex':'none';
+    document.getElementById('btn-quitter-partie').classList.toggle('visible',fab.includes(id));
+    fermerChatDrawer();fermerEmojiPicker();
   }
- 
-  window.addEventListener('beforeunload', (e) => {
-    if (monCode && monNom) { e.preventDefault(); e.returnValue = ''; }
-  });
-  history.pushState(null, '', window.location.href);
-  window.addEventListener('popstate', () => {
-    if (monCode && monNom) history.pushState(null, '', window.location.href);
-  });
- 
-  // ── QUITTER ──
-  function demanderQuitter() {
-    document.getElementById('modale-quitter').classList.add('visible');
-  }
-  function annulerQuitter() {
+
+  window.addEventListener('beforeunload',e=>{if(monCode&&monNom){e.preventDefault();e.returnValue='';}});
+  history.pushState(null,'',window.location.href);
+  window.addEventListener('popstate',()=>{if(monCode&&monNom)history.pushState(null,'',window.location.href);});
+
+  function demanderQuitter(){document.getElementById('modale-quitter').classList.add('visible');}
+  function annulerQuitter(){document.getElementById('modale-quitter').classList.remove('visible');}
+  function confirmerQuitter(){
     document.getElementById('modale-quitter').classList.remove('visible');
+    if(monCode&&monNom)socket.emit('joueur_quitter_partie',{code:monCode,nom:monNom});
+    else{reinitialiserJoueur();allerVers('ecran-accueil');}
   }
-  function confirmerQuitter() {
-    document.getElementById('modale-quitter').classList.remove('visible');
-    if (monCode && monNom) {
-      socket.emit('joueur_quitter_partie', { code: monCode, nom: monNom });
-    } else {
-      reinitialiserJoueur();
-      allerVers('ecran-accueil');
-    }
+  function reinitialiserJoueur(){
+    monNom='';monCode='';viderSession();
+    if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+    tempsDepart=null;demandeIndiceEnvoye=false;chatNonLus=0;
+    document.getElementById('chat-drawer-messages').innerHTML='';
+    document.getElementById('chat-attente').innerHTML='';
   }
-  function reinitialiserJoueur() {
-    monNom = ''; monCode = '';
-    localStorage.removeItem('jeu_code');
-    localStorage.removeItem('jeu_nom');
-    localStorage.removeItem('jeu_ts');
-    // FIX : s'assurer de stopper le timer proprement
-    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-    tempsDepart = null;
-    demandeIndiceEnvoye = false;
-    chatNonLus = 0;
-    document.getElementById('chat-drawer-messages').innerHTML = '';
-    document.getElementById('chat-attente').innerHTML = '';
+
+  function afficherToast(t){
+    const el=document.getElementById('toast-trouve');
+    el.textContent=t;el.classList.add('visible');
+    if(toastTimeout)clearTimeout(toastTimeout);
+    toastTimeout=setTimeout(()=>el.classList.remove('visible'),3500);
   }
- 
-  // ── TOAST ──
-  function afficherToast(texte) {
-    const toast = document.getElementById('toast-trouve');
-    toast.textContent = texte;
-    toast.classList.add('visible');
-    if (toastTimeout) clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => toast.classList.remove('visible'), 3500);
+
+  function ouvrirEmojiPicker(nomCible,ancre){
+    emojiPickerCible=nomCible;
+    const p=document.getElementById('emoji-picker'),o=document.getElementById('emoji-picker-overlay');
+    const W=280,r=ancre.getBoundingClientRect();
+    let l=r.left+r.width/2-W/2;l=Math.max(8,Math.min(l,window.innerWidth-W-8));
+    let top=r.top-64;if(top<60)top=r.bottom+10;
+    p.style.left=l+'px';p.style.top=top+'px';
+    o.classList.add('visible');requestAnimationFrame(()=>p.classList.add('visible'));
+    if(navigator.vibrate)navigator.vibrate(30);
   }
- 
-  // ── EMOJI PICKER STYLE WHATSAPP ──
-  function ouvrirEmojiPicker(nomCible, ancreEl) {
-    emojiPickerCible = nomCible;
-    const picker = document.getElementById('emoji-picker');
-    const overlay = document.getElementById('emoji-picker-overlay');
- 
-    // Positionner le picker au-dessus de l'élément ciblé
-    const rect = ancreEl.getBoundingClientRect();
-    const pickerW = 280;
-    let left = rect.left + rect.width / 2 - pickerW / 2;
-    left = Math.max(8, Math.min(left, window.innerWidth - pickerW - 8));
-    let top = rect.top - 64;
-    if (top < 60) top = rect.bottom + 10;
- 
-    picker.style.left = left + 'px';
-    picker.style.top  = top + 'px';
- 
-    overlay.classList.add('visible');
-    // Décaler l'animation pour laisser le DOM se mettre à jour
-    requestAnimationFrame(() => picker.classList.add('visible'));
- 
-    if (navigator.vibrate) navigator.vibrate(30);
-  }
- 
-  function fermerEmojiPicker() {
+  function fermerEmojiPicker(){
     document.getElementById('emoji-picker').classList.remove('visible');
     document.getElementById('emoji-picker-overlay').classList.remove('visible');
-    emojiPickerCible = null;
+    emojiPickerCible=null;
   }
- 
-  function choisirEmoji(emoji) {
-    if (!emojiPickerCible || !monCode) { fermerEmojiPicker(); return; }
-    socket.emit('joueur_reaction', { code: monCode, nomCible: emojiPickerCible, emoji });
+  function choisirEmoji(e){
+    if(!emojiPickerCible||!monCode){fermerEmojiPicker();return;}
+    socket.emit('joueur_reaction',{code:monCode,nomCible:emojiPickerCible,emoji:e});
     fermerEmojiPicker();
   }
- 
-  // Attacher le long-press sur un élément TR du recap
-  function attacherLongPress(el, nomCible) {
-    let timer = null;
-    const LONG = 450; // ms
- 
-    function start(e) {
-      timer = setTimeout(() => {
-        timer = null;
-        ouvrirEmojiPicker(nomCible, el);
-      }, LONG);
-    }
-    function cancel() {
-      if (timer) { clearTimeout(timer); timer = null; }
-    }
- 
-    el.addEventListener('mousedown', start);
-    el.addEventListener('touchstart', start, { passive: true });
-    el.addEventListener('mouseup', cancel);
-    el.addEventListener('mouseleave', cancel);
-    el.addEventListener('touchend', cancel);
-    el.addEventListener('touchcancel', cancel);
-    // Empêcher le menu contextuel natif sur mobile
-    el.addEventListener('contextmenu', (e) => e.preventDefault());
+  function attacherLongPress(el,nomCible){
+    let t=null;
+    function s(){t=setTimeout(()=>{t=null;ouvrirEmojiPicker(nomCible,el);},450);}
+    function c(){if(t){clearTimeout(t);t=null;}}
+    el.addEventListener('mousedown',s);el.addEventListener('touchstart',s,{passive:true});
+    el.addEventListener('mouseup',c);el.addEventListener('mouseleave',c);
+    el.addEventListener('touchend',c);el.addEventListener('touchcancel',c);
+    el.addEventListener('contextmenu',e=>e.preventDefault());
   }
- 
-  // ── CHAT DRAWER ──
-  function ouvrirChatDrawer() {
+
+  function ouvrirChatDrawer(){
     document.getElementById('chat-drawer').classList.add('ouvert');
     document.getElementById('chat-overlay').classList.add('visible');
-    chatDrawerOuvert = true;
-    chatNonLus = 0;
-    const badge = document.getElementById('chat-fab-badge');
-    badge.textContent = '0';
-    badge.classList.remove('visible');
-    setTimeout(() => {
-      const msgs = document.getElementById('chat-drawer-messages');
-      msgs.scrollTop = msgs.scrollHeight;
-      document.getElementById('chat-input-drawer').focus();
-    }, 100);
+    chatDrawerOuvert=true;chatNonLus=0;
+    const b=document.getElementById('chat-fab-badge');b.textContent='0';b.classList.remove('visible');
+    setTimeout(()=>{const m=document.getElementById('chat-drawer-messages');m.scrollTop=m.scrollHeight;document.getElementById('chat-input-drawer').focus();},100);
   }
-  function fermerChatDrawer() {
+  function fermerChatDrawer(){
     document.getElementById('chat-drawer').classList.remove('ouvert');
     document.getElementById('chat-overlay').classList.remove('visible');
-    chatDrawerOuvert = false;
+    chatDrawerOuvert=false;
   }
-  function annulerReplyDrawer() {
-    replyToDrawer = null;
+  function annulerReplyDrawer(){
+    replyToDrawer=null;
     document.getElementById('reply-bar-drawer').classList.remove('visible');
-    document.querySelectorAll('#chat-drawer-messages .chat-msg').forEach(m => m.classList.remove('selected'));
+    document.querySelectorAll('#chat-drawer-messages .chat-msg').forEach(m=>m.classList.remove('selected'));
   }
-  function envoyerChatDrawer() {
-    const input = document.getElementById('chat-input-drawer');
-    const msg = input.value.trim();
-    if (!msg || !monCode) return;
-    socket.emit('chat_message', { code: monCode, nom: monNom, message: msg, replyTo: replyToDrawer || null });
-    input.value = '';
-    annulerReplyDrawer();
+  function envoyerChatDrawer(){
+    const inp=document.getElementById('chat-input-drawer'),msg=inp.value.trim();
+    if(!msg||!monCode)return;
+    socket.emit('chat_message',{code:monCode,nom:monNom,message:msg,replyTo:replyToDrawer||null});
+    inp.value='';annulerReplyDrawer();
   }
- 
-  // ── CHAT ATTENTE ──
-  function annulerReply(source) {
-    replyTo[source] = null;
-    const bar = document.getElementById('reply-bar-' + source);
-    if (bar) bar.classList.remove('visible');
-    if (source === 'attente') document.querySelectorAll('#chat-attente .chat-msg').forEach(m => m.classList.remove('selected'));
+  function annulerReply(src){
+    replyTo[src]=null;
+    const b=document.getElementById('reply-bar-'+src);if(b)b.classList.remove('visible');
+    if(src==='attente')document.querySelectorAll('#chat-attente .chat-msg').forEach(m=>m.classList.remove('selected'));
   }
-  function envoyerChat(source) {
-    const inputId = source === 'attente' ? 'chat-input-attente' : 'chat-input-drawer';
-    const msg = document.getElementById(inputId).value.trim();
-    if (!msg || !monCode) return;
-    socket.emit('chat_message', { code: monCode, nom: monNom, message: msg, replyTo: replyTo[source] || null });
-    document.getElementById(inputId).value = '';
-    annulerReply(source);
+  function envoyerChat(src){
+    const id=src==='attente'?'chat-input-attente':'chat-input-drawer';
+    const msg=document.getElementById(id).value.trim();
+    if(!msg||!monCode)return;
+    socket.emit('chat_message',{code:monCode,nom:monNom,message:msg,replyTo:replyTo[src]||null});
+    document.getElementById(id).value='';annulerReply(src);
   }
-  function attacherEvenementsChatMsg(div, data, estDrawer) {
-    function selectionnerMessage() {
-      if (estDrawer) {
-        replyToDrawer = { id: data.id, nom: data.nom, message: data.message };
-        const apercu = data.message.substring(0, 40) + (data.message.length > 40 ? '...' : '');
-        document.getElementById('reply-bar-texte-drawer').textContent = `↩ ${data.nom} : ${apercu}`;
+  function attacherEvenementsChatMsg(div,data,estDrawer){
+    function sel(){
+      if(estDrawer){
+        replyToDrawer={id:data.id,nom:data.nom,message:data.message};
+        document.getElementById('reply-bar-texte-drawer').textContent=`↩ ${data.nom} : ${data.message.substring(0,40)}${data.message.length>40?'...':''}`;
         document.getElementById('reply-bar-drawer').classList.add('visible');
         document.getElementById('chat-input-drawer').focus();
-        document.querySelectorAll('#chat-drawer-messages .chat-msg').forEach(m => m.classList.remove('selected'));
-      } else {
-        replyTo.attente = { id: data.id, nom: data.nom, message: data.message };
-        const apercu = data.message.substring(0, 40) + (data.message.length > 40 ? '...' : '');
-        document.getElementById('reply-bar-texte-attente').textContent = `↩ ${data.nom} : ${apercu}`;
+        document.querySelectorAll('#chat-drawer-messages .chat-msg').forEach(m=>m.classList.remove('selected'));
+      }else{
+        replyTo.attente={id:data.id,nom:data.nom,message:data.message};
+        document.getElementById('reply-bar-texte-attente').textContent=`↩ ${data.nom} : ${data.message.substring(0,40)}${data.message.length>40?'...':''}`;
         document.getElementById('reply-bar-attente').classList.add('visible');
         document.getElementById('chat-input-attente').focus();
-        document.querySelectorAll('#chat-attente .chat-msg').forEach(m => m.classList.remove('selected'));
+        document.querySelectorAll('#chat-attente .chat-msg').forEach(m=>m.classList.remove('selected'));
       }
       div.classList.add('selected');
     }
-    div.addEventListener('click', selectionnerMessage);
-    let touchStartY = 0;
-    div.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
-    div.addEventListener('touchend', (e) => {
-      if (Math.abs(e.changedTouches[0].clientY - touchStartY) < 10) { e.preventDefault(); selectionnerMessage(); }
-    });
+    div.addEventListener('click',sel);
+    let ty=0;
+    div.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;},{passive:true});
+    div.addEventListener('touchend',e=>{if(Math.abs(e.changedTouches[0].clientY-ty)<10){e.preventDefault();sel();}});
   }
-  function ajouterChat(data) {
-    const drawer = document.getElementById('chat-drawer-messages');
-    if (drawer) {
-      const div = creerDivChat(data, true);
-      drawer.appendChild(div);
-      if (chatDrawerOuvert) drawer.scrollTop = drawer.scrollHeight;
-    }
-    if (ecranActif === 'ecran-attente') {
-      const el = document.getElementById('chat-attente');
-      if (el) {
-        const div = creerDivChat(data, false);
-        el.appendChild(div);
-        el.scrollTop = el.scrollHeight;
-      }
-    }
-    if (!chatDrawerOuvert && ['ecran-question', 'ecran-recap'].includes(ecranActif)) {
+  function ajouterChat(data){
+    const dr=document.getElementById('chat-drawer-messages');
+    if(dr){const d=creerDivChat(data,true);dr.appendChild(d);if(chatDrawerOuvert)dr.scrollTop=dr.scrollHeight;}
+    if(ecranActif==='ecran-attente'){const el=document.getElementById('chat-attente');if(el){const d=creerDivChat(data,false);el.appendChild(d);el.scrollTop=el.scrollHeight;}}
+    if(!chatDrawerOuvert&&['ecran-question','ecran-recap'].includes(ecranActif)){
       chatNonLus++;
-      const badge = document.getElementById('chat-fab-badge');
-      badge.textContent = chatNonLus > 9 ? '9+' : chatNonLus;
-      badge.classList.add('visible');
-      if (navigator.vibrate) navigator.vibrate(30);
+      const b=document.getElementById('chat-fab-badge');b.textContent=chatNonLus>9?'9+':chatNonLus;b.classList.add('visible');
+      if(navigator.vibrate)navigator.vibrate(30);
     }
   }
-  function creerDivChat(data, estDrawer) {
-    const div = document.createElement('div');
-    div.className = 'chat-msg';
-    let html = '';
-    if (data.replyTo) html += `<div class="chat-reply-preview">↩ <b>${escapeHtml(data.replyTo.nom)}</b> : ${escapeHtml(data.replyTo.message)}</div>`;
-    html += `<span class="chat-nom">${escapeHtml(data.nom)}</span><span class="chat-heure">${data.heure}</span> : ${escapeHtml(data.message)}`;
-    div.innerHTML = html;
-    attacherEvenementsChatMsg(div, data, estDrawer);
-    return div;
+  function creerDivChat(data,estDrawer){
+    const div=document.createElement('div');div.className='chat-msg';
+    let h='';
+    if(data.replyTo)h+=`<div class="chat-reply-preview">↩ <b>${escapeHtml(data.replyTo.nom)}</b> : ${escapeHtml(data.replyTo.message)}</div>`;
+    h+=`<span class="chat-nom">${escapeHtml(data.nom)}</span><span class="chat-heure">${data.heure}</span> : ${escapeHtml(data.message)}`;
+    div.innerHTML=h;attacherEvenementsChatMsg(div,data,estDrawer);return div;
   }
- 
-  function escapeHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+  function rejoindrePartie(){
+    const code=document.getElementById('input-code').value.trim().toUpperCase();
+    const nom=document.getElementById('input-nom').value.trim();
+    if(!code||!nom){document.getElementById('erreur-rejoindre').textContent='Remplis tous les champs !';return;}
+    monNom=nom;monCode=code;sauvegarderSession(code,nom);
+    socket.emit('joueur_rejoindre',{code,nom});
   }
- 
-  // ── REJOINDRE ──
-  function rejoindrePartie() {
-    const code = document.getElementById('input-code').value.trim().toUpperCase();
-    const nom  = document.getElementById('input-nom').value.trim();
-    if (!code || !nom) {
-      document.getElementById('erreur-rejoindre').textContent = 'Remplis tous les champs !';
-      return;
-    }
-    monNom = nom; monCode = code;
-    sauvegarderSession(code, nom);
-    socket.emit('joueur_rejoindre', { code, nom });
+  function envoyerReponse(){
+    const inp=document.getElementById('input-reponse'),rep=inp.value.trim();
+    if(!rep||!monCode)return;
+    const tr=tempsDepart?Math.floor((Date.now()-tempsDepart)/1000):0;
+    socket.emit('joueur_reponse',{code:monCode,nom:monNom,reponse:rep,tempsReponse:tr});
+    inp.value='';
+    const c=document.getElementById('reponse-confirmee');
+    c.textContent=`✅ "${rep}" envoyée !`;
+    setTimeout(()=>{c.textContent='';},2500);
+    if(navigator.vibrate)navigator.vibrate(40);
   }
- 
-  // ── RÉPONSE ──
-  function envoyerReponse() {
-    const input = document.getElementById('input-reponse');
-    const reponse = input.value.trim();
-    if (!reponse || !monCode) return;
-    // FIX : tempsReponse toujours correct même après reconnexion
-    const tempsReponse = tempsDepart ? Math.floor((Date.now() - tempsDepart) / 1000) : 0;
-    socket.emit('joueur_reponse', { code: monCode, nom: monNom, reponse, tempsReponse });
-    input.value = '';
-    const conf = document.getElementById('reponse-confirmee');
-    conf.textContent = `✅ "${reponse}" envoyée !`;
-    setTimeout(() => { conf.textContent = ''; }, 2500);
-    if (navigator.vibrate) navigator.vibrate(40);
+  function demanderIndice(){
+    if(demandeIndiceEnvoye)return;
+    demandeIndiceEnvoye=true;
+    socket.emit('joueur_demande_indice',{code:monCode,nom:monNom});
+    const b=document.getElementById('btn-demande-indice');
+    b.classList.add('demande');b.textContent='💡 Indice demandé !';b.disabled=true;
   }
- 
-  // ── INDICE ──
-  function demanderIndice() {
-    if (demandeIndiceEnvoye) return;
-    demandeIndiceEnvoye = true;
-    socket.emit('joueur_demande_indice', { code: monCode, nom: monNom });
-    const btn = document.getElementById('btn-demande-indice');
-    btn.classList.add('demande');
-    btn.textContent = '💡 Indice demandé !';
-    btn.disabled = true;
+
+  function afficherScoresJoueur(data){
+    data.sort((a,b)=>b.points-a.points);
+    const max=data.length>0?Math.max(...data.map(j=>j.points),1):1;
+    const el=document.getElementById('scores-joueur');if(!el)return;
+    const bc=['#7F77DD','#1D9E75','#D85A30','#185FA5','#BA7517','#993556','#639922','#A32D2D'];
+    el.innerHTML=data.map((j,i)=>`
+      <div class="score-ligne">
+        <span style="font-size:16px;flex-shrink:0;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'▪️'}</span>
+        <div class="score-nom-wrap"><span class="score-nom">${escapeHtml(j.nom)}</span></div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:${Math.round(j.points/max*100)}%;background:${bc[i%bc.length]};"></div></div>
+        <span class="score-pts">${j.points} pts</span>
+      </div>`).join('');
   }
- 
-  // ── RECAP — couleur gagnant ──
-  function appliquerVertGagnant(nom) {
-    const tbody = document.getElementById('recap-tbody');
-    if (!tbody) return;
-    tbody.querySelectorAll('tr').forEach(tr => {
-      if (tr.dataset.nom === nom) {
-        tr.querySelectorAll('.recap-reponse-div').forEach((div, i, arr) => {
-          if (i === arr.length - 1) div.style.cssText = 'font-size:13px;font-weight:bold;color:#3d6e3d;';
-        });
-      }
+  function appliquerVertGagnant(nom){
+    const tbody=document.getElementById('recap-tbody');if(!tbody)return;
+    tbody.querySelectorAll('tr').forEach(tr=>{
+      if(tr.dataset.nom===nom)tr.querySelectorAll('.recap-reponse-div').forEach((d,i,a)=>{if(i===a.length-1)d.style.cssText='font-size:13px;font-weight:bold;color:#3B6D11';});
     });
   }
- 
-  // ── SOCKETS ──
-  socket.on('partie_rejointe', ({ code, nom }) => {
-    monCode = code; monNom = nom;
-    sauvegarderSession(code, nom);
-    document.getElementById('attente-nom').textContent = `Bonjour ${escapeHtml(nom)} ! 👋`;
-    allerVers('ecran-attente');
+
+  socket.on('partie_rejointe',({code,nom})=>{monCode=code;monNom=nom;sauvegarderSession(code,nom);document.getElementById('attente-nom').textContent=`Bonjour ${escapeHtml(nom)} ! 👋`;allerVers('ecran-attente');});
+  socket.on('quitter_confirme',()=>{reinitialiserJoueur();allerVers('ecran-accueil');});
+  socket.on('erreur',msg=>{
+    document.getElementById('erreur-rejoindre').textContent=msg;
+    viderSession();monNom='';monCode='';
+    if(ecranActif!=='ecran-accueil'&&ecranActif!=='ecran-rejoindre')setTimeout(()=>allerVers('ecran-accueil'),1500);
   });
- 
-  socket.on('quitter_confirme', () => {
-    reinitialiserJoueur();
-    allerVers('ecran-accueil');
+  socket.on('joueurs_update',joueurs=>{
+    const el=document.getElementById('joueurs-attente');
+    if(el)el.innerHTML=joueurs.map(j=>creerChip(j.nom)).join('');
   });
- 
-  socket.on('erreur', (msg) => {
-    document.getElementById('erreur-rejoindre').textContent = msg;
-    // Si erreur de reconnexion, nettoyer le localStorage
-    localStorage.removeItem('jeu_code');
-    localStorage.removeItem('jeu_nom');
-    localStorage.removeItem('jeu_ts');
-  });
- 
-  socket.on('joueurs_update', (joueurs) => {
-    const el = document.getElementById('joueurs-attente');
-    if (el) el.innerHTML = joueurs.map(j => `<div class="joueur-chip">${escapeHtml(j.nom)}</div>`).join('');
-  });
- 
-  socket.on('nouvelle_question', (data) => {
-    document.getElementById('input-reponse').disabled = false;
-    document.getElementById('mes-reponses-zone').style.display = 'none';
-    document.getElementById('mes-reponses-liste').innerHTML = '';
-    document.getElementById('indice-bulle').style.display = 'none';
-    document.getElementById('personne-banner').style.display = 'none';
-    document.getElementById('reponse-confirmee').textContent = '';
-    scoresAvant = {}; nomGagnantCeRound = null;
-    demandeIndiceEnvoye = false;
-    chatNonLus = 0;
+  socket.on('nouvelle_question',data=>{
+    document.getElementById('input-reponse').disabled=false;
+    document.getElementById('mes-reponses-zone').style.display='none';
+    document.getElementById('mes-reponses-liste').innerHTML='';
+    document.getElementById('indice-bulle').style.display='none';
+    document.getElementById('bonne-rep-bulle').style.display='none';
+    document.getElementById('personne-banner').style.display='none';
+    document.getElementById('reponse-confirmee').textContent='';
+    scoresAvant={};nomGagnantCeRound=null;demandeIndiceEnvoye=false;chatNonLus=0;
     document.getElementById('chat-fab-badge').classList.remove('visible');
- 
-    const btnIndice = document.getElementById('btn-demande-indice');
-    btnIndice.classList.remove('demande');
-    btnIndice.textContent = '💡 Demander un indice';
-    btnIndice.disabled = false;
- 
-    document.getElementById('question-texte-joueur').textContent = data.question || '';
-    document.getElementById('pts-badge-joueur').textContent = `⭐ Max : ${data.pointsMax} pts`;
- 
-    const imgEl = document.getElementById('question-image');
-    if (data.image && data.image.startsWith('data:image')) {
-      imgEl.src = data.image; imgEl.style.display = 'block';
-    } else {
-      imgEl.src = ''; imgEl.style.display = 'none';
-    }
- 
-    // FIX : calcul correct du tempsDepart dans tous les cas
-    // (nouvelle question ET reconnexion en cours de question)
-    if (data.tempsTotal && data.temps < data.tempsTotal) {
-      tempsDepart = Date.now() - (data.tempsTotal - data.temps) * 1000;
-    } else {
-      tempsDepart = Date.now();
-    }
- 
-    // FIX double timer : toujours stopper proprement avant d'en créer un nouveau
-    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
- 
-    let temps = data.temps;
-    const timerEl = document.getElementById('timer-joueur');
-    timerEl.textContent = temps;
-    timerEl.classList.remove('urgent');
- 
-    timerInterval = setInterval(() => {
+    const bi=document.getElementById('btn-demande-indice');
+    bi.classList.remove('demande');bi.textContent='💡 Demander un indice';bi.disabled=false;
+    document.getElementById('question-texte-joueur').textContent=data.question||'';
+    document.getElementById('pts-badge-joueur').textContent=`⭐ Max : ${data.pointsMax} pts`;
+    const img=document.getElementById('question-image');
+    if(data.image&&data.image.startsWith('data:image')){img.src=data.image;img.style.display='block';}
+    else{img.src='';img.style.display='none';}
+    tempsTotal=data.tempsTotal||data.temps;
+    if(data.tempsTotal&&data.temps<data.tempsTotal)tempsDepart=Date.now()-(data.tempsTotal-data.temps)*1000;
+    else tempsDepart=Date.now();
+    if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+    let temps=data.temps;
+    const te=document.getElementById('timer-joueur'),be=document.getElementById('timer-barre');
+    te.textContent=temps;te.classList.remove('urgent');be.classList.remove('urgent');be.style.width='100%';
+    timerInterval=setInterval(()=>{
       temps--;
-      timerEl.textContent = Math.max(0, temps);
-      if (temps <= 10) timerEl.classList.add('urgent');
-      if (temps <= 0) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-      }
-    }, 1000);
- 
+      te.textContent=Math.max(0,temps);
+      be.style.width=Math.max(0,Math.round(temps/tempsTotal*100))+'%';
+      if(temps<=10){te.classList.add('urgent');be.classList.add('urgent');}
+      if(temps<=0){clearInterval(timerInterval);timerInterval=null;if(navigator.vibrate)navigator.vibrate([100,50,100]);}
+    },1000);
     allerVers('ecran-question');
-    setTimeout(() => {
-      const inp = document.getElementById('input-reponse');
-      if (inp && !inp.disabled) inp.focus();
-    }, 400);
-    if (navigator.vibrate) navigator.vibrate(60);
+    setTimeout(()=>{const i=document.getElementById('input-reponse');if(i&&!i.disabled)i.focus();},400);
+    if(navigator.vibrate)navigator.vibrate(60);
   });
- 
-  socket.on('reponse_joueur', (tousLesJoueurs) => {
-    const moi = tousLesJoueurs.find(r => r.nom === monNom);
-    if (moi && moi.historique && moi.historique.length > 0) {
-      document.getElementById('mes-reponses-zone').style.display = 'block';
-      document.getElementById('mes-reponses-liste').innerHTML = moi.historique.map((r, i) => `
-        <div class="ma-reponse-item ${i === moi.historique.length - 1 ? 'derniere' : ''}">
-          <span>${escapeHtml(r.reponse)}</span>
-          <span class="temps-mini">⏱ ${r.tempsReponse}s</span>
+  socket.on('reponse_joueur',tousLesJoueurs=>{
+    const moi=tousLesJoueurs.find(r=>r.nom===monNom);
+    if(moi&&moi.historique&&moi.historique.length>0){
+      document.getElementById('mes-reponses-zone').style.display='block';
+      document.getElementById('mes-reponses-liste').innerHTML=moi.historique.map((r,i)=>`
+        <div class="ma-reponse-item ${i===moi.historique.length-1?'derniere':''}">
+          <span>${escapeHtml(r.reponse)}</span><span class="temps-mini">⏱ ${r.tempsReponse}s</span>
         </div>`).join('');
     }
   });
- 
-  socket.on('fin_question', ({ reponses }) => {
-    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-    tempsDepart = null;
-    document.getElementById('input-reponse').disabled = true;
+  socket.on('fin_question',({reponses})=>{
+    if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+    tempsDepart=null;
+    document.getElementById('input-reponse').disabled=true;
     fermerChatDrawer();
- 
-    const tbody = document.getElementById('recap-tbody');
-    tbody.innerHTML = '';
-    reponses.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.dataset.nom = r.nom;
-      tr.style.cursor = 'context-menu';
-      tr.innerHTML = `
-        <td>
-          <b>${escapeHtml(r.nom)}</b>
-          <div class="reactions-recap" id="reactions-${escapeHtml(r.nom)}"></div>
-        </td>
-        <td>${(r.historique && r.historique.length > 0)
-          ? r.historique.map((h, i) =>
-              `<div class="recap-reponse-div" style="font-size:13px;${i === r.historique.length-1 ? 'font-weight:bold;' : 'color:#aaa;text-decoration:line-through;'}">${escapeHtml(h.reponse)}</div>`
-            ).join('')
-          : '<span style="color:#aaa">—</span>'}</td>
+    document.getElementById('bonne-rep-section').style.display='none';
+    const tbody=document.getElementById('recap-tbody');tbody.innerHTML='';
+    reponses.forEach(r=>{
+      const tr=document.createElement('tr');tr.dataset.nom=r.nom;
+      tr.innerHTML=`<td><b>${escapeHtml(r.nom)}</b><div class="reactions-recap" id="reactions-${escapeHtml(r.nom)}"></div></td>
+        <td>${(r.historique&&r.historique.length>0)?r.historique.map((h,i)=>`<div class="recap-reponse-div" style="font-size:13px;${i===r.historique.length-1?'font-weight:bold;':'color:#aaa;text-decoration:line-through;'}">${escapeHtml(h.reponse)}</div>`).join(''):'<span style="color:#aaa">—</span>'}</td>
         <td><span class="temps-badge">⏱ ${r.tempsReponse}s</span></td>`;
-      tbody.appendChild(tr);
- 
-      // Attacher le long press pour ouvrir le picker emoji
-      attacherLongPress(tr, r.nom);
+      tbody.appendChild(tr);attacherLongPress(tr,r.nom);
     });
- 
-    if (nomGagnantCeRound) appliquerVertGagnant(nomGagnantCeRound);
+    if(nomGagnantCeRound)appliquerVertGagnant(nomGagnantCeRound);
     allerVers('ecran-recap');
   });
- 
-  socket.on('personne_a_trouve', () => {
-    document.getElementById('personne-banner').style.display = 'block';
+  socket.on('bonne_reponse_revelee',({reponse})=>{
+    document.getElementById('bonne-rep-texte').textContent=reponse;
+    document.getElementById('bonne-rep-bulle').style.display='block';
+    document.getElementById('bonne-rep-recap-texte').textContent=reponse;
+    document.getElementById('bonne-rep-section').style.display='block';
+    afficherToast(`✅ Bonne réponse : ${reponse}`);
   });
- 
-  socket.on('indice_recu', ({ indice }) => {
-    document.getElementById('indice-texte').textContent = indice;
-    document.getElementById('indice-bulle').style.display = 'block';
-    if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+  socket.on('personne_a_trouve',()=>{document.getElementById('personne-banner').style.display='block';});
+  socket.on('indice_recu',({indice})=>{
+    document.getElementById('indice-texte').textContent=indice;
+    document.getElementById('indice-bulle').style.display='block';
+    if(navigator.vibrate)navigator.vibrate([50,30,50]);
     afficherToast('💡 Un indice vient d\'arriver !');
   });
- 
-  socket.on('reaction_update', ({ nomCible, reactions }) => {
-    const el = document.getElementById('reactions-' + nomCible);
-    if (!el) return;
-    el.innerHTML = Object.entries(reactions)
-      .map(([e, c]) => `<span class="reaction-pill">${e} ${c}</span>`)
-      .join('');
+  socket.on('reaction_update',({nomCible,reactions})=>{
+    const el=document.getElementById('reactions-'+nomCible);if(!el)return;
+    el.innerHTML=Object.entries(reactions).map(([e,c])=>`<span class="reaction-pill">${e} ${c}</span>`).join('');
   });
- 
-  socket.on('joueur_a_trouve', ({ nom }) => {
-    if (nom !== monNom) afficherToast(`🎉 ${escapeHtml(nom)} a trouvé la bonne réponse !`);
-    if (navigator.vibrate) navigator.vibrate(80);
-  });
- 
-  socket.on('points_update', (data) => {
-    data.forEach(j => {
-      const avant = scoresAvant[j.nom] !== undefined ? scoresAvant[j.nom] : null;
-      if (avant !== null && j.points > avant) {
-        nomGagnantCeRound = j.nom;
-        appliquerVertGagnant(j.nom);
-      }
-      scoresAvant[j.nom] = j.points;
+  socket.on('joueur_a_trouve',({nom})=>{if(nom!==monNom)afficherToast(`🎉 ${escapeHtml(nom)} a trouvé la bonne réponse !`);if(navigator.vibrate)navigator.vibrate(80);});
+  socket.on('points_update',data=>{
+    data.forEach(j=>{
+      const av=scoresAvant[j.nom]!==undefined?scoresAvant[j.nom]:null;
+      if(av!==null&&j.points>av){nomGagnantCeRound=j.nom;appliquerVertGagnant(j.nom);}
+      scoresAvant[j.nom]=j.points;
     });
-    const el = document.getElementById('scores-joueur');
-    if (!el) return;
-    data.sort((a, b) => b.points - a.points);
-    el.innerHTML = data.map((j, i) => `
-      <div class="score-ligne">
-        <span>${i===0?'🥇':i===1?'🥈':i===2?'🥉':''} ${escapeHtml(j.nom)}</span>
-        <span class="score-pts">${j.points} pts</span>
-      </div>`).join('');
+    afficherScoresJoueur(data);
   });
- 
-  socket.on('scores_finaux', (scores) => {
-    fermerChatDrawer();
-    scores.sort((a, b) => b.points - a.points);
-    const classes = ['or', 'argent', 'bronze'];
-    const emojis = ['🥇', '🥈', '🥉'];
-    document.getElementById('podium-fin').innerHTML = scores.map((j, i) => `
-      <div class="podium-ligne ${classes[i] || 'autre'}">
-        <span>${emojis[i] || (i+1)+'.'} ${escapeHtml(j.nom)}</span>
-        <span class="podium-pts">${j.points} pts</span>
-      </div>`).join('');
-    allerVers('ecran-fin');
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+  socket.on('scores_finaux',scores=>{
+    fermerChatDrawer();scores.sort((a,b)=>b.points-a.points);
+    const cl=['or','argent','bronze'],em=['🥇','🥈','🥉'];
+    document.getElementById('podium-fin').innerHTML=scores.map((j,i)=>`<div class="podium-ligne ${cl[i]||'autre'}"><span>${em[i]||(i+1)+'.'} ${escapeHtml(j.nom)}</span><span class="podium-pts">${j.points} pts</span></div>`).join('');
+    allerVers('ecran-fin');if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
   });
- 
-  socket.on('chat_message', ajouterChat);
- 
-  socket.on('partie_annulee', () => {
-    reinitialiserJoueur();
-    allerVers('ecran-accueil');
+  socket.on('chat_message',ajouterChat);
+  socket.on('partie_annulee',()=>{reinitialiserJoueur();allerVers('ecran-accueil');});
+  socket.on('disconnect',()=>{const b=document.getElementById('reconnect-banner');b.classList.add('visible');b.classList.remove('reconnect-ok');b.textContent='⚠️ Connexion perdue... Reconnexion en cours';});
+  socket.on('connect',()=>{
+    const b=document.getElementById('reconnect-banner');b.classList.add('reconnect-ok');b.textContent='✅ Reconnecté !';
+    setTimeout(()=>b.classList.remove('visible'),2500);
+    if(monCode&&monNom)socket.emit('joueur_rejoindre',{code:monCode,nom:monNom});
   });
- 
-  socket.on('disconnect', () => {
-    document.getElementById('reconnect-banner').classList.add('visible');
-    document.getElementById('reconnect-banner').classList.remove('reconnect-ok');
-    document.getElementById('reconnect-banner').textContent = '⚠️ Connexion perdue... Reconnexion en cours';
+  document.addEventListener('visibilitychange',()=>{
+    if(!monCode||!monNom)return;
+    if(document.hidden)socket.emit('joueur_quitte_page',{code:monCode,nom:monNom});
+    else socket.emit('joueur_revient_page',{code:monCode,nom:monNom});
   });
- 
-  socket.on('connect', () => {
-    const banner = document.getElementById('reconnect-banner');
-    banner.classList.add('reconnect-ok');
-    banner.textContent = '✅ Reconnecté !';
-    setTimeout(() => banner.classList.remove('visible'), 2500);
-    if (monCode && monNom) socket.emit('joueur_rejoindre', { code: monCode, nom: monNom });
-  });
- 
-  document.addEventListener('visibilitychange', () => {
-    if (!monCode || !monNom) return;
-    if (document.hidden) socket.emit('joueur_quitte_page', { code: monCode, nom: monNom });
-    else socket.emit('joueur_revient_page', { code: monCode, nom: monNom });
-  });
- 
-  window.addEventListener('load', () => {
-    const session = chargerSession();
-    if (session) {
-      monCode = session.code;
-      monNom  = session.nom;
-      socket.emit('joueur_rejoindre', { code: monCode, nom: monNom });
-    }
+  window.addEventListener('load',()=>{
+    const s=chargerSession();
+    if(s){monCode=s.code;monNom=s.nom;socket.emit('joueur_rejoindre',{code:monCode,nom:monNom});}
   });
 </script>
 </body>
