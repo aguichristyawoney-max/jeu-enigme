@@ -15,6 +15,7 @@
       --vert-dk: #3B6D11;
       --rouge:   #E24B4A;
       --rouge-dk:#A32D2D;
+      --orange:  #E07B20;
       --bg:      #f0f4fa;
       --bg2:     #ffffff;
       --txt:     #0d1b2e;
@@ -85,165 +86,222 @@
     [data-theme="dark"] .chip6{color:#C0DD97;} [data-theme="dark"] .chip7{color:#F7C1C1;}
 
     /* BOUTONS */
-    .btn{padding:clamp(12px,3vw,14px) clamp(18px,5vw,28px);font-size:clamp(15px,4vw,17px);font-weight:700;border:none;border-radius:var(--radius);cursor:pointer;margin:6px;font-family:inherit;min-height:48px;transition:transform 0.1s,box-shadow 0.12s;}
-    .btn:active{transform:translateY(3px);}
-    .btn-bleu{background:var(--bleu);color:white;box-shadow:0 5px 0 var(--bleu-dk);}
+    .btn{padding:clamp(10px,2.5vw,13px) clamp(14px,4vw,22px);font-size:clamp(13px,3.5vw,15px);font-weight:700;border:none;border-radius:var(--radius);cursor:pointer;margin:4px;font-family:inherit;min-height:42px;transition:transform 0.1s,box-shadow 0.12s;}
+    .btn:active{transform:translateY(2px);}
+    .btn-bleu{background:var(--bleu);color:white;box-shadow:0 4px 0 var(--bleu-dk);}
     .btn-rouge{background:var(--rouge);color:white;box-shadow:0 4px 0 var(--rouge-dk);}
-    .btn-ambre{background:var(--ambre);color:var(--bleu-xdk);box-shadow:0 5px 0 var(--ambre-dk);}
+    .btn-ambre{background:var(--ambre);color:var(--bleu-xdk);box-shadow:0 4px 0 var(--ambre-dk);}
     .btn-vert{background:var(--vert);color:white;box-shadow:0 4px 0 var(--vert-dk);}
+    .btn-orange{background:var(--orange);color:white;box-shadow:0 4px 0 #a0561a;}
     .btn-gris{background:#aaa;color:white;box-shadow:0 4px 0 #888;}
     .btn-ghost{background:transparent;color:var(--txt2);border:2px solid var(--border);box-shadow:none;}
     .btn-bleu:active{box-shadow:0 2px 0 var(--bleu-dk);}
     .btn-rouge:active{box-shadow:0 2px 0 var(--rouge-dk);}
     .btn-ambre:active{box-shadow:0 2px 0 var(--ambre-dk);}
     .btn-vert:active{box-shadow:0 2px 0 var(--vert-dk);}
+    .btn-orange:active{box-shadow:0 2px 0 #a0561a;}
     .btn-full{width:100%;margin:4px 0;}
 
     /* JEU */
     #ecran-admin-jeu{background:var(--bg);align-items:stretch;padding:0;min-height:100dvh;}
-    .admin-header{background:linear-gradient(135deg,var(--bleu-dk),var(--bleu-xdk));padding:10px 14px;display:flex;justify-content:space-between;align-items:center;color:white;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:100;flex-shrink:0;}
-    .admin-header h1{font-size:clamp(13px,3.5vw,17px);}
-    .admin-code-small{background:rgba(255,255,255,0.18);padding:4px 12px;border-radius:var(--radius);font-size:clamp(14px,3.5vw,17px);font-weight:700;letter-spacing:3px;}
+
+    /* HEADER avec bouton pause intégré */
+    .admin-header{background:linear-gradient(135deg,var(--bleu-dk),var(--bleu-xdk));padding:8px 12px;display:flex;justify-content:space-between;align-items:center;color:white;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:100;flex-shrink:0;}
+    .admin-header-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
+    .admin-header h1{font-size:clamp(12px,3.2vw,15px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .admin-code-small{background:rgba(255,255,255,0.18);padding:3px 10px;border-radius:var(--radius);font-size:clamp(13px,3.2vw,15px);font-weight:700;letter-spacing:3px;flex-shrink:0;}
     .joueurs-header{display:flex;flex-wrap:wrap;gap:4px;}
 
+    /* Bouton pause dans le header */
+    .btn-pause-header{
+      background:rgba(239,159,39,0.25);
+      border:1.5px solid var(--ambre);
+      color:var(--ambre);
+      border-radius:var(--radius);
+      padding:5px 12px;
+      font-size:13px;font-weight:700;
+      cursor:pointer;font-family:inherit;
+      white-space:nowrap;flex-shrink:0;
+      transition:background 0.2s;
+      min-height:34px;
+    }
+    .btn-pause-header:active{background:rgba(239,159,39,0.45);}
+    .btn-pause-header.en-pause{
+      background:rgba(99,153,34,0.25);
+      border-color:var(--vert);
+      color:#9FE1CB;
+    }
+    .btn-pause-header:disabled{opacity:0.35;cursor:not-allowed;}
+
+    /* Bandeau pause admin */
+    .pause-banner-admin{
+      display:none;
+      background:linear-gradient(135deg,#a0561a,var(--orange));
+      color:white;
+      padding:8px 14px;
+      text-align:center;
+      font-size:13px;font-weight:700;
+      position:sticky;top:44px;z-index:98;
+      align-items:center;justify-content:center;gap:10px;
+    }
+    .pause-banner-admin.visible{display:flex;}
+    .pause-temps-admin{font-size:16px;font-weight:700;color:#ffe0b2;}
+
     /* TIMER BAR ADMIN */
-    .admin-timer-bar{background:var(--bleu-xdk);padding:8px 14px;display:none;align-items:center;gap:12px;color:white;position:sticky;top:44px;z-index:99;flex-shrink:0;}
+    .admin-timer-bar{background:var(--bleu-xdk);padding:7px 12px;display:none;align-items:center;gap:10px;color:white;position:sticky;top:44px;z-index:99;flex-shrink:0;}
     .admin-timer-bar.visible{display:flex;}
-    .admin-timer-cercle{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:700;border:3px solid white;flex-shrink:0;transition:background 0.3s;}
+    .admin-timer-cercle{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;border:3px solid white;flex-shrink:0;transition:background 0.3s;}
     .admin-timer-cercle.urgent{background:var(--rouge);border-color:#ffaaaa;}
-    .admin-timer-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
-    .admin-timer-barre-wrap{width:100%;height:5px;background:rgba(255,255,255,0.2);border-radius:3px;overflow:hidden;}
+    .admin-timer-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+    .admin-timer-barre-wrap{width:100%;height:4px;background:rgba(255,255,255,0.2);border-radius:3px;overflow:hidden;}
     .admin-timer-barre{height:100%;background:white;border-radius:3px;transition:width 1s linear,background 0.3s;}
     .admin-timer-barre.urgent{background:#ffaaaa;}
-    .admin-timer-question{font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .admin-timer-question{font-size:11px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
     /* TABS MOBILE */
     .admin-tabs{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:none;z-index:200;padding-bottom:env(safe-area-inset-bottom,0);}
-    .admin-tabs-inner{display:flex;height:58px;}
-    .admin-tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;font-family:inherit;font-size:10px;color:var(--txt2);gap:3px;position:relative;padding:6px 0;transition:color 0.2s;}
-    .admin-tab-btn .tab-icon{font-size:20px;line-height:1;}
+    .admin-tabs-inner{display:flex;height:56px;}
+    .admin-tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;font-family:inherit;font-size:10px;color:var(--txt2);gap:2px;position:relative;padding:5px 0;transition:color 0.2s;}
+    .admin-tab-btn .tab-icon{font-size:18px;line-height:1;}
     .admin-tab-btn.actif{color:var(--bleu);}
     .admin-tab-btn.actif::after{content:'';position:absolute;top:0;left:20%;right:20%;height:3px;background:var(--bleu);border-radius:0 0 3px 3px;}
-    .tab-badge{position:absolute;top:4px;right:calc(50% - 16px);background:var(--rouge);color:white;font-size:10px;font-weight:700;border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;display:none;}
+    .tab-badge{position:absolute;top:3px;right:calc(50% - 16px);background:var(--rouge);color:white;font-size:10px;font-weight:700;border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;display:none;}
     .tab-badge.visible{display:block;}
 
     /* GRID */
-    .admin-body{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;flex:1;}
+    .admin-body{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px;flex:1;}
     @media(max-width:700px){
-      .admin-body{grid-template-columns:1fr;padding:10px 10px 76px;}
+      .admin-body{grid-template-columns:1fr;padding:8px 8px 72px;}
       .admin-tabs{display:block;}
       .panel{display:none;}
       .panel.onglet-actif{display:block;}
-      .admin-timer-bar{top:50px;}
+      .admin-timer-bar{top:48px;}
+      .pause-banner-admin{top:48px;}
     }
 
     /* PANELS */
-    .panel{background:var(--bg2);border-radius:var(--radius-md);padding:clamp(14px,4vw,20px);border:0.5px solid var(--border);}
-    .panel h3{color:var(--bleu);margin-bottom:14px;font-size:clamp(15px,4vw,17px);border-bottom:1px solid var(--border);padding-bottom:8px;}
+    .panel{background:var(--bg2);border-radius:var(--radius-md);padding:clamp(12px,3.5vw,18px);border:0.5px solid var(--border);}
+    .panel h3{color:var(--bleu);margin-bottom:12px;font-size:clamp(14px,3.8vw,16px);border-bottom:1px solid var(--border);padding-bottom:7px;}
 
     /* FORM QUESTION */
-    .question-form textarea{width:100%;padding:12px;border:2px solid var(--border);border-radius:var(--radius-md);font-size:clamp(14px,3.5vw,15px);font-family:inherit;resize:vertical;min-height:80px;outline:none;background:var(--bg);color:var(--txt);}
+    .question-form textarea{width:100%;padding:10px;border:2px solid var(--border);border-radius:var(--radius-md);font-size:clamp(13px,3.5vw,14px);font-family:inherit;resize:vertical;min-height:70px;outline:none;background:var(--bg);color:var(--txt);}
     .question-form textarea:focus{border-color:var(--bleu);}
-    .form-row{display:flex;gap:10px;margin:10px 0;flex-wrap:wrap;}
-    .form-row label{font-size:13px;color:var(--bleu);font-weight:700;}
-    .form-row input[type="number"],.form-row input[type="range"]{flex:1;padding:8px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;outline:none;background:var(--bg);color:var(--txt);}
+    .form-row{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:flex-end;}
+    .form-row label{font-size:12px;color:var(--bleu);font-weight:700;}
+    .form-row input[type="number"],.form-row input[type="range"]{flex:1;padding:7px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;outline:none;background:var(--bg);color:var(--txt);}
     .form-row input:focus{border-color:var(--bleu);}
-    .preview-image{max-width:100%;max-height:130px;border-radius:var(--radius-md);margin:8px 0;display:none;object-fit:contain;}
-    .image-upload-label{display:block;padding:10px;text-align:center;border:2px dashed var(--border);border-radius:var(--radius-md);cursor:pointer;color:var(--txt2);font-size:14px;margin:8px 0;transition:border-color 0.2s;}
+    .preview-image{max-width:100%;max-height:110px;border-radius:var(--radius-md);margin:6px 0;display:none;object-fit:contain;}
+    .image-upload-label{display:block;padding:8px;text-align:center;border:2px dashed var(--border);border-radius:var(--radius-md);cursor:pointer;color:var(--txt2);font-size:13px;margin:6px 0;transition:border-color 0.2s;}
     .image-upload-label:hover{border-color:var(--bleu);color:var(--bleu);}
-    .temps-val{font-weight:700;color:var(--bleu);min-width:30px;text-align:center;}
+    .temps-val{font-weight:700;color:var(--bleu);min-width:28px;text-align:center;font-size:14px;}
 
-    .controles{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0;}
-    .controles .btn{flex:1;min-width:100px;}
+    /* Contrôles principaux — ligne compacte */
+    .controles{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-start;margin:8px 0;}
+    .controles .btn{flex:0 0 auto;font-size:clamp(12px,3.2vw,13px);padding:8px 12px;min-height:38px;margin:0;}
 
-    /* INDICE */
-    .notif-indice{background:#fef3cd;border:2px solid var(--ambre);border-radius:var(--radius-md);padding:10px;margin-bottom:10px;display:none;}
-    [data-theme="dark"] .notif-indice{background:#1e2d10;}
-    .notif-indice p{color:#856404;font-weight:700;font-size:13px;}
-    [data-theme="dark"] .notif-indice p{color:#c8a04a;}
-    .indice-form{display:flex;gap:8px;margin-bottom:12px;}
-    .indice-form input{flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:14px;min-height:44px;background:var(--bg);color:var(--txt);}
+    /* INDICE — notif push compacte */
+    .notif-indice{
+      background:linear-gradient(135deg,#fffbec,#fef3cd);
+      border:2px solid var(--ambre);
+      border-radius:var(--radius-md);
+      padding:8px 10px;
+      margin-bottom:8px;
+      display:none;
+      align-items:center;
+      gap:8px;
+      animation:slideIn 0.3s ease;
+    }
+    @keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+    [data-theme="dark"] .notif-indice{background:linear-gradient(135deg,#1e2d10,#2a3d15);}
+    .notif-indice-icon{font-size:20px;flex-shrink:0;}
+    .notif-indice-texte{flex:1;font-weight:700;font-size:13px;color:#856404;}
+    [data-theme="dark"] .notif-indice-texte{color:#c8a04a;}
+    .notif-indice-count{background:var(--ambre);color:var(--bleu-xdk);font-size:12px;font-weight:700;border-radius:var(--radius);padding:2px 8px;flex-shrink:0;}
+    .notif-indice-close{cursor:pointer;font-size:16px;color:var(--txt2);padding:0 2px;background:none;border:none;font-family:inherit;}
+
+    .indice-form{display:flex;gap:6px;margin-bottom:10px;}
+    .indice-form input{flex:1;padding:9px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:13px;min-height:40px;background:var(--bg);color:var(--txt);}
     .indice-form input:focus{border-color:var(--ambre);}
 
     /* BONNE REPONSE FORM */
-    .bonne-rep-section{background:var(--bg);border:2px solid var(--vert);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:12px;}
-    .bonne-rep-section-label{font-size:12px;color:var(--vert-dk);font-weight:700;margin-bottom:6px;}
+    .bonne-rep-section{background:var(--bg);border:2px solid var(--vert);border-radius:var(--radius-md);padding:9px 11px;margin-bottom:10px;}
+    .bonne-rep-section-label{font-size:11px;color:var(--vert-dk);font-weight:700;margin-bottom:5px;}
     [data-theme="dark"] .bonne-rep-section-label{color:#9FE1CB;}
-    .bonne-rep-form{display:flex;gap:8px;}
-    .bonne-rep-form input{flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:14px;min-height:44px;background:var(--bg2);color:var(--txt);}
+    .bonne-rep-form{display:flex;gap:6px;}
+    .bonne-rep-form input{flex:1;padding:9px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:13px;min-height:40px;background:var(--bg2);color:var(--txt);}
     .bonne-rep-form input:focus{border-color:var(--vert);}
 
     /* QUESTION ENVOYEE RECAP */
-    .question-envoyee-recap{background:var(--bg);border:2px solid var(--ambre);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:12px;display:none;}
-    .question-envoyee-recap .qr-label{font-size:11px;color:var(--ambre-dk);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+    .question-envoyee-recap{background:var(--bg);border:2px solid var(--ambre);border-radius:var(--radius-md);padding:9px 11px;margin-bottom:10px;display:none;}
+    .question-envoyee-recap .qr-label{font-size:11px;color:var(--ambre-dk);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
     [data-theme="dark"] .question-envoyee-recap .qr-label{color:var(--ambre);}
-    .question-envoyee-recap .qr-texte{font-size:14px;color:var(--txt);font-weight:700;line-height:1.4;}
-    .question-envoyee-recap .qr-image{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px;display:none;object-fit:contain;}
+    .question-envoyee-recap .qr-texte{font-size:13px;color:var(--txt);font-weight:700;line-height:1.4;}
+    .question-envoyee-recap .qr-image{max-width:100%;max-height:150px;border-radius:8px;margin-top:6px;display:none;object-fit:contain;}
 
     /* JOUEUR CARDS */
-    .joueur-cards{display:flex;flex-direction:column;gap:8px;}
+    .joueur-cards{display:flex;flex-direction:column;gap:7px;}
     .joueur-card{background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-md);overflow:hidden;}
     .joueur-card.has-reponse{border-color:var(--vert);}
-    .joueur-card-header{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;-webkit-user-select:none;}
-    .joueur-card-nom{font-weight:700;font-size:14px;color:var(--txt);min-width:70px;flex-shrink:0;}
-    .joueur-card-fleche{font-size:12px;color:var(--txt2);flex-shrink:0;transition:transform 0.2s;}
+    .joueur-card-header{display:flex;align-items:center;gap:7px;padding:9px 11px;cursor:pointer;user-select:none;-webkit-user-select:none;}
+    .joueur-card-nom{font-weight:700;font-size:13px;color:var(--txt);min-width:60px;flex-shrink:0;}
+    .joueur-card-fleche{font-size:11px;color:var(--txt2);flex-shrink:0;transition:transform 0.2s;}
     .joueur-card.open .joueur-card-fleche{transform:rotate(90deg);}
-    .joueur-card-derniere{flex:1;font-size:13px;color:var(--vert-dk);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .joueur-card-derniere{flex:1;font-size:12px;color:var(--vert-dk);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     [data-theme="dark"] .joueur-card-derniere{color:#9FE1CB;}
     .joueur-card-derniere.vide{color:var(--txt2);font-weight:normal;font-style:italic;}
-    .joueur-card-temps{font-size:11px;background:var(--ambre);color:var(--bleu-xdk);padding:2px 7px;border-radius:var(--radius);font-weight:700;flex-shrink:0;}
-    .joueur-card-body{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
+    .joueur-card-temps{font-size:10px;background:var(--ambre);color:var(--bleu-xdk);padding:2px 6px;border-radius:var(--radius);font-weight:700;flex-shrink:0;}
+    .joueur-card-body{display:none;padding:0 11px 11px;border-top:1px solid var(--border);}
     .joueur-card.open .joueur-card-body{display:block;}
-    .historique-liste{margin:10px 0 8px;display:flex;flex-direction:column;gap:4px;}
-    .histo-item{font-size:13px;color:var(--txt2);padding:4px 8px;border-radius:6px;background:var(--bg2);display:flex;justify-content:space-between;align-items:center;gap:6px;}
+    .historique-liste{margin:8px 0 7px;display:flex;flex-direction:column;gap:4px;}
+    .histo-item{font-size:12px;color:var(--txt2);padding:4px 7px;border-radius:6px;background:var(--bg2);display:flex;justify-content:space-between;align-items:center;gap:6px;}
     .histo-item.derniere{color:var(--txt);font-weight:700;background:#e6f1fb;}
     [data-theme="dark"] .histo-item.derniere{background:#1a2f48;}
-    .temps-badge{background:var(--ambre);color:var(--bleu-xdk);border-radius:var(--radius);padding:2px 6px;font-size:11px;font-weight:700;flex-shrink:0;}
-    .joueur-card-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;}
-    .reactions-admin{font-size:12px;color:var(--txt2);display:flex;flex-wrap:wrap;gap:4px;flex:1;}
-    .reaction-pill{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:2px 8px;font-size:12px;}
-    .points-zone{display:flex;gap:5px;align-items:center;margin-left:auto;}
-    .points-zone input{width:48px;padding:5px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;text-align:center;font-size:14px;min-height:32px;background:var(--bg);color:var(--txt);}
-    .btn-point{background:var(--vert);color:white;border:none;border-radius:var(--radius-md);padding:5px 10px;cursor:pointer;font-weight:700;font-size:15px;font-family:inherit;min-height:32px;min-width:34px;}
+    .temps-badge{background:var(--ambre);color:var(--bleu-xdk);border-radius:var(--radius);padding:2px 6px;font-size:10px;font-weight:700;flex-shrink:0;}
+    .joueur-card-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:7px;}
+    .reactions-admin{font-size:11px;color:var(--txt2);display:flex;flex-wrap:wrap;gap:3px;flex:1;}
+    .reaction-pill{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:2px 6px;font-size:11px;}
+    .points-zone{display:flex;gap:4px;align-items:center;margin-left:auto;}
+    .points-zone input{width:44px;padding:4px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;text-align:center;font-size:13px;min-height:30px;background:var(--bg);color:var(--txt);}
+    .btn-point{background:var(--vert);color:white;border:none;border-radius:var(--radius-md);padding:4px 9px;cursor:pointer;font-weight:700;font-size:14px;font-family:inherit;min-height:30px;min-width:30px;}
     .btn-point:disabled{background:#ccc;opacity:.4;cursor:not-allowed;}
-    .points-max-badge{font-size:11px;color:var(--txt2);margin-top:2px;text-align:right;}
-    .verrou-banner{background:var(--rouge);color:white;text-align:center;padding:8px;border-radius:var(--radius-md);font-weight:700;font-size:13px;margin-bottom:10px;display:none;}
-    .longpress-hint{font-size:11px;color:var(--txt2);text-align:center;margin-top:6px;font-style:italic;}
+    .points-max-badge{font-size:10px;color:var(--txt2);margin-top:2px;text-align:right;}
+    .verrou-banner{background:var(--rouge);color:white;text-align:center;padding:7px;border-radius:var(--radius-md);font-weight:700;font-size:12px;margin-bottom:8px;display:none;}
+    .longpress-hint{font-size:10px;color:var(--txt2);text-align:center;margin-top:5px;font-style:italic;}
 
     /* SCORES */
-    .score-ligne{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--radius-md);margin-bottom:8px;background:var(--bg);gap:8px;}
-    .score-nom-flex{flex:1;display:flex;align-items:center;gap:8px;min-width:0;}
-    .score-nom{font-size:clamp(13px,3.5vw,15px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .score-bar-wrap{width:60px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0;}
+    .score-ligne{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;border-radius:var(--radius-md);margin-bottom:7px;background:var(--bg);gap:7px;}
+    .score-nom-flex{flex:1;display:flex;align-items:center;gap:7px;min-width:0;}
+    .score-nom{font-size:clamp(12px,3.5vw,14px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .score-bar-wrap{width:55px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0;}
     .score-bar{height:100%;border-radius:3px;transition:width 0.6s ease;}
-    .score-pts{font-weight:700;color:var(--ambre-dk);background:var(--bg2);padding:4px 10px;border-radius:var(--radius);flex-shrink:0;font-size:13px;}
+    .score-pts{font-weight:700;color:var(--ambre-dk);background:var(--bg2);padding:3px 9px;border-radius:var(--radius);flex-shrink:0;font-size:12px;}
     [data-theme="dark"] .score-pts{color:var(--ambre);}
-    .btn-edit-score{background:none;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:14px;padding:3px 7px;min-height:28px;color:var(--bleu);flex-shrink:0;}
+    .btn-edit-score{background:none;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;padding:2px 6px;min-height:26px;color:var(--bleu);flex-shrink:0;}
     .btn-edit-score:hover{background:var(--bg);}
-    .score-edit-row{display:none;align-items:center;gap:6px;margin-top:6px;padding:0 4px;}
+    .score-edit-row{display:none;align-items:center;gap:5px;margin-top:5px;padding:0 4px;}
     .score-edit-row.visible{display:flex;}
-    .score-edit-row input{width:60px;padding:5px 8px;border:2px solid var(--bleu);border-radius:var(--radius-md);font-family:inherit;font-size:14px;text-align:center;outline:none;background:var(--bg);color:var(--txt);}
-    .btn-edit-ok{background:var(--vert);color:white;border:none;border-radius:var(--radius-md);padding:5px 10px;cursor:pointer;font-weight:700;font-size:13px;font-family:inherit;min-height:30px;}
-    .btn-edit-annuler{background:var(--border);color:var(--txt);border:none;border-radius:var(--radius-md);padding:5px 10px;cursor:pointer;font-size:13px;font-family:inherit;min-height:30px;}
+    .score-edit-row input{width:56px;padding:4px 7px;border:2px solid var(--bleu);border-radius:var(--radius-md);font-family:inherit;font-size:13px;text-align:center;outline:none;background:var(--bg);color:var(--txt);}
+    .btn-edit-ok{background:var(--vert);color:white;border:none;border-radius:var(--radius-md);padding:4px 9px;cursor:pointer;font-weight:700;font-size:12px;font-family:inherit;min-height:28px;}
+    .btn-edit-annuler{background:var(--border);color:var(--txt);border:none;border-radius:var(--radius-md);padding:4px 9px;cursor:pointer;font-size:12px;font-family:inherit;min-height:28px;}
 
     /* CHAT */
-    .chat-box{height:clamp(130px,25vw,180px);overflow-y:auto;border:2px solid var(--border);border-radius:var(--radius-md);padding:10px;margin-bottom:10px;background:var(--bg);display:flex;flex-direction:column;gap:4px;}
-    @media(max-width:700px){.chat-box{height:calc(100dvh - 300px);min-height:150px;}}
-    .chat-msg{margin-bottom:4px;font-size:14px;line-height:1.4;cursor:pointer;padding:4px 6px;border-radius:8px;transition:background 0.15s;user-select:none;-webkit-user-select:none;word-break:break-word;}
+    .chat-box{height:clamp(120px,22vw,170px);overflow-y:auto;border:2px solid var(--border);border-radius:var(--radius-md);padding:9px;margin-bottom:9px;background:var(--bg);display:flex;flex-direction:column;gap:4px;}
+    @media(max-width:700px){.chat-box{height:calc(100dvh - 280px);min-height:140px;}}
+    .chat-msg{margin-bottom:3px;font-size:13px;line-height:1.4;cursor:pointer;padding:3px 5px;border-radius:8px;transition:background 0.15s;user-select:none;-webkit-user-select:none;word-break:break-word;}
     .chat-msg:hover{background:var(--bg2);}
     .chat-msg.selected{background:#e6f1fb;}
     [data-theme="dark"] .chat-msg.selected{background:#1a2f48;}
     .chat-msg.alerte-triche{color:var(--rouge);font-weight:700;cursor:default;}
     .chat-nom{font-weight:700;color:var(--ambre-dk);margin-right:4px;}
     [data-theme="dark"] .chat-nom{color:var(--ambre);}
-    .chat-heure{font-size:11px;color:var(--txt2);margin-right:4px;}
-    .chat-reply-preview{background:var(--bg2);border-left:3px solid var(--ambre);padding:4px 8px;border-radius:0 6px 6px 0;font-size:12px;color:var(--txt2);margin-bottom:4px;}
-    .reply-bar{background:#fef3cd;border:1px solid var(--ambre);border-radius:8px;padding:6px 10px;margin-bottom:6px;font-size:13px;color:#856404;display:none;align-items:center;justify-content:space-between;}
+    .chat-heure{font-size:10px;color:var(--txt2);margin-right:4px;}
+    .chat-reply-preview{background:var(--bg2);border-left:3px solid var(--ambre);padding:3px 7px;border-radius:0 5px 5px 0;font-size:11px;color:var(--txt2);margin-bottom:3px;}
+    .reply-bar{background:#fef3cd;border:1px solid var(--ambre);border-radius:8px;padding:5px 9px;margin-bottom:5px;font-size:12px;color:#856404;display:none;align-items:center;justify-content:space-between;}
     [data-theme="dark"] .reply-bar{background:#1e2d10;color:#c8a04a;}
     .reply-bar.visible{display:flex;}
-    .reply-bar-close{cursor:pointer;font-size:16px;color:var(--rouge);font-weight:700;padding:0 4px;}
-    .chat-form{display:flex;gap:6px;}
-    .chat-form input{flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:14px;min-height:44px;background:var(--bg);color:var(--txt);}
+    .reply-bar-close{cursor:pointer;font-size:15px;color:var(--rouge);font-weight:700;padding:0 4px;}
+    .chat-form{display:flex;gap:5px;}
+    .chat-form input{flex:1;padding:9px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:13px;min-height:40px;background:var(--bg);color:var(--txt);}
     .chat-form input:focus{border-color:var(--bleu);}
 
     /* EMOJI */
@@ -251,7 +309,7 @@
     .emoji-picker-overlay.visible{display:block;}
     .emoji-picker{position:fixed;background:var(--bg2);border-radius:var(--radius);padding:10px 14px;display:flex;gap:6px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:900;transform:scale(0.7);opacity:0;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),opacity 0.15s;border:0.5px solid var(--border);}
     .emoji-picker.visible{transform:scale(1);opacity:1;}
-    .emoji-picker-btn{font-size:26px;background:none;border:none;cursor:pointer;padding:4px;border-radius:50%;transition:transform 0.15s;line-height:1;}
+    .emoji-picker-btn{font-size:24px;background:none;border:none;cursor:pointer;padding:4px;border-radius:50%;transition:transform 0.15s;line-height:1;}
     .emoji-picker-btn:hover{background:var(--bg);transform:scale(1.25);}
     .emoji-picker-btn:active{transform:scale(1.4);}
 
@@ -306,14 +364,28 @@
 <!-- ECRAN JEU -->
 <div id="ecran-admin-jeu" class="ecran">
   <div class="admin-header">
-    <h1 id="admin-nom-header">👑 Admin</h1>
-    <div class="admin-code-small" id="admin-code-small"></div>
-    <div class="joueurs-header" id="joueurs-jeu"></div>
+    <div class="admin-header-left">
+      <h1 id="admin-nom-header">👑 Admin</h1>
+      <div class="admin-code-small" id="admin-code-small"></div>
+      <div class="joueurs-header" id="joueurs-jeu"></div>
+    </div>
+    <!-- Bouton pause compact dans le header -->
+    <button class="btn-pause-header" id="btn-pause-header" onclick="togglePause()" disabled title="Pause / Reprendre">
+      ⏸ Pause
+    </button>
   </div>
+
+  <!-- Bandeau pause visible admin -->
+  <div class="pause-banner-admin" id="pause-banner-admin">
+    <span>⏸ PARTIE EN PAUSE —</span>
+    <span class="pause-temps-admin" id="pause-temps-admin">-- s restantes</span>
+    <span>— Appuie sur ▶ pour reprendre</span>
+  </div>
+
   <div class="admin-timer-bar" id="admin-timer-bar">
     <div class="admin-timer-cercle" id="admin-timer-cercle">--</div>
     <div class="admin-timer-right">
-      <div style="font-size:12px;opacity:.8;">⏱ Temps restant</div>
+      <div style="font-size:11px;opacity:.8;">⏱ Temps restant</div>
       <div class="admin-timer-barre-wrap"><div class="admin-timer-barre" id="admin-timer-barre" style="width:100%"></div></div>
       <div class="admin-timer-question" id="admin-timer-question"></div>
     </div>
@@ -329,22 +401,24 @@
         <label class="image-upload-label" for="image-input">📷 Ajouter une image (optionnel)</label>
         <input type="file" id="image-input" accept="image/*" style="display:none" onchange="previewImage(this)">
         <img id="image-preview" class="preview-image" alt="Aperçu">
-        <button style="display:none;background:var(--rouge);color:white;border:none;border-radius:var(--radius);padding:5px 12px;cursor:pointer;font-size:12px;margin-bottom:8px;min-height:36px;" id="btn-suppr-image" onclick="supprimerImage()">🗑 Supprimer</button>
+        <button style="display:none;background:var(--rouge);color:white;border:none;border-radius:var(--radius);padding:4px 10px;cursor:pointer;font-size:12px;margin-bottom:6px;min-height:32px;" id="btn-suppr-image" onclick="supprimerImage()">🗑 Supprimer</button>
         <div class="form-row">
           <div style="flex:1;">
             <label>⏱ Temps (s)</label><br>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+            <div style="display:flex;align-items:center;gap:7px;margin-top:5px;">
               <input type="range" id="temps-slider" min="10" max="120" value="30" step="5"
-                oninput="document.getElementById('temps-val').textContent=this.value" style="flex:1;min-height:36px;">
+                oninput="document.getElementById('temps-val').textContent=this.value" style="flex:1;min-height:32px;">
               <span class="temps-val" id="temps-val">30</span>
             </div>
           </div>
-          <div style="flex:1;">
-            <label>🏆 Points max</label><br>
+          <div style="flex:0 0 auto;">
+            <label>🏆 Pts max</label><br>
             <input type="number" id="points-max-input" value="3" min="1" max="10"
-              style="margin-top:6px;padding:8px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;width:70px;outline:none;min-height:40px;font-size:16px;background:var(--bg);color:var(--txt);">
+              style="margin-top:5px;padding:6px;border:2px solid var(--border);border-radius:var(--radius-md);font-family:inherit;width:62px;outline:none;min-height:36px;font-size:15px;background:var(--bg);color:var(--txt);">
           </div>
         </div>
+
+        <!-- Contrôles principaux -->
         <div class="controles">
           <button class="btn btn-bleu" onclick="envoyerQuestion()">📤 Envoyer</button>
           <button class="btn btn-rouge" onclick="couperTemps()">⏹ Couper</button>
@@ -352,11 +426,17 @@
         </div>
       </div>
 
-      <!-- INDICE -->
-      <div class="notif-indice" id="notif-indice"><p id="notif-indice-texte">Des joueurs demandent un indice !</p></div>
+      <!-- NOTIF INDICE — push compact -->
+      <div class="notif-indice" id="notif-indice">
+        <span class="notif-indice-icon">💡</span>
+        <span class="notif-indice-texte" id="notif-indice-texte">Des joueurs demandent un indice !</span>
+        <span class="notif-indice-count" id="notif-indice-count">0/0</span>
+        <button class="notif-indice-close" onclick="fermerNotifIndice()" title="Fermer">✕</button>
+      </div>
+
       <div class="indice-form">
-        <input type="text" id="indice-input" placeholder="💡 Indice..." onkeydown="if(event.key==='Enter') envoyerIndice()">
-        <button class="btn btn-ambre" style="padding:10px 14px;font-size:14px;margin:0;min-height:44px;" onclick="envoyerIndice()">Envoyer</button>
+        <input type="text" id="indice-input" placeholder="💡 Envoyer un indice..." onkeydown="if(event.key==='Enter') envoyerIndice()">
+        <button class="btn btn-ambre" style="padding:9px 12px;font-size:13px;margin:0;min-height:40px;" onclick="envoyerIndice()">Envoyer</button>
       </div>
 
       <!-- BONNE REPONSE -->
@@ -364,7 +444,7 @@
         <div class="bonne-rep-section-label">✅ Révéler la bonne réponse aux joueurs</div>
         <div class="bonne-rep-form">
           <input type="text" id="bonne-rep-input" placeholder="La bonne réponse..." onkeydown="if(event.key==='Enter') envoyerBonneReponse()">
-          <button class="btn btn-vert" style="padding:10px 14px;font-size:14px;margin:0;min-height:44px;" onclick="envoyerBonneReponse()">Révéler</button>
+          <button class="btn btn-vert" style="padding:9px 12px;font-size:13px;margin:0;min-height:40px;" onclick="envoyerBonneReponse()">Révéler</button>
         </div>
       </div>
 
@@ -383,14 +463,14 @@
       </div>
       <div class="verrou-banner" id="verrou-banner">🔒 Point attribué — prochaine question pour déverrouiller</div>
       <div class="joueur-cards" id="joueur-cards">
-        <div style="text-align:center;color:var(--txt2);padding:20px;font-size:14px;">En attente de réponses...</div>
+        <div style="text-align:center;color:var(--txt2);padding:20px;font-size:13px;">En attente de réponses...</div>
       </div>
     </div>
 
     <!-- PANEL SCORES -->
     <div class="panel" id="panel-scores" data-panel="scores">
       <h3>🏆 Scores en direct</h3>
-      <div id="admin-scores"><div style="text-align:center;color:var(--txt2);font-size:14px;">Aucun point attribué</div></div>
+      <div id="admin-scores"><div style="text-align:center;color:var(--txt2);font-size:13px;">Aucun point attribué</div></div>
     </div>
 
     <!-- PANEL CHAT -->
@@ -403,7 +483,7 @@
       </div>
       <div class="chat-form">
         <input type="text" id="chat-input-admin" placeholder="Ton message..." onkeydown="if(event.key==='Enter') envoyerChatAdmin()">
-        <button class="btn btn-bleu" style="margin:0;padding:10px 14px;" onclick="envoyerChatAdmin()">➤</button>
+        <button class="btn btn-bleu" style="margin:0;padding:9px 12px;" onclick="envoyerChatAdmin()">➤</button>
       </div>
     </div>
   </div>
@@ -458,6 +538,8 @@
   let ongletActif = 'question', badgeReponses = 0, badgeChat = 0;
   let questionEnCours = { texte: '', image: null };
   let emojiPickerCible = null;
+  let partieEnPause = false;
+  let tempsRestantPause = 0;
 
   // ── THEME ──
   function toggleTheme() {
@@ -527,6 +609,46 @@
     if (type === 'chat' && ongletActif !== 'chat')         { badgeChat++;     const el = document.getElementById('badge-chat');     el.textContent = badgeChat > 9 ? '9+' : badgeChat;         el.classList.add('visible'); if (navigator.vibrate) navigator.vibrate(25); }
   }
 
+  // ── PAUSE ──
+  function togglePause() {
+    if (!adminCode) return;
+    if (partieEnPause) {
+      socket.emit('admin_reprendre', { code: adminCode });
+    } else {
+      socket.emit('admin_pause', { code: adminCode });
+    }
+  }
+
+  function mettreEnPause(tempsRestant) {
+    partieEnPause = true;
+    tempsRestantPause = tempsRestant;
+    stopAdminTimer();
+    // Mettre à jour le bouton
+    const btn = document.getElementById('btn-pause-header');
+    btn.textContent = '▶ Reprendre';
+    btn.classList.add('en-pause');
+    // Afficher le bandeau
+    document.getElementById('pause-temps-admin').textContent = `${tempsRestant}s restantes`;
+    document.getElementById('pause-banner-admin').classList.add('visible');
+    // Griser le timer
+    const cercle = document.getElementById('admin-timer-cercle');
+    if (cercle) { cercle.textContent = '⏸'; cercle.classList.remove('urgent'); }
+    if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+  }
+
+  function reprendrePartie(tempsRestant) {
+    partieEnPause = false;
+    // Mettre à jour le bouton
+    const btn = document.getElementById('btn-pause-header');
+    btn.textContent = '⏸ Pause';
+    btn.classList.remove('en-pause');
+    // Cacher le bandeau
+    document.getElementById('pause-banner-admin').classList.remove('visible');
+    // Reprendre le timer
+    startAdminTimer(tempsRestant);
+    if (navigator.vibrate) navigator.vibrate(80);
+  }
+
   // ── ACTIONS ──
   function creerPartie() { const n = document.getElementById('input-nom-admin').value.trim(); adminNom = n || 'Admin'; socket.emit('admin_creer_partie', { nomAdmin: adminNom }); }
   function lancerJeu() { allerVers('ecran-admin-jeu'); document.getElementById('admin-code-small').textContent = adminCode; document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`; }
@@ -564,9 +686,13 @@
     const temps = parseInt(document.getElementById('temps-slider').value);
     const pointsMax = parseInt(document.getElementById('points-max-input').value) || 3;
     pointsMaxActuel = pointsMax; adminTempsTotal = temps;
-    deverrouiller();
+    deverrouiller(); partieEnPause = false;
+    // Reset bouton pause
+    const btnP = document.getElementById('btn-pause-header');
+    btnP.textContent = '⏸ Pause'; btnP.classList.remove('en-pause'); btnP.disabled = false;
+    document.getElementById('pause-banner-admin').classList.remove('visible');
     Object.keys(cardsOuvertes).forEach(k => delete cardsOuvertes[k]);
-    document.getElementById('joueur-cards').innerHTML = '<div style="text-align:center;color:var(--txt2);padding:20px;font-size:14px;">En attente de réponses...</div>';
+    document.getElementById('joueur-cards').innerHTML = '<div style="text-align:center;color:var(--txt2);padding:20px;font-size:13px;">En attente de réponses...</div>';
     badgeReponses = 0; document.getElementById('badge-reponses').classList.remove('visible');
     questionEnCours = { texte: question, image };
     afficherQuestionEnCours();
@@ -588,20 +714,46 @@
     else { qi.src = ''; qi.style.display = 'none'; }
   }
 
-  function couperTemps()     { if (!adminCode) return; socket.emit('admin_couper_temps', { code: adminCode }); stopAdminTimer(); }
-  function personneNaTrouve(){ if (!adminCode || pointVerrouille) return; socket.emit('admin_personne_a_trouve', { code: adminCode }); stopAdminTimer(); }
+  function couperTemps() {
+    if (!adminCode) return;
+    socket.emit('admin_couper_temps', { code: adminCode });
+    stopAdminTimer();
+    partieEnPause = false;
+    document.getElementById('btn-pause-header').disabled = true;
+    document.getElementById('btn-pause-header').textContent = '⏸ Pause';
+    document.getElementById('btn-pause-header').classList.remove('en-pause');
+    document.getElementById('pause-banner-admin').classList.remove('visible');
+  }
+
+  function personneNaTrouve() {
+    if (!adminCode || pointVerrouille) return;
+    socket.emit('admin_personne_a_trouve', { code: adminCode });
+    stopAdminTimer();
+    partieEnPause = false;
+    document.getElementById('btn-pause-header').disabled = true;
+    document.getElementById('pause-banner-admin').classList.remove('visible');
+  }
+
+  // ── INDICE — notif push ──
+  function fermerNotifIndice() {
+    document.getElementById('notif-indice').style.display = 'none';
+  }
 
   function envoyerIndice() {
     const i = document.getElementById('indice-input').value.trim(); if (!i) return;
     socket.emit('admin_envoyer_indice', { code: adminCode, indice: i });
-    document.getElementById('indice-input').value = ''; document.getElementById('notif-indice').style.display = 'none';
+    document.getElementById('indice-input').value = '';
+    fermerNotifIndice();
+    // Feedback visuel
+    const btn = document.querySelector('.indice-form button');
+    btn.textContent = '✅ Envoyé !'; btn.disabled = true;
+    setTimeout(() => { btn.textContent = 'Envoyer'; btn.disabled = false; }, 2000);
   }
 
   // ── BONNE REPONSE ──
   function envoyerBonneReponse() {
     const r = document.getElementById('bonne-rep-input').value.trim(); if (!r || !adminCode) return;
     socket.emit('admin_bonne_reponse', { code: adminCode, reponse: r });
-    // Feedback visuel immédiat sur le bouton
     const btn = document.querySelector('.bonne-rep-form button');
     const inputEl = document.getElementById('bonne-rep-input');
     btn.textContent = '✅ Révélé !'; btn.disabled = true;
@@ -621,7 +773,7 @@
     bar.classList.add('visible');
     document.getElementById('admin-timer-question').textContent = questionEnCours.texte || '';
     cercle.textContent = restant; cercle.classList.remove('urgent');
-    barre.classList.remove('urgent'); barre.style.width = '100%';
+    barre.classList.remove('urgent'); barre.style.width = Math.max(0, Math.round(restant / adminTempsTotal * 100)) + '%';
     adminTimerInterval = setInterval(() => {
       restant--;
       cercle.textContent = restant;
@@ -679,6 +831,9 @@
     const pts = parseInt(document.getElementById('points-input-' + ne).value) || 0;
     if (pts < 0) return;
     socket.emit('admin_donner_points', { code: adminCode, nom, points: pts }); stopAdminTimer();
+    partieEnPause = false;
+    document.getElementById('btn-pause-header').disabled = true;
+    document.getElementById('pause-banner-admin').classList.remove('visible');
   }
 
   function rendreCartes(reponses) {
@@ -690,7 +845,7 @@
       const est = cardsOuvertes[ne] || false;
       const histHtml = aD
         ? r.historique.map((h, i) => `<div class="histo-item ${i === r.historique.length - 1 ? 'derniere' : ''}"><span>${escapeHtml(h.reponse)}</span><span class="temps-badge">⏱ ${h.tempsReponse}s</span></div>`).join('')
-        : '<div style="color:var(--txt2);font-size:13px;font-style:italic;padding:4px 0;">Pas encore de réponse</div>';
+        : '<div style="color:var(--txt2);font-size:12px;font-style:italic;padding:3px 0;">Pas encore de réponse</div>';
       const card = document.createElement('div');
       card.className = `joueur-card${aD ? ' has-reponse' : ''}${est ? ' open' : ''}`;
       card.id = 'card-' + ne;
@@ -729,10 +884,10 @@
     joueurs.forEach((j, i) => {
       const ne = j.nom.replace(/[^a-zA-Z0-9]/g, '_');
       const med = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▪️';
-      const div = document.createElement('div'); div.style.marginBottom = '8px';
+      const div = document.createElement('div'); div.style.marginBottom = '7px';
       div.innerHTML = `
         <div class="score-ligne">
-          <span style="font-size:16px;flex-shrink:0;">${med}</span>
+          <span style="font-size:15px;flex-shrink:0;">${med}</span>
           <div class="score-nom-flex"><span class="score-nom">${escapeHtml(j.nom)}</span></div>
           <div class="score-bar-wrap"><div class="score-bar" style="width:${Math.round(j.points / max * 100)}%;background:${bc[i % bc.length]};"></div></div>
           <span class="score-pts" id="score-pts-${escapeHtml(ne)}">${j.points} pts</span>
@@ -818,27 +973,75 @@
     if (lj) lj.innerHTML = joueurs.map(j => { const i = getAvatar(j.nom); return `<div class="joueur-tag ${chipColors[i]}"><div class="joueur-tag-av ${avatarColors[i]}">${initiales(j.nom)}</div>${escapeHtml(j.nom)}</div>`; }).join('');
   });
 
-  socket.on('admin_chrono_start', ({ temps }) => { adminTempsTotal = temps; startAdminTimer(temps); });
+  socket.on('admin_chrono_start', ({ temps }) => {
+    adminTempsTotal = temps;
+    startAdminTimer(temps);
+    // Activer le bouton pause
+    const btn = document.getElementById('btn-pause-header');
+    btn.disabled = false; btn.textContent = '⏸ Pause'; btn.classList.remove('en-pause');
+  });
 
-  socket.on('admin_question_encours', ({ question, image, temps, pointsMax }) => {
+  socket.on('admin_question_encours', ({ question, image, temps, pointsMax, enPause: ep }) => {
     pointsMaxActuel = pointsMax; questionEnCours = { texte: question || '', image: image || null };
-    afficherQuestionEnCours(); adminTempsTotal = temps; startAdminTimer(temps);
+    afficherQuestionEnCours(); adminTempsTotal = temps;
     allerVers('ecran-admin-jeu');
     document.getElementById('admin-code-small').textContent = adminCode;
     document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
+    const btn = document.getElementById('btn-pause-header');
+    btn.disabled = false;
+    if (ep) {
+      mettreEnPause(temps);
+    } else {
+      startAdminTimer(temps);
+      btn.textContent = '⏸ Pause'; btn.classList.remove('en-pause');
+    }
+  });
+
+  // Réception pause côté admin (confirmation serveur)
+  socket.on('partie_pause', ({ tempsRestant }) => {
+    mettreEnPause(tempsRestant);
+  });
+
+  socket.on('partie_reprend', ({ tempsRestant }) => {
+    reprendrePartie(tempsRestant);
   });
 
   socket.on('reponse_joueur',        reponses => { rendreCartes(reponses); });
   socket.on('nouvelle_reponse_badge', ()       => { incrementerBadge('reponses'); });
   socket.on('nouveau_chat_badge',     ()       => { incrementerBadge('chat'); });
-  socket.on('point_deja_donne',       ()       => { verrouiller(); stopAdminTimer(); });
-  socket.on('fin_question',           ()       => stopAdminTimer());
+  socket.on('point_deja_donne',       ()       => {
+    verrouiller(); stopAdminTimer();
+    document.getElementById('btn-pause-header').disabled = true;
+    document.getElementById('pause-banner-admin').classList.remove('visible');
+    partieEnPause = false;
+  });
+  socket.on('fin_question', () => {
+    stopAdminTimer();
+    document.getElementById('btn-pause-header').disabled = true;
+    document.getElementById('btn-pause-header').textContent = '⏸ Pause';
+    document.getElementById('btn-pause-header').classList.remove('en-pause');
+    document.getElementById('pause-banner-admin').classList.remove('visible');
+    partieEnPause = false;
+  });
 
-  socket.on('demande_indice_update', ({ nbDemandes, nbJoueurs, majorite }) => {
+  // Notif indice enrichie avec compteur
+  socket.on('demande_indice_update', ({ nbDemandes, nbJoueurs, majorite, nomDemandeur }) => {
+    const notif = document.getElementById('notif-indice');
+    const texte = document.getElementById('notif-indice-texte');
+    const count = document.getElementById('notif-indice-count');
+    count.textContent = `${nbDemandes}/${nbJoueurs}`;
     if (majorite) {
-      document.getElementById('notif-indice').style.display = 'block';
-      document.getElementById('notif-indice-texte').textContent = `${nbDemandes}/${nbJoueurs} joueurs demandent un indice !`;
-      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+      notif.style.display = 'flex';
+      texte.textContent = `Majorité demande un indice !`;
+      if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 60]);
+      // Badge sur l'onglet question si pas actif
+      if (ongletActif !== 'question') {
+        const btn = document.getElementById('tab-btn-question');
+        if (btn) { btn.style.color = 'var(--ambre)'; setTimeout(() => { btn.style.color = ''; }, 5000); }
+      }
+    } else {
+      notif.style.display = 'flex';
+      texte.textContent = `${nomDemandeur} demande un indice`;
     }
   });
 

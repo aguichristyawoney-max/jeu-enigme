@@ -44,17 +44,23 @@ setInterval(() => {
   const maintenant = Date.now();
   Object.keys(parties).forEach(code => {
     const partie = parties[code];
-    if (maintenant - partie.derniereActivite > 2 * 60 * 60 * 1000) {
+    if (!partie) return;
+
+    // Nettoyage inactivité — prolongé à 6h pour supporter les longues pauses
+    if (maintenant - partie.derniereActivite > 6 * 60 * 60 * 1000) {
       io.to(code).emit('partie_annulee');
       delete parties[code];
       console.log(`Partie ${code} nettoyée (inactivité)`);
       return;
     }
-    if (partie.phase === 'playing' && partie.tempsDepart) {
+
+    // Timer uniquement si la partie joue ET n'est pas en pause
+    if (partie.phase === 'playing' && !partie.pauseActive && partie.tempsDepart) {
       const ecoule = Math.floor((maintenant - partie.tempsDepart) / 1000);
       if (ecoule >= partie.tempsDuration) {
         partie.phase = 'recap';
         partie.tempsDepart = null;
+        partie.tempsRestantAvantPause = null;
         io.to(code).emit('fin_question', { reponses: _buildReponses(partie) });
       }
     }
@@ -81,6 +87,8 @@ io.on('connection', (socket) => {
       phase: 'attente',
       tempsDepart: null,
       tempsDuration: null,
+      tempsRestantAvantPause: null,
+      pauseActive: false,
       pointsMax: 1,
       messages: [],
       questionActuelle: null,
@@ -116,16 +124,29 @@ io.on('connection', (socket) => {
     partie.messages.forEach(m => socket.emit('chat_message', m));
 
     if (partie.phase === 'playing' && partie.tempsDepart) {
-      const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
-      const restant = Math.max(0, partie.tempsDuration - ecoule);
+      // Calcul du temps restant en tenant compte de la pause
+      let restant;
+      if (partie.pauseActive && partie.tempsRestantAvantPause !== null) {
+        restant = partie.tempsRestantAvantPause;
+      } else {
+        const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
+        restant = Math.max(0, partie.tempsDuration - ecoule);
+      }
       socket.emit('admin_question_encours', {
         question: partie.questionActuelle,
         image: partie.imageActuelle,
         temps: restant,
-        pointsMax: partie.pointsMax
+        pointsMax: partie.pointsMax,
+        enPause: partie.pauseActive
       });
       socket.emit('reponse_joueur', _buildReponses(partie));
     }
+
+    // Renvoyer l'état pause si actif
+    if (partie.pauseActive) {
+      socket.emit('partie_pause', { tempsRestant: partie.tempsRestantAvantPause });
+    }
+
     toucherPartie(code);
   });
 
@@ -153,16 +174,28 @@ io.on('connection', (socket) => {
     socket.emit('points_update', scores);
     partie.messages.forEach(m => socket.emit('chat_message', m));
 
-    if (partie.phase === 'playing' && partie.tempsDepart) {
-      const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
-      const restant = Math.max(0, partie.tempsDuration - ecoule);
-      socket.emit('nouvelle_question', {
-        question: partie.questionActuelle,
-        image: partie.imageActuelle,
-        temps: restant,
-        tempsTotal: partie.tempsDuration,
-        pointsMax: partie.pointsMax
-      });
+    if (partie.phase === 'playing') {
+      if (partie.pauseActive && partie.tempsRestantAvantPause !== null) {
+        // Partie en pause : envoyer la question avec temps gelé + signal pause
+        socket.emit('nouvelle_question', {
+          question: partie.questionActuelle,
+          image: partie.imageActuelle,
+          temps: partie.tempsRestantAvantPause,
+          tempsTotal: partie.tempsDuration,
+          pointsMax: partie.pointsMax
+        });
+        socket.emit('partie_pause', { tempsRestant: partie.tempsRestantAvantPause });
+      } else if (partie.tempsDepart) {
+        const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
+        const restant = Math.max(0, partie.tempsDuration - ecoule);
+        socket.emit('nouvelle_question', {
+          question: partie.questionActuelle,
+          image: partie.imageActuelle,
+          temps: restant,
+          tempsTotal: partie.tempsDuration,
+          pointsMax: partie.pointsMax
+        });
+      }
     }
     if (partie.phase === 'recap') {
       socket.emit('fin_question', { reponses: _buildReponses(partie) });
@@ -182,6 +215,8 @@ io.on('connection', (socket) => {
     partie.phase = 'playing';
     partie.tempsDepart = Date.now();
     partie.tempsDuration = tempsSec;
+    partie.tempsRestantAvantPause = null;
+    partie.pauseActive = false;
     partie.pointsMax = pointsMaxVal;
     partie.questionActuelle = validerString(question, 500) ? question : '';
     partie.imageActuelle = (typeof image === 'string' && image.startsWith('data:image')) ? image : null;
@@ -197,12 +232,50 @@ io.on('connection', (socket) => {
     toucherPartie(code);
   });
 
+  // ── PAUSE / REPRISE ──
+  socket.on('admin_pause', ({ code } = {}) => {
+    if (!validerString(code, 6)) return;
+    const partie = parties[code];
+    if (!partie || partie.adminId !== socket.id) return;
+    if (partie.phase !== 'playing' || partie.pauseActive) return;
+
+    // Calculer et sauvegarder le temps restant
+    const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
+    const restant = Math.max(0, partie.tempsDuration - ecoule);
+    partie.tempsRestantAvantPause = restant;
+    partie.pauseActive = true;
+    partie.tempsDepart = null; // Geler le timer
+
+    io.to(code).emit('partie_pause', { tempsRestant: restant });
+    toucherPartie(code);
+    console.log(`Partie ${code} mise en pause, ${restant}s restants`);
+  });
+
+  socket.on('admin_reprendre', ({ code } = {}) => {
+    if (!validerString(code, 6)) return;
+    const partie = parties[code];
+    if (!partie || partie.adminId !== socket.id) return;
+    if (partie.phase !== 'playing' || !partie.pauseActive) return;
+
+    // Reprendre depuis le temps sauvegardé
+    const restant = partie.tempsRestantAvantPause || 0;
+    partie.tempsDepart = Date.now() - (partie.tempsDuration - restant) * 1000;
+    partie.pauseActive = false;
+    partie.tempsRestantAvantPause = null;
+
+    io.to(code).emit('partie_reprend', { tempsRestant: restant });
+    toucherPartie(code);
+    console.log(`Partie ${code} reprise, ${restant}s restants`);
+  });
+
   socket.on('admin_couper_temps', ({ code } = {}) => {
     if (!validerString(code, 6)) return;
     const partie = parties[code];
     if (!partie || partie.adminId !== socket.id) return;
     partie.phase = 'recap';
     partie.tempsDepart = null;
+    partie.pauseActive = false;
+    partie.tempsRestantAvantPause = null;
     io.to(code).emit('fin_question', { reponses: _buildReponses(partie) });
     toucherPartie(code);
   });
@@ -210,12 +283,25 @@ io.on('connection', (socket) => {
   socket.on('joueur_reponse', ({ code, nom, reponse, tempsReponse } = {}) => {
     if (!validerString(code, 6) || !validerString(nom, 30) || !validerString(reponse, 300)) return;
     const partie = parties[code];
-    if (!partie || partie.phase !== 'playing') return;
+    // Bloquer les réponses si pause active
+    if (!partie || partie.phase !== 'playing' || partie.pauseActive) return;
     const joueurValide = Object.values(partie.joueurs).some(j => j.nom === nom);
     if (!joueurValide) return;
     const tempsVal = Math.max(0, parseInt(tempsReponse) || 0);
     if (!partie.reponses[nom]) partie.reponses[nom] = { nom, historique: [] };
+
+    // Délai anti-spam : 3s entre deux réponses du même joueur
+    const historique = partie.reponses[nom].historique;
+    if (historique.length > 0) {
+      const derniereTs = partie.reponses[nom].dernierEnvoi || 0;
+      if (Date.now() - derniereTs < 3000) {
+        socket.emit('reponse_trop_rapide', { attente: Math.ceil((3000 - (Date.now() - derniereTs)) / 1000) });
+        return;
+      }
+    }
+    partie.reponses[nom].dernierEnvoi = Date.now();
     partie.reponses[nom].historique.push({ reponse: reponse.trim(), tempsReponse: tempsVal });
+
     const reponses = _buildReponses(partie);
     io.to(partie.adminId).emit('reponse_joueur', reponses);
     socket.emit('reponse_joueur', reponses);
@@ -232,6 +318,8 @@ io.on('connection', (socket) => {
     partie.pointDonneCetteQuestion = true;
     partie.phase = 'recap';
     partie.tempsDepart = null;
+    partie.pauseActive = false;
+    partie.tempsRestantAvantPause = null;
     const scores = Object.entries(partie.scores).map(([n, p]) => ({ nom: n, points: p }));
     io.to(code).emit('points_update', scores);
     io.to(partie.adminId).emit('point_deja_donne');
@@ -247,6 +335,8 @@ io.on('connection', (socket) => {
     partie.pointDonneCetteQuestion = true;
     partie.phase = 'recap';
     partie.tempsDepart = null;
+    partie.pauseActive = false;
+    partie.tempsRestantAvantPause = null;
     io.to(code).emit('personne_a_trouve');
     io.to(partie.adminId).emit('point_deja_donne');
     io.to(code).emit('fin_question', { reponses: _buildReponses(partie) });
@@ -282,7 +372,13 @@ io.on('connection', (socket) => {
     const nbJoueurs = Object.keys(partie.joueurs).length;
     const nbDemandes = partie.demandesIndice.size;
     const majorite = nbDemandes > nbJoueurs / 2;
-    io.to(partie.adminId).emit('demande_indice_update', { nbDemandes, nbJoueurs, majorite });
+    // Notification enrichie pour l'admin
+    io.to(partie.adminId).emit('demande_indice_update', {
+      nbDemandes,
+      nbJoueurs,
+      majorite,
+      nomDemandeur: socket.data.nom || '?'
+    });
     toucherPartie(code);
   });
 
@@ -294,7 +390,6 @@ io.on('connection', (socket) => {
     toucherPartie(code);
   });
 
-  // NOUVEAU : admin révèle la bonne réponse au récap
   socket.on('admin_bonne_reponse', ({ code, reponse } = {}) => {
     if (!validerString(code, 6) || !validerString(reponse, 300)) return;
     const partie = parties[code];
@@ -368,6 +463,8 @@ io.on('connection', (socket) => {
     if (!validerString(code, 6) || !validerString(nom, 30)) return;
     const partie = parties[code];
     if (!partie) return;
+    // Ne pas alerter si la partie est en pause (normal que les joueurs soient ailleurs)
+    if (partie.pauseActive) return;
     io.to(partie.adminId).emit('alerte_triche', { nom, message: `⚠️ ${nom} a quitté la page !` });
   });
 
@@ -375,6 +472,7 @@ io.on('connection', (socket) => {
     if (!validerString(code, 6) || !validerString(nom, 30)) return;
     const partie = parties[code];
     if (!partie) return;
+    if (partie.pauseActive) return; // Pas d'alerte pendant la pause
     io.to(partie.adminId).emit('alerte_triche', { nom, message: `👀 ${nom} est revenu sur la page` });
   });
 
@@ -402,15 +500,3 @@ io.on('connection', (socket) => {
 server.listen(3000, () => {
   console.log('Serveur lancé sur http://localhost:3000');
 });
-// Ce fichier est identique à votre server.js original.
-// LA SEULE MODIFICATION : ajout du handler admin_bonne_reponse (vers la fin, avant admin_fin_partie)
-// Ajoutez ce bloc dans votre server.js existant, juste avant socket.on('admin_fin_partie', ...):
-/*
-  socket.on('admin_bonne_reponse', ({ code, reponse } = {}) => {
-    if (!validerString(code, 6) || !validerString(reponse, 300)) return;
-    const partie = parties[code];
-    if (!partie || partie.adminId !== socket.id) return;
-    io.to(code).emit('bonne_reponse', { reponse: reponse.trim() });
-    toucherPartie(code);
-  });
-*/

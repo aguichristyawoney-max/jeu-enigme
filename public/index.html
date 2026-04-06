@@ -35,6 +35,16 @@
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
     body{font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overscroll-behavior:none;transition:background 0.3s,color 0.3s;}
 
+    /* Anti-screenshot : désactive sélection/callout sur zone sensible */
+    .question-protegee{
+      user-select:none;-webkit-user-select:none;
+      -webkit-touch-callout:none;
+      pointer-events:none;
+    }
+    .question-protegee * { pointer-events:none; }
+    /* Réactive pointer-events pour la zone de réponse */
+    .reponse-sticky { pointer-events:all !important; }
+
     .theme-btn{position:fixed;top:12px;right:12px;z-index:9999;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:white;border-radius:var(--radius);padding:6px 14px;font-size:13px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:background 0.2s;}
     .theme-btn:hover{background:rgba(255,255,255,0.25);}
     [data-theme="dark"] .theme-btn{background:rgba(0,0,0,0.25);border-color:rgba(255,255,255,0.15);}
@@ -91,23 +101,59 @@
     .timer-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;}
     .timer-cercle{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:clamp(15px,4.5vw,20px);font-weight:700;border:3px solid white;transition:border-color 0.3s,background 0.3s;}
     .timer-cercle.urgent{border-color:#ffaaaa;background:rgba(226,75,74,0.5);}
+    .timer-cercle.pause{border-color:var(--ambre);background:rgba(239,159,39,0.3);}
     .timer-barre-wrap{width:46px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;overflow:hidden;}
     .timer-barre{height:100%;background:white;border-radius:2px;transition:width 1s linear,background 0.3s;}
     .timer-barre.urgent{background:#ffaaaa;}
+    .timer-barre.pause{background:var(--ambre);transition:none;}
 
     .btn-quitter-partie{position:fixed;top:14px;left:14px;background:rgba(226,75,74,0.85);color:white;border:none;border-radius:var(--radius);padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;z-index:500;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:none;}
     .btn-quitter-partie.visible{display:block;}
     .btn-quitter-partie:active{transform:scale(0.95);}
 
-    .question-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px;display:flex;flex-direction:column;gap:10px;}
+    /* ÉCRAN MASQUE — question cachée */
+    .masque-overlay{
+      display:none;
+      position:absolute;inset:0;
+      background:linear-gradient(135deg,var(--bleu-xdk),var(--bleu-dk));
+      z-index:50;
+      flex-direction:column;
+      align-items:center;justify-content:center;
+      color:white;text-align:center;padding:24px;
+    }
+    .masque-overlay.visible{display:flex;}
+    .masque-icon{font-size:52px;margin-bottom:16px;}
+    .masque-titre{font-size:clamp(18px,5vw,22px);font-weight:700;margin-bottom:8px;}
+    .masque-sous{font-size:clamp(13px,3.5vw,15px);opacity:.75;line-height:1.5;}
+
+    /* ÉCRAN PAUSE JOUEUR */
+    .pause-overlay{
+      display:none;
+      position:absolute;inset:0;
+      background:rgba(4,44,83,0.92);
+      backdrop-filter:blur(8px);
+      z-index:60;
+      flex-direction:column;
+      align-items:center;justify-content:center;
+      color:white;text-align:center;padding:24px;
+    }
+    .pause-overlay.visible{display:flex;}
+    .pause-icon{font-size:64px;margin-bottom:16px;animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+    .pause-titre{font-size:clamp(22px,6vw,28px);font-weight:700;margin-bottom:10px;}
+    .pause-sous{font-size:clamp(13px,3.5vw,16px);opacity:.8;line-height:1.6;}
+    .pause-temps{font-size:clamp(16px,4vw,20px);font-weight:700;color:var(--ambre);margin-top:12px;}
+
+    .question-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px;display:flex;flex-direction:column;gap:10px;position:relative;}
     .question-texte{font-size:clamp(15px,4.5vw,21px);font-weight:700;color:var(--txt);background:var(--bg2);padding:14px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow);line-height:1.4;border:0.5px solid var(--border);}
     .question-image{max-width:100%;max-height:220px;width:auto;height:auto;border-radius:var(--radius-md);display:none;object-fit:contain;align-self:flex-start;}
 
-    .reponse-sticky{width:100%;background:var(--bg2);border-top:2px solid var(--border);padding:10px 12px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
+    .reponse-sticky{width:100%;background:var(--bg2);border-top:2px solid var(--border);padding:10px 12px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;position:relative;z-index:5;}
     .reponse-zone{display:flex;gap:8px;}
     .reponse-zone input{flex:1;margin:0;font-size:clamp(14px,4vw,16px);padding:12px 14px;min-width:0;border:2px solid var(--border);border-radius:var(--radius);outline:none;color:var(--txt);font-family:inherit;background:var(--bg);transition:border-color 0.2s;}
     .reponse-zone input:focus{border-color:var(--bleu);}
     .reponse-confirmee{font-size:12px;color:var(--vert);font-weight:700;text-align:center;min-height:16px;}
+    .reponse-cooldown{font-size:12px;color:var(--ambre-dk);font-weight:700;text-align:center;min-height:16px;}
 
     .mes-reponses{background:var(--bg);border-radius:var(--radius-md);padding:10px 12px;border:0.5px solid var(--border);}
     .mes-reponses h4{color:var(--bleu);margin-bottom:8px;font-size:clamp(11px,3vw,13px);}
@@ -297,6 +343,7 @@
   </div>
 </div>
 
+<!-- ÉCRANS -->
 <div id="ecran-accueil" class="ecran actif">
   <div class="logo-wrap">
     <div class="logo-label">quiz</div>
@@ -354,6 +401,22 @@
       <div class="timer-barre-wrap"><div class="timer-barre" id="timer-barre" style="width:100%"></div></div>
     </div>
   </div>
+
+  <!-- Masque anti-triche : onglet caché / écran baissé -->
+  <div class="masque-overlay" id="masque-overlay">
+    <div class="masque-icon">🙈</div>
+    <div class="masque-titre">Question masquée</div>
+    <div class="masque-sous">Reviens sur cette page<br>pour voir la question</div>
+  </div>
+
+  <!-- Overlay pause -->
+  <div class="pause-overlay" id="pause-overlay">
+    <div class="pause-icon">⏸</div>
+    <div class="pause-titre">Partie en pause</div>
+    <div class="pause-sous">L'admin a mis la partie en pause.<br>Elle reprendra bientôt !</div>
+    <div class="pause-temps" id="pause-temps-restant"></div>
+  </div>
+
   <div class="question-main" id="question-main">
     <div id="indice-bulle">
       <div class="indice-label">💡 Indice de l'admin :</div>
@@ -376,9 +439,10 @@
       <input type="text" id="input-reponse" placeholder="Ta réponse..."
         onkeydown="if(event.key==='Enter') envoyerReponse()"
         autocomplete="off" autocorrect="off" spellcheck="false" />
-      <button class="btn btn-bleu btn-petit" onclick="envoyerReponse()">➤</button>
+      <button class="btn btn-bleu btn-petit" id="btn-envoyer-reponse" onclick="envoyerReponse()">➤</button>
     </div>
     <div class="reponse-confirmee" id="reponse-confirmee"></div>
+    <div class="reponse-cooldown" id="reponse-cooldown"></div>
   </div>
 </div>
 
@@ -410,359 +474,536 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  const socket=io();
-  let monNom='',monCode='';
-  let timerInterval=null,demandeIndiceEnvoye=false;
-  let tempsDepart=null,tempsTotal=30;
-  let scoresAvant={},nomGagnantCeRound=null;
-  let toastTimeout=null,chatNonLus=0,chatDrawerOuvert=false;
-  let ecranActif='ecran-accueil';
-  const replyTo={attente:null,drawer:null};
-  let replyToDrawer=null,emojiPickerCible=null;
+  const socket = io();
+  let monNom = '', monCode = '';
+  let timerInterval = null, demandeIndiceEnvoye = false;
+  let tempsDepart = null, tempsTotal = 30;
+  let scoresAvant = {}, nomGagnantCeRound = null;
+  let toastTimeout = null, chatNonLus = 0, chatDrawerOuvert = false;
+  let ecranActif = 'ecran-accueil';
+  const replyTo = { attente: null, drawer: null };
+  let replyToDrawer = null, emojiPickerCible = null;
 
-  function toggleTheme(){
-    const dk=document.documentElement.getAttribute('data-theme')==='dark';
-    document.documentElement.setAttribute('data-theme',dk?'':'dark');
-    document.getElementById('theme-btn').textContent=dk?'🌙 Sombre':'☀️ Clair';
-    localStorage.setItem('theme',dk?'light':'dark');
+  // ── Cooldown réponse (3s côté client) ──
+  let dernierEnvoiReponse = 0;
+  let cooldownInterval = null;
+
+  // ── Pause ──
+  let enPause = false;
+  let tempsRestantPause = 0;
+
+  // ── Masque anti-triche ──
+  let masqueActif = false;
+  let questionMasquee = false;
+
+  function afficherMasque(raison) {
+    if (ecranActif !== 'ecran-question') return;
+    masqueActif = true;
+    document.getElementById('masque-overlay').classList.add('visible');
+    // Flouter/masquer la question
+    const qm = document.getElementById('question-main');
+    qm.classList.add('question-protegee');
   }
-  (function(){
-    const t=localStorage.getItem('theme');
-    if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('theme-btn').textContent='☀️ Clair';}
+  function cacherMasque() {
+    masqueActif = false;
+    document.getElementById('masque-overlay').classList.remove('visible');
+    const qm = document.getElementById('question-main');
+    qm.classList.remove('question-protegee');
+  }
+
+  // ── Theme ──
+  function toggleTheme() {
+    const dk = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', dk ? '' : 'dark');
+    document.getElementById('theme-btn').textContent = dk ? '🌙 Sombre' : '☀️ Clair';
+    localStorage.setItem('theme', dk ? 'light' : 'dark');
+  }
+  (function () {
+    const t = localStorage.getItem('theme');
+    if (t === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); document.getElementById('theme-btn').textContent = '☀️ Clair'; }
   })();
 
-  const avatarColors=['av0','av1','av2','av3','av4','av5','av6','av7'];
-  const chipColors=['chip0','chip1','chip2','chip3','chip4','chip5','chip6','chip7'];
-  const avatarMap={};
-  function getAvatar(nom){
-    if(avatarMap[nom]===undefined){avatarMap[nom]=Object.keys(avatarMap).length%avatarColors.length;}
-    return avatarMap[nom];
-  }
-  function initiales(nom){return nom.substring(0,2).toUpperCase();}
-  function creerChip(nom){
-    const i=getAvatar(nom);
+  // ── Avatars ──
+  const avatarColors = ['av0','av1','av2','av3','av4','av5','av6','av7'];
+  const chipColors   = ['chip0','chip1','chip2','chip3','chip4','chip5','chip6','chip7'];
+  const avatarMap = {};
+  function getAvatar(nom) { if (avatarMap[nom] === undefined) avatarMap[nom] = Object.keys(avatarMap).length % avatarColors.length; return avatarMap[nom]; }
+  function initiales(nom) { return nom.substring(0, 2).toUpperCase(); }
+  function creerChip(nom) {
+    const i = getAvatar(nom);
     return `<div class="joueur-chip ${chipColors[i]}"><div class="avatar-circle ${avatarColors[i]}">${initiales(nom)}</div>${escapeHtml(nom)}</div>`;
   }
 
-  const LS_TTL=4*60*60*1000;
-  function sauvegarderSession(c,n){localStorage.setItem('jeu_code',c);localStorage.setItem('jeu_nom',n);localStorage.setItem('jeu_ts',Date.now().toString());}
-  function chargerSession(){
-    const c=localStorage.getItem('jeu_code'),n=localStorage.getItem('jeu_nom'),ts=parseInt(localStorage.getItem('jeu_ts')||'0');
-    if(!c||!n||Date.now()-ts>LS_TTL){viderSession();return null;}
-    return{code:c,nom:n};
+  // ── Session ──
+  const LS_TTL = 4 * 60 * 60 * 1000;
+  function sauvegarderSession(c, n) { localStorage.setItem('jeu_code', c); localStorage.setItem('jeu_nom', n); localStorage.setItem('jeu_ts', Date.now().toString()); }
+  function chargerSession() {
+    const c = localStorage.getItem('jeu_code'), n = localStorage.getItem('jeu_nom'), ts = parseInt(localStorage.getItem('jeu_ts') || '0');
+    if (!c || !n || Date.now() - ts > LS_TTL) { viderSession(); return null; }
+    return { code: c, nom: n };
   }
-  function viderSession(){localStorage.removeItem('jeu_code');localStorage.removeItem('jeu_nom');localStorage.removeItem('jeu_ts');}
+  function viderSession() { localStorage.removeItem('jeu_code'); localStorage.removeItem('jeu_nom'); localStorage.removeItem('jeu_ts'); }
 
-  function allerVers(id){
-    document.querySelectorAll('.ecran').forEach(e=>e.classList.remove('actif'));
+  function allerVers(id) {
+    document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
     document.getElementById(id).classList.add('actif');
-    ecranActif=id; window.scrollTo(0,0);
-    const fab=['ecran-question','ecran-recap'];
-    document.getElementById('chat-fab').style.display=fab.includes(id)?'flex':'none';
-    document.getElementById('btn-quitter-partie').classList.toggle('visible',fab.includes(id));
-    fermerChatDrawer();fermerEmojiPicker();
+    ecranActif = id; window.scrollTo(0, 0);
+    const fab = ['ecran-question', 'ecran-recap'];
+    document.getElementById('chat-fab').style.display = fab.includes(id) ? 'flex' : 'none';
+    document.getElementById('btn-quitter-partie').classList.toggle('visible', fab.includes(id));
+    fermerChatDrawer(); fermerEmojiPicker();
+    // Si on quitte l'écran question, cacher le masque
+    if (id !== 'ecran-question') cacherMasque();
   }
 
-  window.addEventListener('beforeunload',e=>{if(monCode&&monNom){e.preventDefault();e.returnValue='';}});
-  history.pushState(null,'',window.location.href);
-  window.addEventListener('popstate',()=>{if(monCode&&monNom)history.pushState(null,'',window.location.href);});
+  window.addEventListener('beforeunload', e => { if (monCode && monNom) { e.preventDefault(); e.returnValue = ''; } });
+  history.pushState(null, '', window.location.href);
+  window.addEventListener('popstate', () => { if (monCode && monNom) history.pushState(null, '', window.location.href); });
 
-  function demanderQuitter(){document.getElementById('modale-quitter').classList.add('visible');}
-  function annulerQuitter(){document.getElementById('modale-quitter').classList.remove('visible');}
-  function confirmerQuitter(){
+  function demanderQuitter() { document.getElementById('modale-quitter').classList.add('visible'); }
+  function annulerQuitter()   { document.getElementById('modale-quitter').classList.remove('visible'); }
+  function confirmerQuitter() {
     document.getElementById('modale-quitter').classList.remove('visible');
-    if(monCode&&monNom)socket.emit('joueur_quitter_partie',{code:monCode,nom:monNom});
-    else{reinitialiserJoueur();allerVers('ecran-accueil');}
+    if (monCode && monNom) socket.emit('joueur_quitter_partie', { code: monCode, nom: monNom });
+    else { reinitialiserJoueur(); allerVers('ecran-accueil'); }
   }
-  function reinitialiserJoueur(){
-    monNom='';monCode='';viderSession();
-    if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
-    tempsDepart=null;demandeIndiceEnvoye=false;chatNonLus=0;
-    document.getElementById('chat-drawer-messages').innerHTML='';
-    document.getElementById('chat-attente').innerHTML='';
-  }
-
-  function afficherToast(t){
-    const el=document.getElementById('toast-trouve');
-    el.textContent=t;el.classList.add('visible');
-    if(toastTimeout)clearTimeout(toastTimeout);
-    toastTimeout=setTimeout(()=>el.classList.remove('visible'),3500);
+  function reinitialiserJoueur() {
+    monNom = ''; monCode = ''; viderSession();
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if (cooldownInterval) { clearInterval(cooldownInterval); cooldownInterval = null; }
+    tempsDepart = null; demandeIndiceEnvoye = false; chatNonLus = 0;
+    enPause = false; dernierEnvoiReponse = 0;
+    document.getElementById('chat-drawer-messages').innerHTML = '';
+    document.getElementById('chat-attente').innerHTML = '';
+    cacherMasque();
   }
 
-  function ouvrirEmojiPicker(nomCible,ancre){
-    emojiPickerCible=nomCible;
-    const p=document.getElementById('emoji-picker'),o=document.getElementById('emoji-picker-overlay');
-    const W=280,r=ancre.getBoundingClientRect();
-    let l=r.left+r.width/2-W/2;l=Math.max(8,Math.min(l,window.innerWidth-W-8));
-    let top=r.top-64;if(top<60)top=r.bottom+10;
-    p.style.left=l+'px';p.style.top=top+'px';
-    o.classList.add('visible');requestAnimationFrame(()=>p.classList.add('visible'));
-    if(navigator.vibrate)navigator.vibrate(30);
+  function afficherToast(t) {
+    const el = document.getElementById('toast-trouve');
+    el.textContent = t; el.classList.add('visible');
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => el.classList.remove('visible'), 3500);
   }
-  function fermerEmojiPicker(){
+
+  // ── Emoji picker ──
+  function ouvrirEmojiPicker(nomCible, ancre) {
+    emojiPickerCible = nomCible;
+    const p = document.getElementById('emoji-picker'), o = document.getElementById('emoji-picker-overlay');
+    const W = 280, r = ancre.getBoundingClientRect();
+    let l = r.left + r.width / 2 - W / 2; l = Math.max(8, Math.min(l, window.innerWidth - W - 8));
+    let top = r.top - 64; if (top < 60) top = r.bottom + 10;
+    p.style.left = l + 'px'; p.style.top = top + 'px';
+    o.classList.add('visible'); requestAnimationFrame(() => p.classList.add('visible'));
+    if (navigator.vibrate) navigator.vibrate(30);
+  }
+  function fermerEmojiPicker() {
     document.getElementById('emoji-picker').classList.remove('visible');
     document.getElementById('emoji-picker-overlay').classList.remove('visible');
-    emojiPickerCible=null;
+    emojiPickerCible = null;
   }
-  function choisirEmoji(e){
-    if(!emojiPickerCible||!monCode){fermerEmojiPicker();return;}
-    socket.emit('joueur_reaction',{code:monCode,nomCible:emojiPickerCible,emoji:e});
+  function choisirEmoji(e) {
+    if (!emojiPickerCible || !monCode) { fermerEmojiPicker(); return; }
+    socket.emit('joueur_reaction', { code: monCode, nomCible: emojiPickerCible, emoji: e });
     fermerEmojiPicker();
   }
-  function attacherLongPress(el,nomCible){
-    let t=null;
-    function s(){t=setTimeout(()=>{t=null;ouvrirEmojiPicker(nomCible,el);},450);}
-    function c(){if(t){clearTimeout(t);t=null;}}
-    el.addEventListener('mousedown',s);el.addEventListener('touchstart',s,{passive:true});
-    el.addEventListener('mouseup',c);el.addEventListener('mouseleave',c);
-    el.addEventListener('touchend',c);el.addEventListener('touchcancel',c);
-    el.addEventListener('contextmenu',e=>e.preventDefault());
+  function attacherLongPress(el, nomCible) {
+    let t = null;
+    function s() { t = setTimeout(() => { t = null; ouvrirEmojiPicker(nomCible, el); }, 450); }
+    function c() { if (t) { clearTimeout(t); t = null; } }
+    el.addEventListener('mousedown', s); el.addEventListener('touchstart', s, { passive: true });
+    el.addEventListener('mouseup', c); el.addEventListener('mouseleave', c);
+    el.addEventListener('touchend', c); el.addEventListener('touchcancel', c);
+    el.addEventListener('contextmenu', e => e.preventDefault());
   }
 
-  function ouvrirChatDrawer(){
+  // ── Chat ──
+  function ouvrirChatDrawer() {
     document.getElementById('chat-drawer').classList.add('ouvert');
     document.getElementById('chat-overlay').classList.add('visible');
-    chatDrawerOuvert=true;chatNonLus=0;
-    const b=document.getElementById('chat-fab-badge');b.textContent='0';b.classList.remove('visible');
-    setTimeout(()=>{const m=document.getElementById('chat-drawer-messages');m.scrollTop=m.scrollHeight;document.getElementById('chat-input-drawer').focus();},100);
+    chatDrawerOuvert = true; chatNonLus = 0;
+    const b = document.getElementById('chat-fab-badge'); b.textContent = '0'; b.classList.remove('visible');
+    setTimeout(() => { const m = document.getElementById('chat-drawer-messages'); m.scrollTop = m.scrollHeight; document.getElementById('chat-input-drawer').focus(); }, 100);
   }
-  function fermerChatDrawer(){
+  function fermerChatDrawer() {
     document.getElementById('chat-drawer').classList.remove('ouvert');
     document.getElementById('chat-overlay').classList.remove('visible');
-    chatDrawerOuvert=false;
+    chatDrawerOuvert = false;
   }
-  function annulerReplyDrawer(){
-    replyToDrawer=null;
+  function annulerReplyDrawer() {
+    replyToDrawer = null;
     document.getElementById('reply-bar-drawer').classList.remove('visible');
-    document.querySelectorAll('#chat-drawer-messages .chat-msg').forEach(m=>m.classList.remove('selected'));
+    document.querySelectorAll('#chat-drawer-messages .chat-msg').forEach(m => m.classList.remove('selected'));
   }
-  function envoyerChatDrawer(){
-    const inp=document.getElementById('chat-input-drawer'),msg=inp.value.trim();
-    if(!msg||!monCode)return;
-    socket.emit('chat_message',{code:monCode,nom:monNom,message:msg,replyTo:replyToDrawer||null});
-    inp.value='';annulerReplyDrawer();
+  function envoyerChatDrawer() {
+    const inp = document.getElementById('chat-input-drawer'), msg = inp.value.trim();
+    if (!msg || !monCode) return;
+    socket.emit('chat_message', { code: monCode, nom: monNom, message: msg, replyTo: replyToDrawer || null });
+    inp.value = ''; annulerReplyDrawer();
   }
-  function annulerReply(src){
-    replyTo[src]=null;
-    const b=document.getElementById('reply-bar-'+src);if(b)b.classList.remove('visible');
-    if(src==='attente')document.querySelectorAll('#chat-attente .chat-msg').forEach(m=>m.classList.remove('selected'));
+  function annulerReply(src) {
+    replyTo[src] = null;
+    const b = document.getElementById('reply-bar-' + src); if (b) b.classList.remove('visible');
+    if (src === 'attente') document.querySelectorAll('#chat-attente .chat-msg').forEach(m => m.classList.remove('selected'));
   }
-  function envoyerChat(src){
-    const id=src==='attente'?'chat-input-attente':'chat-input-drawer';
-    const msg=document.getElementById(id).value.trim();
-    if(!msg||!monCode)return;
-    socket.emit('chat_message',{code:monCode,nom:monNom,message:msg,replyTo:replyTo[src]||null});
-    document.getElementById(id).value='';annulerReply(src);
+  function envoyerChat(src) {
+    const id = src === 'attente' ? 'chat-input-attente' : 'chat-input-drawer';
+    const msg = document.getElementById(id).value.trim();
+    if (!msg || !monCode) return;
+    socket.emit('chat_message', { code: monCode, nom: monNom, message: msg, replyTo: replyTo[src] || null });
+    document.getElementById(id).value = ''; annulerReply(src);
   }
-  function attacherEvenementsChatMsg(div,data,estDrawer){
-    function sel(){
-      if(estDrawer){
-        replyToDrawer={id:data.id,nom:data.nom,message:data.message};
-        document.getElementById('reply-bar-texte-drawer').textContent=`↩ ${data.nom} : ${data.message.substring(0,40)}${data.message.length>40?'...':''}`;
+  function attacherEvenementsChatMsg(div, data, estDrawer) {
+    function sel() {
+      if (estDrawer) {
+        replyToDrawer = { id: data.id, nom: data.nom, message: data.message };
+        document.getElementById('reply-bar-texte-drawer').textContent = `↩ ${data.nom} : ${data.message.substring(0, 40)}${data.message.length > 40 ? '...' : ''}`;
         document.getElementById('reply-bar-drawer').classList.add('visible');
         document.getElementById('chat-input-drawer').focus();
-        document.querySelectorAll('#chat-drawer-messages .chat-msg').forEach(m=>m.classList.remove('selected'));
-      }else{
-        replyTo.attente={id:data.id,nom:data.nom,message:data.message};
-        document.getElementById('reply-bar-texte-attente').textContent=`↩ ${data.nom} : ${data.message.substring(0,40)}${data.message.length>40?'...':''}`;
+        document.querySelectorAll('#chat-drawer-messages .chat-msg').forEach(m => m.classList.remove('selected'));
+      } else {
+        replyTo.attente = { id: data.id, nom: data.nom, message: data.message };
+        document.getElementById('reply-bar-texte-attente').textContent = `↩ ${data.nom} : ${data.message.substring(0, 40)}${data.message.length > 40 ? '...' : ''}`;
         document.getElementById('reply-bar-attente').classList.add('visible');
         document.getElementById('chat-input-attente').focus();
-        document.querySelectorAll('#chat-attente .chat-msg').forEach(m=>m.classList.remove('selected'));
+        document.querySelectorAll('#chat-attente .chat-msg').forEach(m => m.classList.remove('selected'));
       }
       div.classList.add('selected');
     }
-    div.addEventListener('click',sel);
-    let ty=0;
-    div.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;},{passive:true});
-    div.addEventListener('touchend',e=>{if(Math.abs(e.changedTouches[0].clientY-ty)<10){e.preventDefault();sel();}});
+    div.addEventListener('click', sel);
+    let ty = 0;
+    div.addEventListener('touchstart', e => { ty = e.touches[0].clientY; }, { passive: true });
+    div.addEventListener('touchend', e => { if (Math.abs(e.changedTouches[0].clientY - ty) < 10) { e.preventDefault(); sel(); } });
   }
-  function ajouterChat(data){
-    const dr=document.getElementById('chat-drawer-messages');
-    if(dr){const d=creerDivChat(data,true);dr.appendChild(d);if(chatDrawerOuvert)dr.scrollTop=dr.scrollHeight;}
-    if(ecranActif==='ecran-attente'){const el=document.getElementById('chat-attente');if(el){const d=creerDivChat(data,false);el.appendChild(d);el.scrollTop=el.scrollHeight;}}
-    if(!chatDrawerOuvert&&['ecran-question','ecran-recap'].includes(ecranActif)){
+  function ajouterChat(data) {
+    const dr = document.getElementById('chat-drawer-messages');
+    if (dr) { const d = creerDivChat(data, true); dr.appendChild(d); if (chatDrawerOuvert) dr.scrollTop = dr.scrollHeight; }
+    if (ecranActif === 'ecran-attente') { const el = document.getElementById('chat-attente'); if (el) { const d = creerDivChat(data, false); el.appendChild(d); el.scrollTop = el.scrollHeight; } }
+    if (!chatDrawerOuvert && ['ecran-question', 'ecran-recap'].includes(ecranActif)) {
       chatNonLus++;
-      const b=document.getElementById('chat-fab-badge');b.textContent=chatNonLus>9?'9+':chatNonLus;b.classList.add('visible');
-      if(navigator.vibrate)navigator.vibrate(30);
+      const b = document.getElementById('chat-fab-badge'); b.textContent = chatNonLus > 9 ? '9+' : chatNonLus; b.classList.add('visible');
+      if (navigator.vibrate) navigator.vibrate(30);
     }
   }
-  function creerDivChat(data,estDrawer){
-    const div=document.createElement('div');div.className='chat-msg';
-    let h='';
-    if(data.replyTo)h+=`<div class="chat-reply-preview">↩ <b>${escapeHtml(data.replyTo.nom)}</b> : ${escapeHtml(data.replyTo.message)}</div>`;
-    h+=`<span class="chat-nom">${escapeHtml(data.nom)}</span><span class="chat-heure">${data.heure}</span> : ${escapeHtml(data.message)}`;
-    div.innerHTML=h;attacherEvenementsChatMsg(div,data,estDrawer);return div;
+  function creerDivChat(data, estDrawer) {
+    const div = document.createElement('div'); div.className = 'chat-msg';
+    let h = '';
+    if (data.replyTo) h += `<div class="chat-reply-preview">↩ <b>${escapeHtml(data.replyTo.nom)}</b> : ${escapeHtml(data.replyTo.message)}</div>`;
+    h += `<span class="chat-nom">${escapeHtml(data.nom)}</span><span class="chat-heure">${data.heure}</span> : ${escapeHtml(data.message)}`;
+    div.innerHTML = h; attacherEvenementsChatMsg(div, data, estDrawer); return div;
   }
-  function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
-  function rejoindrePartie(){
-    const code=document.getElementById('input-code').value.trim().toUpperCase();
-    const nom=document.getElementById('input-nom').value.trim();
-    if(!code||!nom){document.getElementById('erreur-rejoindre').textContent='Remplis tous les champs !';return;}
-    monNom=nom;monCode=code;sauvegarderSession(code,nom);
-    socket.emit('joueur_rejoindre',{code,nom});
-  }
-  function envoyerReponse(){
-    const inp=document.getElementById('input-reponse'),rep=inp.value.trim();
-    if(!rep||!monCode)return;
-    const tr=tempsDepart?Math.floor((Date.now()-tempsDepart)/1000):0;
-    socket.emit('joueur_reponse',{code:monCode,nom:monNom,reponse:rep,tempsReponse:tr});
-    inp.value='';
-    const c=document.getElementById('reponse-confirmee');
-    c.textContent=`✅ "${rep}" envoyée !`;
-    setTimeout(()=>{c.textContent='';},2500);
-    if(navigator.vibrate)navigator.vibrate(40);
-  }
-  function demanderIndice(){
-    if(demandeIndiceEnvoye)return;
-    demandeIndiceEnvoye=true;
-    socket.emit('joueur_demande_indice',{code:monCode,nom:monNom});
-    const b=document.getElementById('btn-demande-indice');
-    b.classList.add('demande');b.textContent='💡 Indice demandé !';b.disabled=true;
+  // ── Jeu ──
+  function rejoindrePartie() {
+    const code = document.getElementById('input-code').value.trim().toUpperCase();
+    const nom  = document.getElementById('input-nom').value.trim();
+    if (!code || !nom) { document.getElementById('erreur-rejoindre').textContent = 'Remplis tous les champs !'; return; }
+    monNom = nom; monCode = code; sauvegarderSession(code, nom);
+    socket.emit('joueur_rejoindre', { code, nom });
   }
 
-  function afficherScoresJoueur(data){
-    data.sort((a,b)=>b.points-a.points);
-    const max=data.length>0?Math.max(...data.map(j=>j.points),1):1;
-    const el=document.getElementById('scores-joueur');if(!el)return;
-    const bc=['#7F77DD','#1D9E75','#D85A30','#185FA5','#BA7517','#993556','#639922','#A32D2D'];
-    el.innerHTML=data.map((j,i)=>`
+  function envoyerReponse() {
+    const inp = document.getElementById('input-reponse'), rep = inp.value.trim();
+    if (!rep || !monCode) return;
+    if (enPause) { afficherToast('⏸ La partie est en pause !'); return; }
+
+    // Cooldown 3s côté client
+    const maintenant = Date.now();
+    const delai = maintenant - dernierEnvoiReponse;
+    if (delai < 3000) {
+      const resteCd = Math.ceil((3000 - delai) / 1000);
+      document.getElementById('reponse-cooldown').textContent = `⏳ Attends encore ${resteCd}s...`;
+      return;
+    }
+
+    const tr = tempsDepart ? Math.floor((Date.now() - tempsDepart) / 1000) : 0;
+    socket.emit('joueur_reponse', { code: monCode, nom: monNom, reponse: rep, tempsReponse: tr });
+    inp.value = '';
+    dernierEnvoiReponse = maintenant;
+
+    const c = document.getElementById('reponse-confirmee');
+    c.textContent = `✅ "${rep}" envoyée !`;
+    document.getElementById('reponse-cooldown').textContent = '';
+
+    // Décompte cooldown visuel
+    let cd = 3;
+    if (cooldownInterval) clearInterval(cooldownInterval);
+    const cdEl = document.getElementById('reponse-cooldown');
+    cooldownInterval = setInterval(() => {
+      cd--;
+      if (cd <= 0) { clearInterval(cooldownInterval); cooldownInterval = null; cdEl.textContent = ''; }
+      else cdEl.textContent = `⏳ Prochaine réponse dans ${cd}s`;
+    }, 1000);
+
+    setTimeout(() => { c.textContent = ''; }, 2500);
+    if (navigator.vibrate) navigator.vibrate(40);
+  }
+
+  function demanderIndice() {
+    if (demandeIndiceEnvoye) return;
+    demandeIndiceEnvoye = true;
+    socket.emit('joueur_demande_indice', { code: monCode, nom: monNom });
+    const b = document.getElementById('btn-demande-indice');
+    b.classList.add('demande'); b.textContent = '💡 Indice demandé !'; b.disabled = true;
+  }
+
+  function afficherScoresJoueur(data) {
+    data.sort((a, b) => b.points - a.points);
+    const max = data.length > 0 ? Math.max(...data.map(j => j.points), 1) : 1;
+    const el = document.getElementById('scores-joueur'); if (!el) return;
+    const bc = ['#7F77DD','#1D9E75','#D85A30','#185FA5','#BA7517','#993556','#639922','#A32D2D'];
+    el.innerHTML = data.map((j, i) => `
       <div class="score-ligne">
-        <span style="font-size:16px;flex-shrink:0;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'▪️'}</span>
+        <span style="font-size:16px;flex-shrink:0;">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▪️'}</span>
         <div class="score-nom-wrap"><span class="score-nom">${escapeHtml(j.nom)}</span></div>
-        <div class="score-bar-wrap"><div class="score-bar" style="width:${Math.round(j.points/max*100)}%;background:${bc[i%bc.length]};"></div></div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:${Math.round(j.points / max * 100)}%;background:${bc[i % bc.length]};"></div></div>
         <span class="score-pts">${j.points} pts</span>
       </div>`).join('');
   }
-  function appliquerVertGagnant(nom){
-    const tbody=document.getElementById('recap-tbody');if(!tbody)return;
-    tbody.querySelectorAll('tr').forEach(tr=>{
-      if(tr.dataset.nom===nom)tr.querySelectorAll('.recap-reponse-div').forEach((d,i,a)=>{if(i===a.length-1)d.style.cssText='font-size:13px;font-weight:bold;color:#3B6D11';});
+
+  function appliquerVertGagnant(nom) {
+    const tbody = document.getElementById('recap-tbody'); if (!tbody) return;
+    tbody.querySelectorAll('tr').forEach(tr => {
+      if (tr.dataset.nom === nom) tr.querySelectorAll('.recap-reponse-div').forEach((d, i, a) => { if (i === a.length - 1) d.style.cssText = 'font-size:13px;font-weight:bold;color:#3B6D11'; });
     });
   }
 
-  socket.on('partie_rejointe',({code,nom})=>{monCode=code;monNom=nom;sauvegarderSession(code,nom);document.getElementById('attente-nom').textContent=`Bonjour ${escapeHtml(nom)} ! 👋`;allerVers('ecran-attente');});
-  socket.on('quitter_confirme',()=>{reinitialiserJoueur();allerVers('ecran-accueil');});
-  socket.on('erreur',msg=>{
-    document.getElementById('erreur-rejoindre').textContent=msg;
-    viderSession();monNom='';monCode='';
-    if(ecranActif!=='ecran-accueil'&&ecranActif!=='ecran-rejoindre')setTimeout(()=>allerVers('ecran-accueil'),1500);
+  // ── SOCKETS JOUEUR ──
+  socket.on('partie_rejointe', ({ code, nom }) => {
+    monCode = code; monNom = nom; sauvegarderSession(code, nom);
+    document.getElementById('attente-nom').textContent = `Bonjour ${escapeHtml(nom)} ! 👋`;
+    allerVers('ecran-attente');
   });
-  socket.on('joueurs_update',joueurs=>{
-    const el=document.getElementById('joueurs-attente');
-    if(el)el.innerHTML=joueurs.map(j=>creerChip(j.nom)).join('');
+
+  socket.on('quitter_confirme', () => { reinitialiserJoueur(); allerVers('ecran-accueil'); });
+
+  socket.on('erreur', msg => {
+    document.getElementById('erreur-rejoindre').textContent = msg;
+    viderSession(); monNom = ''; monCode = '';
+    if (ecranActif !== 'ecran-accueil' && ecranActif !== 'ecran-rejoindre') setTimeout(() => allerVers('ecran-accueil'), 1500);
   });
-  socket.on('nouvelle_question',data=>{
-    document.getElementById('input-reponse').disabled=false;
-    document.getElementById('mes-reponses-zone').style.display='none';
-    document.getElementById('mes-reponses-liste').innerHTML='';
-    document.getElementById('indice-bulle').style.display='none';
-    document.getElementById('bonne-rep-bulle').style.display='none';
-    document.getElementById('personne-banner').style.display='none';
-    document.getElementById('reponse-confirmee').textContent='';
-    scoresAvant={};nomGagnantCeRound=null;demandeIndiceEnvoye=false;chatNonLus=0;
+
+  socket.on('joueurs_update', joueurs => {
+    const el = document.getElementById('joueurs-attente');
+    if (el) el.innerHTML = joueurs.map(j => creerChip(j.nom)).join('');
+  });
+
+  socket.on('nouvelle_question', data => {
+    enPause = false;
+    document.getElementById('pause-overlay').classList.remove('visible');
+    document.getElementById('input-reponse').disabled = false;
+    document.getElementById('btn-envoyer-reponse').disabled = false;
+    document.getElementById('mes-reponses-zone').style.display = 'none';
+    document.getElementById('mes-reponses-liste').innerHTML = '';
+    document.getElementById('indice-bulle').style.display = 'none';
+    document.getElementById('bonne-rep-bulle').style.display = 'none';
+    document.getElementById('personne-banner').style.display = 'none';
+    document.getElementById('reponse-confirmee').textContent = '';
+    document.getElementById('reponse-cooldown').textContent = '';
+    scoresAvant = {}; nomGagnantCeRound = null; demandeIndiceEnvoye = false; chatNonLus = 0;
     document.getElementById('chat-fab-badge').classList.remove('visible');
-    const bi=document.getElementById('btn-demande-indice');
-    bi.classList.remove('demande');bi.textContent='💡 Demander un indice';bi.disabled=false;
-    document.getElementById('question-texte-joueur').textContent=data.question||'';
-    document.getElementById('pts-badge-joueur').textContent=`⭐ Max : ${data.pointsMax} pts`;
-    const img=document.getElementById('question-image');
-    if(data.image&&data.image.startsWith('data:image')){img.src=data.image;img.style.display='block';}
-    else{img.src='';img.style.display='none';}
-    tempsTotal=data.tempsTotal||data.temps;
-    if(data.tempsTotal&&data.temps<data.tempsTotal)tempsDepart=Date.now()-(data.tempsTotal-data.temps)*1000;
-    else tempsDepart=Date.now();
-    if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
-    let temps=data.temps;
-    const te=document.getElementById('timer-joueur'),be=document.getElementById('timer-barre');
-    te.textContent=temps;te.classList.remove('urgent');be.classList.remove('urgent');be.style.width='100%';
-    timerInterval=setInterval(()=>{
+    const bi = document.getElementById('btn-demande-indice');
+    bi.classList.remove('demande'); bi.textContent = '💡 Demander un indice'; bi.disabled = false;
+    document.getElementById('question-texte-joueur').textContent = data.question || '';
+    document.getElementById('pts-badge-joueur').textContent = `⭐ Max : ${data.pointsMax} pts`;
+    const img = document.getElementById('question-image');
+    if (data.image && data.image.startsWith('data:image')) { img.src = data.image; img.style.display = 'block'; }
+    else { img.src = ''; img.style.display = 'none'; }
+    tempsTotal = data.tempsTotal || data.temps;
+    if (data.tempsTotal && data.temps < data.tempsTotal) tempsDepart = Date.now() - (data.tempsTotal - data.temps) * 1000;
+    else tempsDepart = Date.now();
+    dernierEnvoiReponse = 0;
+    if (cooldownInterval) { clearInterval(cooldownInterval); cooldownInterval = null; }
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    let temps = data.temps;
+    const te = document.getElementById('timer-joueur'), be = document.getElementById('timer-barre');
+    te.textContent = temps; te.classList.remove('urgent', 'pause'); be.classList.remove('urgent', 'pause'); be.style.width = '100%';
+    timerInterval = setInterval(() => {
       temps--;
-      te.textContent=Math.max(0,temps);
-      be.style.width=Math.max(0,Math.round(temps/tempsTotal*100))+'%';
-      if(temps<=10){te.classList.add('urgent');be.classList.add('urgent');}
-      if(temps<=0){clearInterval(timerInterval);timerInterval=null;if(navigator.vibrate)navigator.vibrate([100,50,100]);}
-    },1000);
+      te.textContent = Math.max(0, temps);
+      be.style.width = Math.max(0, Math.round(temps / tempsTotal * 100)) + '%';
+      if (temps <= 10) { te.classList.add('urgent'); be.classList.add('urgent'); }
+      if (temps <= 0) { clearInterval(timerInterval); timerInterval = null; if (navigator.vibrate) navigator.vibrate([100, 50, 100]); }
+    }, 1000);
     allerVers('ecran-question');
-    setTimeout(()=>{const i=document.getElementById('input-reponse');if(i&&!i.disabled)i.focus();},400);
-    if(navigator.vibrate)navigator.vibrate(60);
+    cacherMasque();
+    setTimeout(() => { const i = document.getElementById('input-reponse'); if (i && !i.disabled) i.focus(); }, 400);
+    if (navigator.vibrate) navigator.vibrate(60);
   });
-  socket.on('reponse_joueur',tousLesJoueurs=>{
-    const moi=tousLesJoueurs.find(r=>r.nom===monNom);
-    if(moi&&moi.historique&&moi.historique.length>0){
-      document.getElementById('mes-reponses-zone').style.display='block';
-      document.getElementById('mes-reponses-liste').innerHTML=moi.historique.map((r,i)=>`
-        <div class="ma-reponse-item ${i===moi.historique.length-1?'derniere':''}">
+
+  // ── PAUSE côté joueur ──
+  socket.on('partie_pause', ({ tempsRestant }) => {
+    enPause = true;
+    tempsRestantPause = tempsRestant;
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    const te = document.getElementById('timer-joueur'), be = document.getElementById('timer-barre');
+    te.textContent = '⏸'; te.classList.add('pause'); te.classList.remove('urgent');
+    be.classList.add('pause'); be.classList.remove('urgent');
+    be.style.width = Math.max(0, Math.round(tempsRestant / tempsTotal * 100)) + '%';
+    // Afficher overlay pause
+    document.getElementById('pause-temps-restant').textContent = `⏱ ${tempsRestant}s restantes`;
+    document.getElementById('pause-overlay').classList.add('visible');
+    // Désactiver la saisie pendant la pause
+    document.getElementById('input-reponse').disabled = true;
+    document.getElementById('btn-envoyer-reponse').disabled = true;
+    if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    afficherToast('⏸ Partie mise en pause');
+  });
+
+  socket.on('partie_reprend', ({ tempsRestant }) => {
+    enPause = false;
+    document.getElementById('pause-overlay').classList.remove('visible');
+    document.getElementById('input-reponse').disabled = false;
+    document.getElementById('btn-envoyer-reponse').disabled = false;
+    const te = document.getElementById('timer-joueur'), be = document.getElementById('timer-barre');
+    te.classList.remove('pause', 'urgent'); be.classList.remove('pause', 'urgent');
+    // Reprendre le timer depuis le temps restant
+    tempsDepart = Date.now() - (tempsTotal - tempsRestant) * 1000;
+    let temps = tempsRestant;
+    te.textContent = temps;
+    be.style.width = Math.max(0, Math.round(temps / tempsTotal * 100)) + '%';
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      temps--;
+      te.textContent = Math.max(0, temps);
+      be.style.width = Math.max(0, Math.round(temps / tempsTotal * 100)) + '%';
+      if (temps <= 10) { te.classList.add('urgent'); be.classList.add('urgent'); }
+      if (temps <= 0) { clearInterval(timerInterval); timerInterval = null; if (navigator.vibrate) navigator.vibrate([100, 50, 100]); }
+    }, 1000);
+    cacherMasque();
+    if (navigator.vibrate) navigator.vibrate(80);
+    afficherToast('▶ La partie reprend !');
+  });
+
+  socket.on('reponse_trop_rapide', ({ attente }) => {
+    document.getElementById('reponse-cooldown').textContent = `⏳ Attends encore ${attente}s...`;
+  });
+
+  socket.on('reponse_joueur', tousLesJoueurs => {
+    const moi = tousLesJoueurs.find(r => r.nom === monNom);
+    if (moi && moi.historique && moi.historique.length > 0) {
+      document.getElementById('mes-reponses-zone').style.display = 'block';
+      document.getElementById('mes-reponses-liste').innerHTML = moi.historique.map((r, i) => `
+        <div class="ma-reponse-item ${i === moi.historique.length - 1 ? 'derniere' : ''}">
           <span>${escapeHtml(r.reponse)}</span><span class="temps-mini">⏱ ${r.tempsReponse}s</span>
         </div>`).join('');
     }
   });
-  socket.on('fin_question',({reponses})=>{
-    if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
-    tempsDepart=null;
-    document.getElementById('input-reponse').disabled=true;
+
+  socket.on('fin_question', ({ reponses }) => {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if (cooldownInterval) { clearInterval(cooldownInterval); cooldownInterval = null; }
+    tempsDepart = null; enPause = false;
+    document.getElementById('pause-overlay').classList.remove('visible');
+    document.getElementById('input-reponse').disabled = true;
+    document.getElementById('reponse-cooldown').textContent = '';
     fermerChatDrawer();
-    document.getElementById('bonne-rep-section').style.display='none';
-    const tbody=document.getElementById('recap-tbody');tbody.innerHTML='';
-    reponses.forEach(r=>{
-      const tr=document.createElement('tr');tr.dataset.nom=r.nom;
-      tr.innerHTML=`<td><b>${escapeHtml(r.nom)}</b><div class="reactions-recap" id="reactions-${escapeHtml(r.nom)}"></div></td>
-        <td>${(r.historique&&r.historique.length>0)?r.historique.map((h,i)=>`<div class="recap-reponse-div" style="font-size:13px;${i===r.historique.length-1?'font-weight:bold;':'color:#aaa;text-decoration:line-through;'}">${escapeHtml(h.reponse)}</div>`).join(''):'<span style="color:#aaa">—</span>'}</td>
+    document.getElementById('bonne-rep-section').style.display = 'none';
+    const tbody = document.getElementById('recap-tbody'); tbody.innerHTML = '';
+    reponses.forEach(r => {
+      const tr = document.createElement('tr'); tr.dataset.nom = r.nom;
+      tr.innerHTML = `<td><b>${escapeHtml(r.nom)}</b><div class="reactions-recap" id="reactions-${escapeHtml(r.nom)}"></div></td>
+        <td>${(r.historique && r.historique.length > 0) ? r.historique.map((h, i) => `<div class="recap-reponse-div" style="font-size:13px;${i === r.historique.length - 1 ? 'font-weight:bold;' : 'color:#aaa;text-decoration:line-through;'}">${escapeHtml(h.reponse)}</div>`).join('') : '<span style="color:#aaa">—</span>'}</td>
         <td><span class="temps-badge">⏱ ${r.tempsReponse}s</span></td>`;
-      tbody.appendChild(tr);attacherLongPress(tr,r.nom);
+      tbody.appendChild(tr); attacherLongPress(tr, r.nom);
     });
-    if(nomGagnantCeRound)appliquerVertGagnant(nomGagnantCeRound);
+    if (nomGagnantCeRound) appliquerVertGagnant(nomGagnantCeRound);
     allerVers('ecran-recap');
   });
-  socket.on('bonne_reponse_revelee',({reponse})=>{
-    document.getElementById('bonne-rep-texte').textContent=reponse;
-    document.getElementById('bonne-rep-bulle').style.display='block';
-    document.getElementById('bonne-rep-recap-texte').textContent=reponse;
-    document.getElementById('bonne-rep-section').style.display='block';
+
+  socket.on('bonne_reponse_revelee', ({ reponse }) => {
+    document.getElementById('bonne-rep-texte').textContent = reponse;
+    document.getElementById('bonne-rep-bulle').style.display = 'block';
+    document.getElementById('bonne-rep-recap-texte').textContent = reponse;
+    document.getElementById('bonne-rep-section').style.display = 'block';
     afficherToast(`✅ Bonne réponse : ${reponse}`);
   });
-  socket.on('personne_a_trouve',()=>{document.getElementById('personne-banner').style.display='block';});
-  socket.on('indice_recu',({indice})=>{
-    document.getElementById('indice-texte').textContent=indice;
-    document.getElementById('indice-bulle').style.display='block';
-    if(navigator.vibrate)navigator.vibrate([50,30,50]);
+
+  socket.on('personne_a_trouve', () => { document.getElementById('personne-banner').style.display = 'block'; });
+
+  socket.on('indice_recu', ({ indice }) => {
+    document.getElementById('indice-texte').textContent = indice;
+    document.getElementById('indice-bulle').style.display = 'block';
+    if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
     afficherToast('💡 Un indice vient d\'arriver !');
   });
-  socket.on('reaction_update',({nomCible,reactions})=>{
-    const el=document.getElementById('reactions-'+nomCible);if(!el)return;
-    el.innerHTML=Object.entries(reactions).map(([e,c])=>`<span class="reaction-pill">${e} ${c}</span>`).join('');
+
+  socket.on('reaction_update', ({ nomCible, reactions }) => {
+    const el = document.getElementById('reactions-' + nomCible); if (!el) return;
+    el.innerHTML = Object.entries(reactions).map(([e, c]) => `<span class="reaction-pill">${e} ${c}</span>`).join('');
   });
-  socket.on('joueur_a_trouve',({nom})=>{if(nom!==monNom)afficherToast(`🎉 ${escapeHtml(nom)} a trouvé la bonne réponse !`);if(navigator.vibrate)navigator.vibrate(80);});
-  socket.on('points_update',data=>{
-    data.forEach(j=>{
-      const av=scoresAvant[j.nom]!==undefined?scoresAvant[j.nom]:null;
-      if(av!==null&&j.points>av){nomGagnantCeRound=j.nom;appliquerVertGagnant(j.nom);}
-      scoresAvant[j.nom]=j.points;
+
+  socket.on('joueur_a_trouve', ({ nom }) => { if (nom !== monNom) afficherToast(`🎉 ${escapeHtml(nom)} a trouvé la bonne réponse !`); if (navigator.vibrate) navigator.vibrate(80); });
+
+  socket.on('points_update', data => {
+    data.forEach(j => {
+      const av = scoresAvant[j.nom] !== undefined ? scoresAvant[j.nom] : null;
+      if (av !== null && j.points > av) { nomGagnantCeRound = j.nom; appliquerVertGagnant(j.nom); }
+      scoresAvant[j.nom] = j.points;
     });
     afficherScoresJoueur(data);
   });
-  socket.on('scores_finaux',scores=>{
-    fermerChatDrawer();scores.sort((a,b)=>b.points-a.points);
-    const cl=['or','argent','bronze'],em=['🥇','🥈','🥉'];
-    document.getElementById('podium-fin').innerHTML=scores.map((j,i)=>`<div class="podium-ligne ${cl[i]||'autre'}"><span>${em[i]||(i+1)+'.'} ${escapeHtml(j.nom)}</span><span class="podium-pts">${j.points} pts</span></div>`).join('');
-    allerVers('ecran-fin');if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
+
+  socket.on('scores_finaux', scores => {
+    fermerChatDrawer(); scores.sort((a, b) => b.points - a.points);
+    const cl = ['or','argent','bronze'], em = ['🥇','🥈','🥉'];
+    document.getElementById('podium-fin').innerHTML = scores.map((j, i) => `<div class="podium-ligne ${cl[i] || 'autre'}"><span>${em[i] || (i + 1) + '.'} ${escapeHtml(j.nom)}</span><span class="podium-pts">${j.points} pts</span></div>`).join('');
+    allerVers('ecran-fin'); if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
   });
-  socket.on('chat_message',ajouterChat);
-  socket.on('partie_annulee',()=>{reinitialiserJoueur();allerVers('ecran-accueil');});
-  socket.on('disconnect',()=>{const b=document.getElementById('reconnect-banner');b.classList.add('visible');b.classList.remove('reconnect-ok');b.textContent='⚠️ Connexion perdue... Reconnexion en cours';});
-  socket.on('connect',()=>{
-    const b=document.getElementById('reconnect-banner');b.classList.add('reconnect-ok');b.textContent='✅ Reconnecté !';
-    setTimeout(()=>b.classList.remove('visible'),2500);
-    if(monCode&&monNom)socket.emit('joueur_rejoindre',{code:monCode,nom:monNom});
+
+  socket.on('chat_message', ajouterChat);
+  socket.on('partie_annulee', () => { reinitialiserJoueur(); allerVers('ecran-accueil'); });
+
+  socket.on('disconnect', () => {
+    const b = document.getElementById('reconnect-banner'); b.classList.add('visible'); b.classList.remove('reconnect-ok');
+    b.textContent = '⚠️ Connexion perdue... Reconnexion en cours';
   });
-  document.addEventListener('visibilitychange',()=>{
-    if(!monCode||!monNom)return;
-    if(document.hidden)socket.emit('joueur_quitte_page',{code:monCode,nom:monNom});
-    else socket.emit('joueur_revient_page',{code:monCode,nom:monNom});
+  socket.on('connect', () => {
+    const b = document.getElementById('reconnect-banner'); b.classList.add('reconnect-ok'); b.textContent = '✅ Reconnecté !';
+    setTimeout(() => b.classList.remove('visible'), 2500);
+    if (monCode && monNom) socket.emit('joueur_rejoindre', { code: monCode, nom: monNom });
   });
-  window.addEventListener('load',()=>{
-    const s=chargerSession();
-    if(s){monCode=s.code;monNom=s.nom;socket.emit('joueur_rejoindre',{code:monCode,nom:monNom});}
+
+  // ── Anti-triche : visibilité & orientation ──
+  document.addEventListener('visibilitychange', () => {
+    if (!monCode || !monNom || ecranActif !== 'ecran-question') return;
+    if (document.hidden) {
+      afficherMasque('onglet');
+      socket.emit('joueur_quitte_page', { code: monCode, nom: monNom });
+    } else {
+      // Ne pas cacher le masque si en pause
+      if (!enPause) cacherMasque();
+      socket.emit('joueur_revient_page', { code: monCode, nom: monNom });
+    }
+  });
+
+  // Masque si fenêtre perd le focus (ex: écran de contrôle iPhone, apps qui passent devant)
+  window.addEventListener('blur', () => {
+    if (!monCode || !monNom || ecranActif !== 'ecran-question') return;
+    afficherMasque('blur');
+  });
+  window.addEventListener('focus', () => {
+    if (!enPause) cacherMasque();
+  });
+
+  // Masque si l'écran tourne ou si le viewport change drastiquement (écran de contrôle iPhone)
+  let dernierHauteur = window.innerHeight;
+  window.addEventListener('resize', () => {
+    if (!monCode || !monNom || ecranActif !== 'ecran-question') return;
+    const nouvelleHauteur = window.innerHeight;
+    // Si la hauteur diminue de plus de 150px (écran de contrôle, multitâche iPhone)
+    if (dernierHauteur - nouvelleHauteur > 150) {
+      afficherMasque('resize');
+    } else if (!enPause) {
+      cacherMasque();
+    }
+    dernierHauteur = nouvelleHauteur;
+  });
+
+  // ── Chargement / session ──
+  window.addEventListener('load', () => {
+    const s = chargerSession();
+    if (s) { monCode = s.code; monNom = s.nom; socket.emit('joueur_rejoindre', { code: monCode, nom: monNom }); }
   });
 </script>
 </body>
