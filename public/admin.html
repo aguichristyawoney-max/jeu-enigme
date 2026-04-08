@@ -36,7 +36,17 @@
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
     body{font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--txt);overscroll-behavior:none;transition:background 0.3s,color 0.3s;}
 
-    .theme-btn{position:fixed;top:12px;right:12px;z-index:9999;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:white;border-radius:var(--radius);padding:6px 14px;font-size:13px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:background 0.2s;}
+    /*
+     * FIX BUG 1 — Le bouton sombre est décalé à gauche sur la page admin
+     * pour ne pas se superposer au bouton pause qui est en haut à droite du header.
+     * On le place à gauche uniquement sur cette page.
+     */
+    .theme-btn{
+      position:fixed;top:12px;left:12px;z-index:9999;
+      background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);
+      color:white;border-radius:var(--radius);padding:6px 14px;font-size:13px;
+      cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:background 0.2s;
+    }
     .theme-btn:hover{background:rgba(255,255,255,0.25);}
     [data-theme="dark"] .theme-btn{background:rgba(0,0,0,0.25);border-color:rgba(255,255,255,0.15);}
 
@@ -105,25 +115,41 @@
     /* JEU */
     #ecran-admin-jeu{background:var(--bg);align-items:stretch;padding:0;min-height:100dvh;}
 
-    /* HEADER avec bouton pause intégré */
-    .admin-header{background:linear-gradient(135deg,var(--bleu-dk),var(--bleu-xdk));padding:8px 12px;display:flex;justify-content:space-between;align-items:center;color:white;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:100;flex-shrink:0;}
+    /*
+     * FIX BUG 1 — Header admin : le bouton pause est à droite
+     * Le bouton sombre étant maintenant à GAUCHE, il n'y a plus de collision.
+     * On ajoute padding-left pour ne pas que le titre se cache derrière le bouton sombre.
+     */
+    .admin-header{
+      background:linear-gradient(135deg,var(--bleu-dk),var(--bleu-xdk));
+      padding:8px 12px 8px 100px; /* padding-left large pour laisser la place au bouton sombre fixe */
+      display:flex;justify-content:space-between;align-items:center;
+      color:white;flex-wrap:wrap;gap:6px;
+      position:sticky;top:0;z-index:100;flex-shrink:0;
+    }
+    /* Sur desktop, le bouton sombre est petit, on peut réduire le padding */
+    @media(min-width:701px){
+      .admin-header{ padding-left: 120px; }
+    }
     .admin-header-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
     .admin-header h1{font-size:clamp(12px,3.2vw,15px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .admin-code-small{background:rgba(255,255,255,0.18);padding:3px 10px;border-radius:var(--radius);font-size:clamp(13px,3.2vw,15px);font-weight:700;letter-spacing:3px;flex-shrink:0;}
     .joueurs-header{display:flex;flex-wrap:wrap;gap:4px;}
 
-    /* Bouton pause dans le header */
+    /* Bouton pause dans le header — à droite, clairement visible */
     .btn-pause-header{
       background:rgba(239,159,39,0.25);
       border:1.5px solid var(--ambre);
       color:var(--ambre);
       border-radius:var(--radius);
-      padding:5px 12px;
+      padding:5px 14px;
       font-size:13px;font-weight:700;
       cursor:pointer;font-family:inherit;
       white-space:nowrap;flex-shrink:0;
       transition:background 0.2s;
       min-height:34px;
+      position:relative;
+      z-index:101; /* Au-dessus du header pour être toujours cliquable */
     }
     .btn-pause-header:active{background:rgba(239,159,39,0.45);}
     .btn-pause-header.en-pause{
@@ -199,18 +225,8 @@
     .controles{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-start;margin:8px 0;}
     .controles .btn{flex:0 0 auto;font-size:clamp(12px,3.2vw,13px);padding:8px 12px;min-height:38px;margin:0;}
 
-    /* INDICE — notif push compacte */
-    .notif-indice{
-      background:linear-gradient(135deg,#fffbec,#fef3cd);
-      border:2px solid var(--ambre);
-      border-radius:var(--radius-md);
-      padding:8px 10px;
-      margin-bottom:8px;
-      display:none;
-      align-items:center;
-      gap:8px;
-      animation:slideIn 0.3s ease;
-    }
+    /* INDICE */
+    .notif-indice{background:linear-gradient(135deg,#fffbec,#fef3cd);border:2px solid var(--ambre);border-radius:var(--radius-md);padding:8px 10px;margin-bottom:8px;display:none;align-items:center;gap:8px;animation:slideIn 0.3s ease;}
     @keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
     [data-theme="dark"] .notif-indice{background:linear-gradient(135deg,#1e2d10,#2a3d15);}
     .notif-indice-icon{font-size:20px;flex-shrink:0;}
@@ -218,7 +234,6 @@
     [data-theme="dark"] .notif-indice-texte{color:#c8a04a;}
     .notif-indice-count{background:var(--ambre);color:var(--bleu-xdk);font-size:12px;font-weight:700;border-radius:var(--radius);padding:2px 8px;flex-shrink:0;}
     .notif-indice-close{cursor:pointer;font-size:16px;color:var(--txt2);padding:0 2px;background:none;border:none;font-family:inherit;}
-
     .indice-form{display:flex;gap:6px;margin-bottom:10px;}
     .indice-form input{flex:1;padding:9px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-size:13px;min-height:40px;background:var(--bg);color:var(--txt);}
     .indice-form input:focus{border-color:var(--ambre);}
@@ -330,6 +345,7 @@
 </head>
 <body>
 
+<!-- FIX BUG 1 : bouton sombre à GAUCHE sur admin pour libérer la droite au bouton pause -->
 <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Sombre</button>
 
 <!-- ECRAN NOM -->
@@ -365,12 +381,13 @@
 <div id="ecran-admin-jeu" class="ecran">
   <div class="admin-header">
     <div class="admin-header-left">
+      <!-- FIX BUG 1 : le titre commence après le padding-left qui laisse la place au bouton sombre fixe -->
       <h1 id="admin-nom-header">👑 Admin</h1>
       <div class="admin-code-small" id="admin-code-small"></div>
       <div class="joueurs-header" id="joueurs-jeu"></div>
     </div>
-    <!-- Bouton pause compact dans le header -->
-    <button class="btn-pause-header" id="btn-pause-header" onclick="togglePause()" disabled title="Pause / Reprendre">
+    <!-- Bouton pause à droite — plus de collision avec le bouton sombre (maintenant à gauche) -->
+    <button class="btn-pause-header" id="btn-pause-header" onclick="togglePause()" disabled title="Pause / Reprendre entre les questions pour maintenir les connexions">
       ⏸ Pause
     </button>
   </div>
@@ -378,7 +395,7 @@
   <!-- Bandeau pause visible admin -->
   <div class="pause-banner-admin" id="pause-banner-admin">
     <span>⏸ PARTIE EN PAUSE —</span>
-    <span class="pause-temps-admin" id="pause-temps-admin">-- s restantes</span>
+    <span class="pause-temps-admin" id="pause-temps-admin">Connexions maintenues</span>
     <span>— Appuie sur ▶ pour reprendre</span>
   </div>
 
@@ -418,7 +435,6 @@
           </div>
         </div>
 
-        <!-- Contrôles principaux -->
         <div class="controles">
           <button class="btn btn-bleu" onclick="envoyerQuestion()">📤 Envoyer</button>
           <button class="btn btn-rouge" onclick="couperTemps()">⏹ Couper</button>
@@ -426,7 +442,6 @@
         </div>
       </div>
 
-      <!-- NOTIF INDICE — push compact -->
       <div class="notif-indice" id="notif-indice">
         <span class="notif-indice-icon">💡</span>
         <span class="notif-indice-texte" id="notif-indice-texte">Des joueurs demandent un indice !</span>
@@ -439,7 +454,6 @@
         <button class="btn btn-ambre" style="padding:9px 12px;font-size:13px;margin:0;min-height:40px;" onclick="envoyerIndice()">Envoyer</button>
       </div>
 
-      <!-- BONNE REPONSE -->
       <div class="bonne-rep-section">
         <div class="bonne-rep-section-label">✅ Révéler la bonne réponse aux joueurs</div>
         <div class="bonne-rep-form">
@@ -541,6 +555,20 @@
   let partieEnPause = false;
   let tempsRestantPause = 0;
 
+  // FIX BUG 2 — Keep-alive : ping toutes les 20s quand la pause est active
+  // pour maintenir les connexions socket des joueurs
+  let keepAliveInterval = null;
+
+  function demarrerKeepAlive() {
+    if (keepAliveInterval) return;
+    keepAliveInterval = setInterval(() => {
+      if (adminCode) socket.emit('admin_ping_keepalive', { code: adminCode });
+    }, 20000);
+  }
+  function arreterKeepAlive() {
+    if (keepAliveInterval) { clearInterval(keepAliveInterval); keepAliveInterval = null; }
+  }
+
   // ── THEME ──
   function toggleTheme() {
     const dk = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -610,6 +638,8 @@
   }
 
   // ── PAUSE ──
+  // FIX BUG 2 : la pause est disponible à tout moment (entre questions aussi)
+  // Elle sert à maintenir les joueurs connectés lors d'une longue absence
   function togglePause() {
     if (!adminCode) return;
     if (partieEnPause) {
@@ -619,39 +649,58 @@
     }
   }
 
-  function mettreEnPause(tempsRestant) {
+  function mettreEnPause(tempsRestant, phase) {
     partieEnPause = true;
     tempsRestantPause = tempsRestant;
     stopAdminTimer();
-    // Mettre à jour le bouton
+    demarrerKeepAlive(); // Démarrer le keep-alive pendant la pause
+
     const btn = document.getElementById('btn-pause-header');
     btn.textContent = '▶ Reprendre';
     btn.classList.add('en-pause');
-    // Afficher le bandeau
-    document.getElementById('pause-temps-admin').textContent = `${tempsRestant}s restantes`;
+    btn.disabled = false;
+
+    // Message adapté selon la phase
+    const bannerTemps = document.getElementById('pause-temps-admin');
+    if (tempsRestant !== null && tempsRestant > 0) {
+      bannerTemps.textContent = `${tempsRestant}s restantes`;
+    } else {
+      bannerTemps.textContent = 'Connexions maintenues';
+    }
     document.getElementById('pause-banner-admin').classList.add('visible');
-    // Griser le timer
+
     const cercle = document.getElementById('admin-timer-cercle');
     if (cercle) { cercle.textContent = '⏸'; cercle.classList.remove('urgent'); }
     if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
   }
 
-  function reprendrePartie(tempsRestant) {
+  function reprendrePartie(tempsRestant, phase) {
     partieEnPause = false;
-    // Mettre à jour le bouton
+    arreterKeepAlive(); // Arrêter le keep-alive, les sockets sont de nouveau actifs
+
     const btn = document.getElementById('btn-pause-header');
     btn.textContent = '⏸ Pause';
     btn.classList.remove('en-pause');
-    // Cacher le bandeau
+
     document.getElementById('pause-banner-admin').classList.remove('visible');
-    // Reprendre le timer
-    startAdminTimer(tempsRestant);
+
+    // Ne reprendre le timer que si on était en cours de question
+    if (tempsRestant !== null && tempsRestant > 0) {
+      startAdminTimer(tempsRestant);
+    }
     if (navigator.vibrate) navigator.vibrate(80);
   }
 
   // ── ACTIONS ──
   function creerPartie() { const n = document.getElementById('input-nom-admin').value.trim(); adminNom = n || 'Admin'; socket.emit('admin_creer_partie', { nomAdmin: adminNom }); }
-  function lancerJeu() { allerVers('ecran-admin-jeu'); document.getElementById('admin-code-small').textContent = adminCode; document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`; }
+  function lancerJeu() {
+    allerVers('ecran-admin-jeu');
+    document.getElementById('admin-code-small').textContent = adminCode;
+    document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
+    // FIX BUG 2 : activer le bouton pause dès le lancement (pour pauses inter-questions)
+    const btn = document.getElementById('btn-pause-header');
+    btn.disabled = false;
+  }
   function annulerPartie() { if (!confirm('Annuler la partie ? Tous les joueurs seront déconnectés.')) return; socket.emit('admin_annuler_partie', { code: adminCode }); adminCode = ''; viderSessionAdmin(); allerVers('ecran-admin-nom'); }
 
   function verrouiller() {
@@ -687,7 +736,8 @@
     const pointsMax = parseInt(document.getElementById('points-max-input').value) || 3;
     pointsMaxActuel = pointsMax; adminTempsTotal = temps;
     deverrouiller(); partieEnPause = false;
-    // Reset bouton pause
+    arreterKeepAlive();
+
     const btnP = document.getElementById('btn-pause-header');
     btnP.textContent = '⏸ Pause'; btnP.classList.remove('en-pause'); btnP.disabled = false;
     document.getElementById('pause-banner-admin').classList.remove('visible');
@@ -719,9 +769,10 @@
     socket.emit('admin_couper_temps', { code: adminCode });
     stopAdminTimer();
     partieEnPause = false;
-    document.getElementById('btn-pause-header').disabled = true;
-    document.getElementById('btn-pause-header').textContent = '⏸ Pause';
-    document.getElementById('btn-pause-header').classList.remove('en-pause');
+    arreterKeepAlive();
+    // On garde le bouton pause actif entre les questions
+    const btn = document.getElementById('btn-pause-header');
+    btn.textContent = '⏸ Pause'; btn.classList.remove('en-pause'); btn.disabled = false;
     document.getElementById('pause-banner-admin').classList.remove('visible');
   }
 
@@ -730,27 +781,24 @@
     socket.emit('admin_personne_a_trouve', { code: adminCode });
     stopAdminTimer();
     partieEnPause = false;
-    document.getElementById('btn-pause-header').disabled = true;
+    arreterKeepAlive();
+    const btn = document.getElementById('btn-pause-header');
+    btn.textContent = '⏸ Pause'; btn.classList.remove('en-pause'); btn.disabled = false;
     document.getElementById('pause-banner-admin').classList.remove('visible');
   }
 
-  // ── INDICE — notif push ──
-  function fermerNotifIndice() {
-    document.getElementById('notif-indice').style.display = 'none';
-  }
+  function fermerNotifIndice() { document.getElementById('notif-indice').style.display = 'none'; }
 
   function envoyerIndice() {
     const i = document.getElementById('indice-input').value.trim(); if (!i) return;
     socket.emit('admin_envoyer_indice', { code: adminCode, indice: i });
     document.getElementById('indice-input').value = '';
     fermerNotifIndice();
-    // Feedback visuel
     const btn = document.querySelector('.indice-form button');
     btn.textContent = '✅ Envoyé !'; btn.disabled = true;
     setTimeout(() => { btn.textContent = 'Envoyer'; btn.disabled = false; }, 2000);
   }
 
-  // ── BONNE REPONSE ──
   function envoyerBonneReponse() {
     const r = document.getElementById('bonne-rep-input').value.trim(); if (!r || !adminCode) return;
     socket.emit('admin_bonne_reponse', { code: adminCode, reponse: r });
@@ -760,7 +808,7 @@
     setTimeout(() => { btn.textContent = 'Révéler'; btn.disabled = false; inputEl.value = ''; }, 2500);
   }
 
-  function afficherFin() { if (!confirm('Terminer la partie ?')) return; socket.emit('admin_fin_partie', { code: adminCode }); stopAdminTimer(); }
+  function afficherFin() { if (!confirm('Terminer la partie ?')) return; socket.emit('admin_fin_partie', { code: adminCode }); stopAdminTimer(); arreterKeepAlive(); }
   function nouvellePartie() { adminCode = ''; viderSessionAdmin(); allerVers('ecran-admin-nom'); }
 
   // ── TIMER ──
@@ -831,8 +879,9 @@
     const pts = parseInt(document.getElementById('points-input-' + ne).value) || 0;
     if (pts < 0) return;
     socket.emit('admin_donner_points', { code: adminCode, nom, points: pts }); stopAdminTimer();
-    partieEnPause = false;
-    document.getElementById('btn-pause-header').disabled = true;
+    partieEnPause = false; arreterKeepAlive();
+    const btnPause = document.getElementById('btn-pause-header');
+    btnPause.textContent = '⏸ Pause'; btnPause.classList.remove('en-pause'); btnPause.disabled = false;
     document.getElementById('pause-banner-admin').classList.remove('visible');
   }
 
@@ -976,7 +1025,6 @@
   socket.on('admin_chrono_start', ({ temps }) => {
     adminTempsTotal = temps;
     startAdminTimer(temps);
-    // Activer le bouton pause
     const btn = document.getElementById('btn-pause-header');
     btn.disabled = false; btn.textContent = '⏸ Pause'; btn.classList.remove('en-pause');
   });
@@ -997,34 +1045,36 @@
     }
   });
 
-  // Réception pause côté admin (confirmation serveur)
-  socket.on('partie_pause', ({ tempsRestant }) => {
-    mettreEnPause(tempsRestant);
+  socket.on('partie_pause', ({ tempsRestant, phase }) => {
+    mettreEnPause(tempsRestant, phase);
   });
 
-  socket.on('partie_reprend', ({ tempsRestant }) => {
-    reprendrePartie(tempsRestant);
+  socket.on('partie_reprend', ({ tempsRestant, phase }) => {
+    reprendrePartie(tempsRestant, phase);
   });
 
   socket.on('reponse_joueur',        reponses => { rendreCartes(reponses); });
   socket.on('nouvelle_reponse_badge', ()       => { incrementerBadge('reponses'); });
   socket.on('nouveau_chat_badge',     ()       => { incrementerBadge('chat'); });
   socket.on('point_deja_donne',       ()       => {
-    verrouiller(); stopAdminTimer();
-    document.getElementById('btn-pause-header').disabled = true;
+    verrouiller(); stopAdminTimer(); arreterKeepAlive();
+    // Garder le bouton pause actif entre les questions
+    const btn = document.getElementById('btn-pause-header');
+    btn.textContent = '⏸ Pause'; btn.classList.remove('en-pause'); btn.disabled = false;
     document.getElementById('pause-banner-admin').classList.remove('visible');
     partieEnPause = false;
   });
   socket.on('fin_question', () => {
     stopAdminTimer();
-    document.getElementById('btn-pause-header').disabled = true;
-    document.getElementById('btn-pause-header').textContent = '⏸ Pause';
-    document.getElementById('btn-pause-header').classList.remove('en-pause');
+    // FIX BUG 2 : NE PAS désactiver le bouton pause après la fin d'une question
+    // L'admin peut utiliser la pause entre les questions pour maintenir les connexions
+    const btn = document.getElementById('btn-pause-header');
+    btn.textContent = '⏸ Pause'; btn.classList.remove('en-pause');
+    btn.disabled = false; // Rester actif !
     document.getElementById('pause-banner-admin').classList.remove('visible');
     partieEnPause = false;
   });
 
-  // Notif indice enrichie avec compteur
   socket.on('demande_indice_update', ({ nbDemandes, nbJoueurs, majorite, nomDemandeur }) => {
     const notif = document.getElementById('notif-indice');
     const texte = document.getElementById('notif-indice-texte');
@@ -1034,7 +1084,6 @@
       notif.style.display = 'flex';
       texte.textContent = `Majorité demande un indice !`;
       if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 60]);
-      // Badge sur l'onglet question si pas actif
       if (ongletActif !== 'question') {
         const btn = document.getElementById('tab-btn-question');
         if (btn) { btn.style.color = 'var(--ambre)'; setTimeout(() => { btn.style.color = ''; }, 5000); }
@@ -1066,14 +1115,20 @@
     scores.sort((a, b) => b.points - a.points);
     const cl = ['or','argent','bronze'], em = ['🥇','🥈','🥉'];
     document.getElementById('admin-podium-fin').innerHTML = scores.map((j, i) => `<div class="podium-ligne ${cl[i] || 'autre'}"><span>${em[i] || (i + 1) + '.'} ${escapeHtml(j.nom)}</span><span class="podium-pts">${j.points} pts</span></div>`).join('');
-    allerVers('ecran-admin-fin'); stopAdminTimer();
+    allerVers('ecran-admin-fin'); stopAdminTimer(); arreterKeepAlive();
   });
 
   socket.on('partie_annulee', () => allerVers('ecran-admin-nom'));
 
   window.addEventListener('load', () => {
     const s = chargerSessionAdmin();
-    if (s) { adminCode = s.code; adminNom = s.nom; document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`; socket.emit('admin_rejoindre', { code: adminCode }); }
+    if (s) {
+      adminCode = s.code; adminNom = s.nom;
+      document.getElementById('admin-nom-header').textContent = `${adminNom} 👑`;
+      socket.emit('admin_rejoindre', { code: adminCode });
+      // FIX BUG 2 : activer le bouton pause dès que l'admin est connecté à une partie
+      document.getElementById('btn-pause-header').disabled = false;
+    }
   });
 </script>
 </body>

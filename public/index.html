@@ -35,14 +35,8 @@
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
     body{font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overscroll-behavior:none;transition:background 0.3s,color 0.3s;}
 
-    /* Anti-screenshot : désactive sélection/callout sur zone sensible */
-    .question-protegee{
-      user-select:none;-webkit-user-select:none;
-      -webkit-touch-callout:none;
-      pointer-events:none;
-    }
+    .question-protegee{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;pointer-events:none;}
     .question-protegee * { pointer-events:none; }
-    /* Réactive pointer-events pour la zone de réponse */
     .reponse-sticky { pointer-events:all !important; }
 
     .theme-btn{position:fixed;top:12px;right:12px;z-index:9999;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:white;border-radius:var(--radius);padding:6px 14px;font-size:13px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:background 0.2s;}
@@ -77,9 +71,6 @@
     .btn-ambre{background:var(--ambre);color:var(--bleu-xdk);box-shadow:0 5px 0 var(--ambre-dk);}
     .btn-rouge{background:var(--rouge);color:white;box-shadow:0 4px 0 var(--rouge-dk);}
     .btn-ghost{background:transparent;color:var(--txt2);border:2px solid var(--border);box-shadow:none;}
-    .btn-bleu:active{box-shadow:0 2px 0 var(--bleu-dk);}
-    .btn-ambre:active{box-shadow:0 2px 0 var(--ambre-dk);}
-    .btn-rouge:active{box-shadow:0 2px 0 var(--rouge-dk);}
     .btn-petit{width:auto;padding:11px 18px;font-size:clamp(13px,3.5vw,15px);border-radius:var(--radius);white-space:nowrap;flex-shrink:0;}
     .erreur{color:var(--rouge);font-size:13px;margin:4px 0;min-height:18px;}
 
@@ -111,32 +102,13 @@
     .btn-quitter-partie.visible{display:block;}
     .btn-quitter-partie:active{transform:scale(0.95);}
 
-    /* ÉCRAN MASQUE — question cachée */
-    .masque-overlay{
-      display:none;
-      position:absolute;inset:0;
-      background:linear-gradient(135deg,var(--bleu-xdk),var(--bleu-dk));
-      z-index:50;
-      flex-direction:column;
-      align-items:center;justify-content:center;
-      color:white;text-align:center;padding:24px;
-    }
+    .masque-overlay{display:none;position:absolute;inset:0;background:linear-gradient(135deg,var(--bleu-xdk),var(--bleu-dk));z-index:50;flex-direction:column;align-items:center;justify-content:center;color:white;text-align:center;padding:24px;}
     .masque-overlay.visible{display:flex;}
     .masque-icon{font-size:52px;margin-bottom:16px;}
     .masque-titre{font-size:clamp(18px,5vw,22px);font-weight:700;margin-bottom:8px;}
     .masque-sous{font-size:clamp(13px,3.5vw,15px);opacity:.75;line-height:1.5;}
 
-    /* ÉCRAN PAUSE JOUEUR */
-    .pause-overlay{
-      display:none;
-      position:absolute;inset:0;
-      background:rgba(4,44,83,0.92);
-      backdrop-filter:blur(8px);
-      z-index:60;
-      flex-direction:column;
-      align-items:center;justify-content:center;
-      color:white;text-align:center;padding:24px;
-    }
+    .pause-overlay{display:none;position:absolute;inset:0;background:rgba(4,44,83,0.92);backdrop-filter:blur(8px);z-index:60;flex-direction:column;align-items:center;justify-content:center;color:white;text-align:center;padding:24px;}
     .pause-overlay.visible{display:flex;}
     .pause-icon{font-size:64px;margin-bottom:16px;animation:pulse 2s infinite;}
     @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
@@ -402,18 +374,16 @@
     </div>
   </div>
 
-  <!-- Masque anti-triche : onglet caché / écran baissé -->
   <div class="masque-overlay" id="masque-overlay">
     <div class="masque-icon">🙈</div>
     <div class="masque-titre">Question masquée</div>
     <div class="masque-sous">Reviens sur cette page<br>pour voir la question</div>
   </div>
 
-  <!-- Overlay pause -->
   <div class="pause-overlay" id="pause-overlay">
     <div class="pause-icon">⏸</div>
     <div class="pause-titre">Partie en pause</div>
-    <div class="pause-sous">L'admin a mis la partie en pause.<br>Elle reprendra bientôt !</div>
+    <div class="pause-sous">L'admin a mis la partie en pause.<br>Pas besoin d'actualiser, elle reprendra bientôt !</div>
     <div class="pause-temps" id="pause-temps-restant"></div>
   </div>
 
@@ -484,31 +454,38 @@
   const replyTo = { attente: null, drawer: null };
   let replyToDrawer = null, emojiPickerCible = null;
 
-  // ── Cooldown réponse (3s côté client) ──
   let dernierEnvoiReponse = 0;
   let cooldownInterval = null;
 
-  // ── Pause ──
   let enPause = false;
   let tempsRestantPause = 0;
 
-  // ── Masque anti-triche ──
   let masqueActif = false;
-  let questionMasquee = false;
+
+  // FIX BUG 2 — Keep-alive joueur : pendant la pause, envoie un ping toutes les 20s
+  // pour maintenir la connexion socket active sans actualiser la page
+  let keepAliveInterval = null;
+
+  function demarrerKeepAlive() {
+    if (keepAliveInterval) return;
+    keepAliveInterval = setInterval(() => {
+      if (monCode) socket.emit('joueur_ping', { code: monCode });
+    }, 20000);
+  }
+  function arreterKeepAlive() {
+    if (keepAliveInterval) { clearInterval(keepAliveInterval); keepAliveInterval = null; }
+  }
 
   function afficherMasque(raison) {
     if (ecranActif !== 'ecran-question') return;
     masqueActif = true;
     document.getElementById('masque-overlay').classList.add('visible');
-    // Flouter/masquer la question
-    const qm = document.getElementById('question-main');
-    qm.classList.add('question-protegee');
+    document.getElementById('question-main').classList.add('question-protegee');
   }
   function cacherMasque() {
     masqueActif = false;
     document.getElementById('masque-overlay').classList.remove('visible');
-    const qm = document.getElementById('question-main');
-    qm.classList.remove('question-protegee');
+    document.getElementById('question-main').classList.remove('question-protegee');
   }
 
   // ── Theme ──
@@ -552,7 +529,6 @@
     document.getElementById('chat-fab').style.display = fab.includes(id) ? 'flex' : 'none';
     document.getElementById('btn-quitter-partie').classList.toggle('visible', fab.includes(id));
     fermerChatDrawer(); fermerEmojiPicker();
-    // Si on quitte l'écran question, cacher le masque
     if (id !== 'ecran-question') cacherMasque();
   }
 
@@ -571,6 +547,7 @@
     monNom = ''; monCode = ''; viderSession();
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
     if (cooldownInterval) { clearInterval(cooldownInterval); cooldownInterval = null; }
+    arreterKeepAlive();
     tempsDepart = null; demandeIndiceEnvoye = false; chatNonLus = 0;
     enPause = false; dernierEnvoiReponse = 0;
     document.getElementById('chat-drawer-messages').innerHTML = '';
@@ -707,7 +684,6 @@
     if (!rep || !monCode) return;
     if (enPause) { afficherToast('⏸ La partie est en pause !'); return; }
 
-    // Cooldown 3s côté client
     const maintenant = Date.now();
     const delai = maintenant - dernierEnvoiReponse;
     if (delai < 3000) {
@@ -725,7 +701,6 @@
     c.textContent = `✅ "${rep}" envoyée !`;
     document.getElementById('reponse-cooldown').textContent = '';
 
-    // Décompte cooldown visuel
     let cd = 3;
     if (cooldownInterval) clearInterval(cooldownInterval);
     const cdEl = document.getElementById('reponse-cooldown');
@@ -790,6 +765,7 @@
 
   socket.on('nouvelle_question', data => {
     enPause = false;
+    arreterKeepAlive(); // Plus besoin du keep-alive, le socket est actif
     document.getElementById('pause-overlay').classList.remove('visible');
     document.getElementById('input-reponse').disabled = false;
     document.getElementById('btn-envoyer-reponse').disabled = false;
@@ -831,48 +807,67 @@
     if (navigator.vibrate) navigator.vibrate(60);
   });
 
-  // ── PAUSE côté joueur ──
-  socket.on('partie_pause', ({ tempsRestant }) => {
+  // FIX BUG 2 — Pause joueur : démarrer le keep-alive pour maintenir la connexion
+  socket.on('partie_pause', ({ tempsRestant, phase }) => {
     enPause = true;
-    tempsRestantPause = tempsRestant;
+    tempsRestantPause = tempsRestant || 0;
+    demarrerKeepAlive(); // Démarrer le keep-alive pour ne pas perdre la connexion
+
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
     const te = document.getElementById('timer-joueur'), be = document.getElementById('timer-barre');
     te.textContent = '⏸'; te.classList.add('pause'); te.classList.remove('urgent');
     be.classList.add('pause'); be.classList.remove('urgent');
-    be.style.width = Math.max(0, Math.round(tempsRestant / tempsTotal * 100)) + '%';
-    // Afficher overlay pause
-    document.getElementById('pause-temps-restant').textContent = `⏱ ${tempsRestant}s restantes`;
+    if (tempsRestant) be.style.width = Math.max(0, Math.round(tempsRestant / tempsTotal * 100)) + '%';
+
+    // Afficher overlay pause (adapté selon la phase)
+    if (tempsRestant && tempsRestant > 0) {
+      document.getElementById('pause-temps-restant').textContent = `⏱ ${tempsRestant}s restantes`;
+    } else {
+      document.getElementById('pause-temps-restant').textContent = '';
+    }
     document.getElementById('pause-overlay').classList.add('visible');
-    // Désactiver la saisie pendant la pause
     document.getElementById('input-reponse').disabled = true;
     document.getElementById('btn-envoyer-reponse').disabled = true;
     if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
     afficherToast('⏸ Partie mise en pause');
   });
 
-  socket.on('partie_reprend', ({ tempsRestant }) => {
+  socket.on('partie_reprend', ({ tempsRestant, phase }) => {
     enPause = false;
+    arreterKeepAlive(); // Arrêter le keep-alive, la connexion est de nouveau active
     document.getElementById('pause-overlay').classList.remove('visible');
     document.getElementById('input-reponse').disabled = false;
     document.getElementById('btn-envoyer-reponse').disabled = false;
     const te = document.getElementById('timer-joueur'), be = document.getElementById('timer-barre');
     te.classList.remove('pause', 'urgent'); be.classList.remove('pause', 'urgent');
-    // Reprendre le timer depuis le temps restant
-    tempsDepart = Date.now() - (tempsTotal - tempsRestant) * 1000;
-    let temps = tempsRestant;
-    te.textContent = temps;
-    be.style.width = Math.max(0, Math.round(temps / tempsTotal * 100)) + '%';
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      temps--;
-      te.textContent = Math.max(0, temps);
+
+    // Reprendre le timer seulement si on était en cours de question
+    if (tempsRestant !== null && tempsRestant > 0) {
+      tempsDepart = Date.now() - (tempsTotal - tempsRestant) * 1000;
+      let temps = tempsRestant;
+      te.textContent = temps;
       be.style.width = Math.max(0, Math.round(temps / tempsTotal * 100)) + '%';
-      if (temps <= 10) { te.classList.add('urgent'); be.classList.add('urgent'); }
-      if (temps <= 0) { clearInterval(timerInterval); timerInterval = null; if (navigator.vibrate) navigator.vibrate([100, 50, 100]); }
-    }, 1000);
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        temps--;
+        te.textContent = Math.max(0, temps);
+        be.style.width = Math.max(0, Math.round(temps / tempsTotal * 100)) + '%';
+        if (temps <= 10) { te.classList.add('urgent'); be.classList.add('urgent'); }
+        if (temps <= 0) { clearInterval(timerInterval); timerInterval = null; if (navigator.vibrate) navigator.vibrate([100, 50, 100]); }
+      }, 1000);
+    } else {
+      // Reprise entre questions : juste afficher un état neutre
+      te.textContent = '--';
+      be.style.width = '100%';
+    }
     cacherMasque();
     if (navigator.vibrate) navigator.vibrate(80);
     afficherToast('▶ La partie reprend !');
+  });
+
+  // FIX BUG 2 — Confirmation que la connexion est toujours vivante
+  socket.on('joueur_pong', () => {
+    // Connexion confirmée — rien à afficher, juste garder la connexion active
   });
 
   socket.on('reponse_trop_rapide', ({ attente }) => {
@@ -894,6 +889,7 @@
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
     if (cooldownInterval) { clearInterval(cooldownInterval); cooldownInterval = null; }
     tempsDepart = null; enPause = false;
+    arreterKeepAlive();
     document.getElementById('pause-overlay').classList.remove('visible');
     document.getElementById('input-reponse').disabled = true;
     document.getElementById('reponse-cooldown').textContent = '';
@@ -946,6 +942,7 @@
 
   socket.on('scores_finaux', scores => {
     fermerChatDrawer(); scores.sort((a, b) => b.points - a.points);
+    arreterKeepAlive();
     const cl = ['or','argent','bronze'], em = ['🥇','🥈','🥉'];
     document.getElementById('podium-fin').innerHTML = scores.map((j, i) => `<div class="podium-ligne ${cl[i] || 'autre'}"><span>${em[i] || (i + 1) + '.'} ${escapeHtml(j.nom)}</span><span class="podium-pts">${j.points} pts</span></div>`).join('');
     allerVers('ecran-fin'); if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
@@ -965,33 +962,32 @@
   });
 
   // ── Anti-triche : visibilité & orientation ──
+  // FIX BUG 3 : les événements joueur_quitte_page / joueur_revient_page sont
+  // TOUJOURS envoyés, même en pause. C'est le serveur qui décide s'il faut alerter.
   document.addEventListener('visibilitychange', () => {
-    if (!monCode || !monNom || ecranActif !== 'ecran-question') return;
+    if (!monCode || !monNom) return;
     if (document.hidden) {
-      afficherMasque('onglet');
+      if (ecranActif === 'ecran-question') afficherMasque('onglet');
       socket.emit('joueur_quitte_page', { code: monCode, nom: monNom });
     } else {
-      // Ne pas cacher le masque si en pause
       if (!enPause) cacherMasque();
       socket.emit('joueur_revient_page', { code: monCode, nom: monNom });
     }
   });
 
-  // Masque si fenêtre perd le focus (ex: écran de contrôle iPhone, apps qui passent devant)
   window.addEventListener('blur', () => {
-    if (!monCode || !monNom || ecranActif !== 'ecran-question') return;
-    afficherMasque('blur');
+    if (!monCode || !monNom) return;
+    if (ecranActif === 'ecran-question') afficherMasque('blur');
+    // Note : blur ne déclenche pas d'alerte serveur, seulement le masque local
   });
   window.addEventListener('focus', () => {
     if (!enPause) cacherMasque();
   });
 
-  // Masque si l'écran tourne ou si le viewport change drastiquement (écran de contrôle iPhone)
   let dernierHauteur = window.innerHeight;
   window.addEventListener('resize', () => {
     if (!monCode || !monNom || ecranActif !== 'ecran-question') return;
     const nouvelleHauteur = window.innerHeight;
-    // Si la hauteur diminue de plus de 150px (écran de contrôle, multitâche iPhone)
     if (dernierHauteur - nouvelleHauteur > 150) {
       afficherMasque('resize');
     } else if (!enPause) {

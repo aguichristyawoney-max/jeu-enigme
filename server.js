@@ -107,12 +107,17 @@ io.on('connection', (socket) => {
     const partie = parties[code];
     if (!partie) { socket.emit('erreur', 'Partie introuvable ou expirée'); return; }
 
+    // FIX BUG 3 : faire quitter l'ancien socket admin de la room
+    // pour que les futurs io.to(partie.adminId) pointent sur le bon socket
     if (partie.adminId && partie.adminId !== socket.id) {
       const ancienSocket = io.sockets.sockets.get(partie.adminId);
-      if (ancienSocket) ancienSocket.leave(code);
+      if (ancienSocket) {
+        ancienSocket.leave(code);
+        ancienSocket.data.isAdmin = false;
+      }
     }
 
-    partie.adminId = socket.id;
+    partie.adminId = socket.id; // Mettre à jour immédiatement
     socket.join(code);
     socket.data.code = code;
     socket.data.isAdmin = true;
@@ -124,7 +129,6 @@ io.on('connection', (socket) => {
     partie.messages.forEach(m => socket.emit('chat_message', m));
 
     if (partie.phase === 'playing' && partie.tempsDepart) {
-      // Calcul du temps restant en tenant compte de la pause
       let restant;
       if (partie.pauseActive && partie.tempsRestantAvantPause !== null) {
         restant = partie.tempsRestantAvantPause;
@@ -142,12 +146,12 @@ io.on('connection', (socket) => {
       socket.emit('reponse_joueur', _buildReponses(partie));
     }
 
-    // Renvoyer l'état pause si actif
     if (partie.pauseActive) {
       socket.emit('partie_pause', { tempsRestant: partie.tempsRestantAvantPause });
     }
 
     toucherPartie(code);
+    console.log(`Admin reconnecté sur la partie ${code}, nouveau socketId: ${socket.id}`);
   });
 
   socket.on('joueur_rejoindre', ({ code, nom } = {}) => {
@@ -176,7 +180,6 @@ io.on('connection', (socket) => {
 
     if (partie.phase === 'playing') {
       if (partie.pauseActive && partie.tempsRestantAvantPause !== null) {
-        // Partie en pause : envoyer la question avec temps gelé + signal pause
         socket.emit('nouvelle_question', {
           question: partie.questionActuelle,
           image: partie.imageActuelle,
@@ -233,39 +236,62 @@ io.on('connection', (socket) => {
   });
 
   // ── PAUSE / REPRISE ──
+  // FIX BUG 2 : la pause fonctionne aussi entre les questions (recap/attente)
+  // pour maintenir les connexions actives (keep-alive)
   socket.on('admin_pause', ({ code } = {}) => {
     if (!validerString(code, 6)) return;
     const partie = parties[code];
     if (!partie || partie.adminId !== socket.id) return;
-    if (partie.phase !== 'playing' || partie.pauseActive) return;
+    if (partie.pauseActive) return; // Déjà en pause
 
-    // Calculer et sauvegarder le temps restant
-    const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
-    const restant = Math.max(0, partie.tempsDuration - ecoule);
-    partie.tempsRestantAvantPause = restant;
+    if (partie.phase === 'playing' && partie.tempsDepart) {
+      // Pause pendant une question : sauvegarder le temps restant
+      const ecoule = Math.floor((Date.now() - partie.tempsDepart) / 1000);
+      const restant = Math.max(0, partie.tempsDuration - ecoule);
+      partie.tempsRestantAvantPause = restant;
+      partie.tempsDepart = null;
+    } else {
+      // Pause entre questions (recap/attente) : pas de timer à sauvegarder
+      partie.tempsRestantAvantPause = null;
+    }
+
     partie.pauseActive = true;
-    partie.tempsDepart = null; // Geler le timer
-
-    io.to(code).emit('partie_pause', { tempsRestant: restant });
+    io.to(code).emit('partie_pause', { tempsRestant: partie.tempsRestantAvantPause, phase: partie.phase });
     toucherPartie(code);
-    console.log(`Partie ${code} mise en pause, ${restant}s restants`);
+    console.log(`Partie ${code} mise en pause (phase: ${partie.phase})`);
   });
 
   socket.on('admin_reprendre', ({ code } = {}) => {
     if (!validerString(code, 6)) return;
     const partie = parties[code];
     if (!partie || partie.adminId !== socket.id) return;
-    if (partie.phase !== 'playing' || !partie.pauseActive) return;
+    if (!partie.pauseActive) return;
 
-    // Reprendre depuis le temps sauvegardé
-    const restant = partie.tempsRestantAvantPause || 0;
-    partie.tempsDepart = Date.now() - (partie.tempsDuration - restant) * 1000;
-    partie.pauseActive = false;
-    partie.tempsRestantAvantPause = null;
+    if (partie.phase === 'playing' && partie.tempsRestantAvantPause !== null) {
+      // Reprendre le timer depuis le temps sauvegardé
+      const restant = partie.tempsRestantAvantPause;
+      partie.tempsDepart = Date.now() - (partie.tempsDuration - restant) * 1000;
+      partie.pauseActive = false;
+      partie.tempsRestantAvantPause = null;
+      io.to(code).emit('partie_reprend', { tempsRestant: restant });
+    } else {
+      // Reprise entre questions : juste lever la pause
+      partie.pauseActive = false;
+      partie.tempsRestantAvantPause = null;
+      io.to(code).emit('partie_reprend', { tempsRestant: null, phase: partie.phase });
+    }
 
-    io.to(code).emit('partie_reprend', { tempsRestant: restant });
     toucherPartie(code);
-    console.log(`Partie ${code} reprise, ${restant}s restants`);
+    console.log(`Partie ${code} reprise`);
+  });
+
+  // FIX BUG 2 : ping keep-alive des joueurs pendant la pause
+  socket.on('joueur_ping', ({ code } = {}) => {
+    if (!validerString(code, 6)) return;
+    const partie = parties[code];
+    if (!partie) return;
+    toucherPartie(code);
+    socket.emit('joueur_pong'); // Confirmer que la connexion est vivante
   });
 
   socket.on('admin_couper_temps', ({ code } = {}) => {
@@ -283,14 +309,12 @@ io.on('connection', (socket) => {
   socket.on('joueur_reponse', ({ code, nom, reponse, tempsReponse } = {}) => {
     if (!validerString(code, 6) || !validerString(nom, 30) || !validerString(reponse, 300)) return;
     const partie = parties[code];
-    // Bloquer les réponses si pause active
     if (!partie || partie.phase !== 'playing' || partie.pauseActive) return;
     const joueurValide = Object.values(partie.joueurs).some(j => j.nom === nom);
     if (!joueurValide) return;
     const tempsVal = Math.max(0, parseInt(tempsReponse) || 0);
     if (!partie.reponses[nom]) partie.reponses[nom] = { nom, historique: [] };
 
-    // Délai anti-spam : 3s entre deux réponses du même joueur
     const historique = partie.reponses[nom].historique;
     if (historique.length > 0) {
       const derniereTs = partie.reponses[nom].dernierEnvoi || 0;
@@ -372,7 +396,6 @@ io.on('connection', (socket) => {
     const nbJoueurs = Object.keys(partie.joueurs).length;
     const nbDemandes = partie.demandesIndice.size;
     const majorite = nbDemandes > nbJoueurs / 2;
-    // Notification enrichie pour l'admin
     io.to(partie.adminId).emit('demande_indice_update', {
       nbDemandes,
       nbJoueurs,
@@ -459,12 +482,14 @@ io.on('connection', (socket) => {
     toucherPartie(code);
   });
 
+  // FIX BUG 3 : les alertes triche arrivent toujours
+  // La vérification pauseActive est supprimée — l'admin doit TOUJOURS voir
+  // les changements de page même en pause (c'est lui qui décide si c'est normal)
   socket.on('joueur_quitte_page', ({ code, nom } = {}) => {
     if (!validerString(code, 6) || !validerString(nom, 30)) return;
     const partie = parties[code];
     if (!partie) return;
-    // Ne pas alerter si la partie est en pause (normal que les joueurs soient ailleurs)
-    if (partie.pauseActive) return;
+    // On envoie toujours l'alerte — l'admin sait si c'est en pause ou non
     io.to(partie.adminId).emit('alerte_triche', { nom, message: `⚠️ ${nom} a quitté la page !` });
   });
 
@@ -472,7 +497,6 @@ io.on('connection', (socket) => {
     if (!validerString(code, 6) || !validerString(nom, 30)) return;
     const partie = parties[code];
     if (!partie) return;
-    if (partie.pauseActive) return; // Pas d'alerte pendant la pause
     io.to(partie.adminId).emit('alerte_triche', { nom, message: `👀 ${nom} est revenu sur la page` });
   });
 
